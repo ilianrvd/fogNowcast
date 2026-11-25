@@ -42,7 +42,7 @@
 
 ## Станции на НТУ
 
-Списъкът на станциите на НТУ е в `static/ntu_stations.json` (127 станции, 100 активни към 2026-11-24). Полета: `name`, `name_en`, `lat`, `lon`, `elev_m` (Open-Meteo Elevation API, Copernicus DEM 90 m), `elev_check_m` (височина от средното налягане по ISA, само за проверка; най-голямата разлика е под 30 m), `active`, `t_surface_usable`, `rh_usable`. Идентификаторите са `NTU:<station_id>`. Данните са на Национално тол управление, CC BY 4.0. Този проект отговаря за този файл. В общия списък (nowcasting-public) те влизат с тези идентификатори.
+Списъкът на станциите на НТУ е в `static/ntu_stations.json` (127 станции, 100 активни към 2026-11-24). Полета: `name`, `name_en`, `lat`, `lon`, `elev_m` (Open-Meteo Elevation API, Copernicus DEM 90 m), `elev_check_m` (височина от средното налягане по ISA, само за проверка; най-голямата разлика е 55 m, всичко е под 150 m), `active`, `t_surface_usable`, `rh_usable`. Идентификаторите са `NTU:<station_id>`. Данните са на Национално тол управление, CC BY 4.0. Този проект отговаря за този файл. В общия списък (nowcasting-public) те влизат с тези идентификатори.
 
 ## Състояние
 
