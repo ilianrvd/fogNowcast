@@ -24,8 +24,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p site fb
-          for pair in "gh-pages:site" "archive-fallback:fb"; do
+          mkdir -p site fb live
+          for pair in "gh-pages:site" "archive-fallback:fb" "archive-live:live"; do
             br="${pair%%:*}"; dir="${pair##*:}"
             # exit code 2 = branch does not exist (first run); any other failure stops the run, so that a
             # network error is never mistaken for an empty branch (which would also lose the request time)
@@ -37,7 +37,7 @@ jobs:
               echo "git ls-remote failed ($rc) for $br"; exit 1
             fi
           done
-      - run: python -m ingest.ntu_live --site site --fallback-archive fb
+      - run: python -m ingest.ntu_live --site site --fallback-archive fb --live-archive live
       - name: Publish
         # also after a failed ingest, so that the time of the request attempt (ntu_fetch_state.json) is kept;
         # the data files are unchanged in that case

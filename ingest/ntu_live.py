@@ -8,6 +8,7 @@ Writes (see docs/obs_ntu.md):
     site/obs/ntu_recent.json          rolling 24 h of normalised rows (for persistence of model errors)
     site/obs/ntu_fallback_latest.json NTU's own temperature check (/temperaturefallback), refreshed ~hourly
     fb/fallback_YYYY-MM-DD.csv        archive of every fallback state, ~every 15 min (branch archive-fallback)
+    live/ntu_live_YYYY-MM.csv.gz      archive of every new live record (branch archive-live), append-only
 
 /mto/data is requested once per run. /temperaturefallback is requested only when the stored copy is
 older than FALLBACK_REFRESH_MIN. If a request fails the previous files are left untouched.
@@ -23,12 +24,14 @@ Operational guards (docs/obs_ntu.md):
 """
 import argparse
 import csv
+import gzip
 import json
 import os
 import sys
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
+from ingest.ntu_archive import COLUMNS as ARCHIVE_COLUMNS, fmt
 from qc.ntu_qc import normalize_record
 
 BASE = "https://bgtoll.bg/index.php/mto/"
@@ -168,6 +171,42 @@ def flag_frozen(latest, recent, now):
                     s["qc"]["excluded"] = True
 
 
+ARCHIVE_SKIP_FLAGS = {"late"}  # about publication, not about the measurement
+
+
+def archive_live(live_dir, latest):
+    """Append records not yet archived to ntu_live_YYYY-MM.csv.gz (month of the record time, UTC).
+    Same columns as the NTU archive (docs/archive_ntu.md). Each call adds one gzip member; existing data
+    is never rewritten. Key: (id, time). Returns the number of rows added."""
+    os.makedirs(live_dir, exist_ok=True)
+    by_month = {}
+    for s in latest["stations"]:
+        by_month.setdefault(s["time"][:7], []).append(s)
+    added = 0
+    for month, stations in sorted(by_month.items()):
+        path = os.path.join(live_dir, f"ntu_live_{month}.csv.gz")
+        seen, exists = set(), os.path.exists(path)
+        if exists:
+            with gzip.open(path, "rt", encoding="utf-8", newline="") as f:
+                for row in csv.reader(f):
+                    if row and row[0] != "time":
+                        seen.add((row[1], row[0]))
+        new = [s for s in stations if (s["id"], s["time"]) not in seen]
+        if not new:
+            continue
+        with gzip.open(path, "at", encoding="utf-8", newline="") as f:
+            w = csv.writer(f)
+            if not exists:
+                w.writerow(ARCHIVE_COLUMNS)
+            for s in sorted(new, key=lambda x: (x["time"], int(x["id"].split(":")[1]))):
+                flags = [x for x in s["qc"]["flags"] if x not in ARCHIVE_SKIP_FLAGS]
+                w.writerow([s["time"], s["id"], fmt(s["t"], 2), fmt(s["rh"], 1), fmt(s["td"], 2),
+                            fmt(s["t_surface"], 2), fmt(s["pressure_hpa"], 1), fmt(s["wind_kt"], 1),
+                            fmt(s["wind_dir"], 0), "|".join(flags)])
+        added += len(new)
+    return added
+
+
 def compact_fallback(raw, now):
     stations, updated = {}, None
     for sid, v in raw.items():
@@ -209,7 +248,7 @@ def archive_fallback(fb_dir, fallback):
     return True
 
 
-def run(site, fb_dir, static_path, fetch=http_json, now=None):
+def run(site, fb_dir, static_path, fetch=http_json, now=None, live_dir=None):
     now = now or datetime.now(UTC)
     state_path = os.path.join(site, "obs", "ntu_fetch_state.json")
     last = (load_json(state_path) or {}).get("last_request_at")
@@ -247,6 +286,12 @@ def run(site, fb_dir, static_path, fetch=http_json, now=None):
     flag_frozen(latest, recent, now)
     write_json(os.path.join(site, "obs", "ntu_latest.json"), latest)
     write_json(os.path.join(site, "obs", "ntu_recent.json"), recent)
+    if live_dir:
+        try:
+            status["live_archived"] = archive_live(live_dir, latest)
+        except Exception as e:  # noqa: BLE001 - the published files must not depend on the archive
+            status["live_archived"] = None
+            print(f"live archive failed: {type(e).__name__}: {e}", file=sys.stderr)
     status.update({"stations": len(latest["stations"]), "omitted": latest["omitted_records"],
                    "obs_time_latest": latest["obs_time_latest"], "recent_rows": len(recent["rows"])})
     return status
@@ -257,8 +302,9 @@ def main() -> int:
     ap.add_argument("--site", required=True)
     ap.add_argument("--fallback-archive", required=True)
     ap.add_argument("--static", default="static/ntu_stations.json")
+    ap.add_argument("--live-archive", default=None)
     a = ap.parse_args()
-    print(json.dumps(run(a.site, a.fallback_archive, a.static), ensure_ascii=False))
+    print(json.dumps(run(a.site, a.fallback_archive, a.static, live_dir=a.live_archive), ensure_ascii=False))
     return 0
 
 
