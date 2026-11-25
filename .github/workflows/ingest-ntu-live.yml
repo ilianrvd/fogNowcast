@@ -1,0 +1,39 @@
+name: ingest-ntu-live
+# Live NTU feed. Triggered every 15 minutes by cron-job.org (workflow_dispatch), not by GitHub's own cron.
+# One request to /mto/data per run (NTU rule: at most one per 15 minutes, only from GitHub Actions).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ingest-ntu-live
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch published branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p site fb
+          for pair in "gh-pages:site" "archive-fallback:fb"; do
+            br="${pair%%:*}"; dir="${pair##*:}"
+            if git ls-remote --exit-code --heads origin "$br" >/dev/null 2>&1; then
+              rm -rf "$dir"
+              git clone -q --depth 1 --branch "$br" "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$dir"
+            fi
+          done
+      - run: python -m ingest.ntu_live --site site --fallback-archive fb
+      - name: Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tools/publish_live.sh
