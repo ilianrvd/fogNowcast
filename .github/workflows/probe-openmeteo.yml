@@ -1,0 +1,22 @@
+name: probe-openmeteo
+# Manual one-off probe: a handful of requests to the Open-Meteo Historical Forecast API. No schedule.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-openmeteo
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python tools/probe_openmeteo.py
