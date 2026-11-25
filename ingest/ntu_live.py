@@ -11,6 +11,15 @@ Writes (see docs/obs_ntu.md):
 
 /mto/data is requested once per run. /temperaturefallback is requested only when the stored copy is
 older than FALLBACK_REFRESH_MIN. If a request fails the previous files are left untouched.
+
+Operational guards (docs/obs_ntu.md):
+- no request at all if the previous request was less than MIN_REQUEST_INTERVAL_MIN ago (NTU rule: at most
+  one request per 15 min; protects against manual or duplicate runs). The time of every request attempt is
+  kept in site/obs/ntu_fetch_state.json, which is published even when the run fails;
+- the run fails, and the published files stay as they were, if fewer than MIN_STATIONS stations are usable
+  (format change, mass outage) - a good file is never replaced by an empty one;
+- NTU's model-fallback state older than FALLBACK_MAX_AGE_MIN, or missing for a station, is "unknown";
+- a temperature that has not changed for FROZEN_T_HOURS is flagged as a stuck sensor and excluded.
 """
 import argparse
 import csv
@@ -33,6 +42,12 @@ FALLBACK_REFRESH_MIN = 10   # the source updates every 15 min (seen at :00:01 an
 FALLBACK_COLUMNS = ["updated_at", "id", "scp", "status", "source", "use_model", "fallback_active",
                     "fallback_reason", "station_temp", "model_temp", "difference", "hits5",
                     "seriousHits", "consecutive5", "consecutive10", "consecutiveOk"]
+MIN_REQUEST_INTERVAL_MIN = 14  # cron runs every 15 min; start times jitter by tens of seconds
+MIN_STATIONS = 20             # ~95 stations report normally
+FALLBACK_MAX_AGE_MIN = 60     # the source updates every 15 min
+FROZEN_T_HOURS = 3            # t identical for this long (and at least FROZEN_MIN_ROWS rows) = stuck sensor
+FROZEN_RH_HOURS = 6           # rh identical for this long = flag only (persistent fog can look the same)
+FROZEN_MIN_ROWS = 10
 RECENT_COLUMNS = ["time", "id", "t", "rh", "td", "t_surface", "pressure_hpa", "wind_kt", "wind_dir"]
 
 
@@ -66,7 +81,16 @@ def r(v, nd):
     return None if v is None else round(v, nd)
 
 
+def fallback_age_min(fallback, now):
+    u = (fallback or {}).get("updated_at")
+    if not u:
+        return None
+    return (now - datetime.strptime(u, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)).total_seconds() / 60
+
+
 def build_latest(records, now, fallback, elevations):
+    fb_age = fallback_age_min(fallback, now)
+    fallback_fresh = fallback if fb_age is not None and fb_age <= FALLBACK_MAX_AGE_MIN else None
     best, omitted = {}, 0
     for rec in records:
         try:
@@ -88,10 +112,13 @@ def build_latest(records, now, fallback, elevations):
         flags = list(n["flags"])
         if n["age_min"] > LATE_MIN:
             flags.append("late")
-        fb = (fallback or {}).get("stations", {}).get(str(sid)) or {}
-        model_fb = bool(fb.get("fallback_active") or fb.get("use_model"))
+        fb = (fallback_fresh or {}).get("stations", {}).get(str(sid))
+        model_fb = bool(fb and (fb.get("fallback_active") or fb.get("use_model")))
         if model_fb:
             flags.append("model_fallback")
+        elif fb is None:
+            flags.append("fallback_unknown")  # NTU may be sending model values; not excluded, but not confirmed
+        fb = fb or {}
         stations.append({
             "id": f"NTU:{sid}", "name": n["name"], "name_en": n["name_en"], "lat": n["lat"], "lon": n["lon"],
             "elev_m": elevations.get(f"NTU:{sid}"), "time": iso(n["time"]), "age_min": n["age_min"],
@@ -102,7 +129,8 @@ def build_latest(records, now, fallback, elevations):
         })
     newest = max((s["time"] for s in stations), default=None)
     return {"generated_at": iso(now), "source": SOURCE, "obs_time_latest": newest,
-            "fallback_updated_at": (fallback or {}).get("updated_at"), "omitted_records": omitted,
+            "fallback_updated_at": (fallback or {}).get("updated_at"),
+            "fallback_used": fallback_fresh is not None, "omitted_records": omitted,
             "stations": stations}
 
 
@@ -119,6 +147,25 @@ def update_recent(prev, latest, now):
     rows = sorted(seen.values())
     return {"generated_at": latest["generated_at"], "source": SOURCE, "window_hours": RECENT_HOURS,
             "columns": RECENT_COLUMNS, "rows": rows}
+
+
+def flag_frozen(latest, recent, now):
+    """Add t_frozen (and exclude) / rh_constant flags from the rolling 24 h rows."""
+    cols = recent["columns"]
+    it, irh = cols.index("t"), cols.index("rh")
+    by = {}
+    for row in recent["rows"]:
+        by.setdefault(row[1], []).append(row)
+    for s in latest["stations"]:
+        rows = by.get(s["id"], [])
+        for col, hours, flag in ((it, FROZEN_T_HOURS, "t_frozen"), (irh, FROZEN_RH_HOURS, "rh_constant")):
+            cut = iso(now - timedelta(hours=hours))
+            win = [r_[col] for r_ in rows if r_[0] >= cut and r_[col] is not None]
+            span_ok = rows and min(r_[0] for r_ in rows) <= cut  # history covers the whole window
+            if span_ok and len(win) >= FROZEN_MIN_ROWS and len(set(win)) == 1:
+                s["qc"]["flags"].append(flag)
+                if flag == "t_frozen":
+                    s["qc"]["excluded"] = True
 
 
 def compact_fallback(raw, now):
@@ -164,6 +211,14 @@ def archive_fallback(fb_dir, fallback):
 
 def run(site, fb_dir, static_path, fetch=http_json, now=None):
     now = now or datetime.now(UTC)
+    state_path = os.path.join(site, "obs", "ntu_fetch_state.json")
+    last = (load_json(state_path) or {}).get("last_request_at")
+    if last:
+        since = (now - datetime.strptime(last, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)).total_seconds() / 60
+        if since < MIN_REQUEST_INTERVAL_MIN:
+            return {"skipped": True, "reason": f"last request {since:.1f} min ago (< {MIN_REQUEST_INTERVAL_MIN})"}
+    write_json(state_path, {"generated_at": iso(now), "source": "fogNowcast ingest.ntu_live",
+                            "last_request_at": iso(now)})
     elevations = {k: v.get("elev_m") for k, v in (load_json(static_path, {}) or {}).get("stations", {}).items()}
     fb_path = os.path.join(site, "obs", "ntu_fallback_latest.json")
     fallback = load_json(fb_path)
@@ -185,7 +240,11 @@ def run(site, fb_dir, static_path, fetch=http_json, now=None):
     if not isinstance(data, list) or not data:
         raise RuntimeError("empty or unexpected /mto/data response; previous files left unchanged")
     latest = build_latest(data, now, fallback, elevations)
+    if len(latest["stations"]) < MIN_STATIONS:
+        raise RuntimeError(f"only {len(latest['stations'])} usable stations (< {MIN_STATIONS}), "
+                           f"{latest['omitted_records']} records omitted; previous files left unchanged")
     recent = update_recent(load_json(os.path.join(site, "obs", "ntu_recent.json")), latest, now)
+    flag_frozen(latest, recent, now)
     write_json(os.path.join(site, "obs", "ntu_latest.json"), latest)
     write_json(os.path.join(site, "obs", "ntu_recent.json"), recent)
     status.update({"stations": len(latest["stations"]), "omitted": latest["omitted_records"],

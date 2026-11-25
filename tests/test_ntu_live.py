@@ -44,6 +44,11 @@ class LiveTests(unittest.TestCase):
         self.static = os.path.join(d, "st.json")
         with open(self.static, "w", encoding="utf-8") as f:
             json.dump({"stations": {"NTU:1": {"elev_m": 700}}}, f)
+        self._min = ntu_live.MIN_STATIONS
+        ntu_live.MIN_STATIONS = 1  # most tests use one or two stations
+
+    def tearDown(self):
+        ntu_live.MIN_STATIONS = self._min
 
     def test_latest_flags_and_dedupe(self):
         data = [rec(1, 5), rec(1, 20),                   # duplicate station: newest kept
@@ -71,8 +76,9 @@ class LiveTests(unittest.TestCase):
         f = Fetcher([rec(1, 5)], {"1": fb_entry(1)})
         ntu_live.run(self.site, self.fb, self.static, fetch=f, now=NOW)
         f2 = Fetcher([rec(1, 5)], {"1": fb_entry(1)})
-        ntu_live.run(self.site, self.fb, self.static, fetch=f2, now=NOW + timedelta(minutes=3))
-        self.assertEqual(f2.calls, ["data"])               # a re-run minutes later does not ask again
+        st2 = ntu_live.run(self.site, self.fb, self.static, fetch=f2, now=NOW + timedelta(minutes=3))
+        self.assertEqual(f2.calls, [])                     # a re-run minutes later makes no request at all
+        self.assertTrue(st2["skipped"])
         f3 = Fetcher([rec(1, 5)], {"1": fb_entry(1, updated_at=1795626901)})
         ntu_live.run(self.site, self.fb, self.static, fetch=f3, now=NOW + timedelta(minutes=15))
         self.assertEqual(f3.calls, ["temperaturefallback", "data"])
@@ -108,6 +114,82 @@ class LiveTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher([], {}), now=NOW + timedelta(minutes=15))
         self.assertEqual(open(path, encoding="utf-8").read(), before)
+
+
+class GuardTests(unittest.TestCase):
+    def setUp(self):
+        d = tempfile.mkdtemp()
+        self.site, self.fb = os.path.join(d, "site"), os.path.join(d, "fb")
+        self.static = os.path.join(d, "st.json")
+        with open(self.static, "w", encoding="utf-8") as f:
+            json.dump({"stations": {}}, f)
+        self.many = [rec(i, 5) for i in range(1, 31)]
+        self.fb_ok = {str(i): fb_entry(i) for i in range(1, 31)}
+
+    def latest(self):
+        with open(os.path.join(self.site, "obs", "ntu_latest.json"), encoding="utf-8") as f:
+            return {s["id"]: s for s in json.load(f)["stations"]}
+
+    def test_no_request_within_14_minutes(self):
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
+        for m in (1, 7, 13):
+            f = Fetcher(self.many, self.fb_ok)
+            st = ntu_live.run(self.site, self.fb, self.static, fetch=f, now=NOW + timedelta(minutes=m))
+            self.assertEqual(f.calls, [])
+            self.assertTrue(st["skipped"])
+        f = Fetcher(self.many, self.fb_ok)
+        ntu_live.run(self.site, self.fb, self.static, fetch=f, now=NOW + timedelta(minutes=14, seconds=40))
+        self.assertIn("data", f.calls)
+
+    def test_failed_request_still_counts(self):
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
+        with self.assertRaises(RuntimeError):
+            ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher([], {}), now=NOW + timedelta(minutes=15))
+        f = Fetcher(self.many, self.fb_ok)
+        st = ntu_live.run(self.site, self.fb, self.static, fetch=f, now=NOW + timedelta(minutes=20))
+        self.assertTrue(st["skipped"])                     # the failed attempt at +15 was a request too
+
+    def test_too_few_stations_keeps_good_file(self):
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
+        path = os.path.join(self.site, "obs", "ntu_latest.json")
+        before = open(path, encoding="utf-8").read()
+        stale = [rec(i, 400) for i in range(1, 31)]        # all older than 6 h -> omitted
+        broken = [{"station_id": i, "whatever": 1} for i in range(1, 31)]   # format change
+        for k, data in enumerate((stale, broken, self.many[:5])):
+            with self.assertRaises(RuntimeError):
+                ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(data, self.fb_ok),
+                             now=NOW + timedelta(minutes=15 * (k + 1)))
+            self.assertEqual(open(path, encoding="utf-8").read(), before)
+
+    def test_stale_or_missing_fallback_is_unknown(self):
+        part = {str(i): fb_entry(i) for i in range(1, 30)}                      # station 30 missing
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, part),
+                     now=NOW + timedelta(minutes=10))
+        by = self.latest()
+        self.assertIn("fallback_unknown", by["NTU:30"]["qc"]["flags"])
+        self.assertEqual(by["NTU:1"]["qc"]["flags"], [])
+        old = {str(i): fb_entry(i, fallback_active=True) for i in range(1, 31)}   # 2026-11-25T17:00:01Z
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, old),
+                     now=NOW + timedelta(minutes=61))
+        s = self.latest()["NTU:1"]
+        self.assertIn("fallback_unknown", s["qc"]["flags"])
+        self.assertNotIn("model_fallback", s["qc"]["flags"])
+        self.assertFalse(s["qc"]["excluded"])
+
+    def test_frozen_temperature_is_flagged_and_excluded(self):
+        t = NOW
+        for k in range(14):                                # 14 runs, 15 min apart = 3 h 15 min
+            data = [rec(i, 0, time=t.strftime("%Y-%m-%d %H:%M:%S"),
+                        air=(5.0 if i == 1 else 5.0 + 0.1 * k), humidity=(100.0 if i == 2 else 90.0 - k))
+                    for i in range(1, 31)]
+            fb = {str(i): fb_entry(i, updated_at=int(t.timestamp())) for i in range(1, 31)}
+            ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(data, fb), now=t)
+            t += timedelta(minutes=15)
+        by = self.latest()
+        self.assertIn("t_frozen", by["NTU:1"]["qc"]["flags"])
+        self.assertTrue(by["NTU:1"]["qc"]["excluded"])
+        self.assertNotIn("t_frozen", by["NTU:3"]["qc"]["flags"])
+        self.assertNotIn("rh_constant", by["NTU:2"]["qc"]["flags"])   # only 3 h of history, needs 6 h
 
 
 if __name__ == "__main__":
