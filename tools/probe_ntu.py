@@ -8,11 +8,18 @@ import json
 import sys
 import urllib.request
 
-URL = "https://bgtoll.bg/index.php/mto/data"
+BASE = "https://bgtoll.bg/index.php/mto/"
+ENDPOINTS = ("data", "temperaturefallback")
 UA = "fogNowcast-probe/0.1 (+https://github.com/ilianrvd/fogNowcast)"
 
 
 def main() -> int:
+    endpoint = sys.argv[1] if len(sys.argv) > 1 else "data"
+    if endpoint not in ENDPOINTS:
+        print(f"unknown endpoint {endpoint!r}, expected one of {ENDPOINTS}")
+        return 2
+    URL = BASE + endpoint
+    print(f"GET {URL}")
     req = urllib.request.Request(URL, headers={"User-Agent": UA, "Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -33,7 +40,13 @@ def main() -> int:
     for k in ("Content-Type", "Date", "Last-Modified", "Cache-Control", "Server"):
         print(f"{k}: {headers.get(k)}")
 
-    data = json.loads(raw.decode("utf-8-sig"))
+    text = raw.decode("utf-8-sig")
+    try:
+        data = json.loads(text)
+    except ValueError:
+        print("not JSON; first 3000 chars:")
+        print(text[:3000])
+        return 0
     items = data if isinstance(data, list) else data.get("data", data)
     print(f"top-level type: {type(data).__name__}")
     if isinstance(items, list):
@@ -43,7 +56,7 @@ def main() -> int:
         keys = sorted({k for r in items if isinstance(r, dict) for k in r})
         print(f"all keys: {keys}")
     else:
-        print(json.dumps(items, ensure_ascii=False)[:2000])
+        print(json.dumps(items, ensure_ascii=False, indent=1)[:4000])
     return 0
 
 

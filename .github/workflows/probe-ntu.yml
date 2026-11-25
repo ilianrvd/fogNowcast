@@ -1,7 +1,13 @@
 name: probe-ntu
-# Manual one-off probe: a single request to bgtoll.bg /mto/data. No schedule.
+# Manual one-off probe: a single request to one bgtoll.bg /mto endpoint. No schedule.
 on:
   workflow_dispatch:
+    inputs:
+      endpoint:
+        description: "NTU endpoint"
+        type: choice
+        options: [data, temperaturefallback]
+        default: temperaturefallback
 
 permissions:
   contents: read
@@ -19,4 +25,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python tools/probe_ntu.py
+      - run: python tools/probe_ntu.py "${{ inputs.endpoint }}"
