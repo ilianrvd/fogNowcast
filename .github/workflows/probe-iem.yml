@@ -1,0 +1,22 @@
+name: probe-iem
+# Manual one-off probe: five requests to the IEM ASOS archive (METAR/SPECI of the five airports). No schedule.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-iem
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python tools/probe_iem.py
