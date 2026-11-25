@@ -1,0 +1,42 @@
+name: calibrate-metar
+# Manual: calibrate the fog flag of NTU stations against airport METAR from IEM (docs/obs_metar_synop.md).
+# Reads the archive branches, fetches METAR/SPECI of five airports from IEM (5 requests).
+on:
+  workflow_dispatch:
+    inputs:
+      months:
+        description: "Archive months to read"
+        default: "2026-01 2026-02 2026-03 2026-04 2026-05 2026-06 2026-07 2026-08 2026-09 2026-10 2026-11"
+      publish:
+        description: "Publish the result to branch analysis-metar"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: calibrate-metar
+  cancel-in-progress: false
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch archive months
+        run: |
+          mkdir -p "$RUNNER_TEMP/archive"
+          for m in ${{ inputs.months }}; do
+            git fetch --depth 1 origin "archive-$m"
+            git show FETCH_HEAD:"ntu_$m.csv.gz" > "$RUNNER_TEMP/archive/ntu_$m.csv.gz"
+          done
+      - run: python -m calibration.build_metar --archive-dir "$RUNNER_TEMP/archive" --out "$RUNNER_TEMP/out"
+      - if: ${{ inputs.publish }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tools/publish_metar.sh "$RUNNER_TEMP/out"
