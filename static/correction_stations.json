@@ -1,0 +1,218 @@
+{
+ "generated_at": "2026-11-25T18:00:00Z",
+ "source": "selected by hand from static/ntu_stations.json (nearest to airports; road stations with the highest share of rh>=99.5 % in the NTU archive)",
+ "version": 1,
+ "stations": [
+  {
+   "id": "NTU:9",
+   "name": "Игнатиево",
+   "lat": 43.240614,
+   "lon": 27.781228,
+   "elev_m": 48,
+   "groups": [
+    "airport:LBWN"
+   ]
+  },
+  {
+   "id": "NTU:21",
+   "name": "Чепинци",
+   "lat": 42.719517,
+   "lon": 23.400456,
+   "elev_m": 520,
+   "groups": [
+    "airport:LBSF"
+   ]
+  },
+  {
+   "id": "NTU:33",
+   "name": "Моравица",
+   "lat": 43.158699,
+   "lon": 26.129339,
+   "elev_m": 452,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:49",
+   "name": "Борован",
+   "lat": 43.431844,
+   "lon": 23.736628,
+   "elev_m": 193,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:54",
+   "name": "Одринци",
+   "lat": 43.539778,
+   "lon": 27.709242,
+   "elev_m": 219,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:55",
+   "name": "Кардам",
+   "lat": 43.748849,
+   "lon": 28.095555,
+   "elev_m": 179,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:56",
+   "name": "Стожер",
+   "lat": 43.441145,
+   "lon": 27.825259,
+   "elev_m": 317,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:58",
+   "name": "Брестовец",
+   "lat": 43.361679,
+   "lon": 24.611624,
+   "elev_m": 261,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:61",
+   "name": "Тертер",
+   "lat": 43.90457,
+   "lon": 26.53674,
+   "elev_m": 120,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:64",
+   "name": "Елена",
+   "lat": 42.918316,
+   "lon": 25.920351,
+   "elev_m": 308,
+   "groups": [
+    "airport:LBGO",
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:68",
+   "name": "Червен",
+   "lat": 41.944329,
+   "lon": 24.962951,
+   "elev_m": 406,
+   "groups": [
+    "airport:LBPD"
+   ]
+  },
+  {
+   "id": "NTU:76",
+   "name": "Коларово",
+   "lat": 41.970639,
+   "lon": 26.002254,
+   "elev_m": 238,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:78",
+   "name": "Бързия",
+   "lat": 43.120328,
+   "lon": 23.122952,
+   "elev_m": 1419,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:82",
+   "name": "Равнища",
+   "lat": 41.539991,
+   "lon": 24.906576,
+   "elev_m": 690,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:92",
+   "name": "Кнежа",
+   "lat": 43.512519,
+   "lon": 24.08262,
+   "elev_m": 128,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:94",
+   "name": "Долно войводино",
+   "lat": 41.804442,
+   "lon": 25.568942,
+   "elev_m": 213,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:107",
+   "name": "Железно",
+   "lat": 42.210551,
+   "lon": 24.782103,
+   "elev_m": 169,
+   "groups": [
+    "airport:LBPD"
+   ]
+  },
+  {
+   "id": "NTU:113",
+   "name": "Трилистник",
+   "lat": 42.216931,
+   "lon": 24.859625,
+   "elev_m": 165,
+   "groups": [
+    "airport:LBPD"
+   ]
+  },
+  {
+   "id": "NTU:123",
+   "name": "Димитровград",
+   "lat": 42.038769,
+   "lon": 25.578869,
+   "elev_m": 143,
+   "groups": [
+    "road_fog"
+   ]
+  },
+  {
+   "id": "NTU:124",
+   "name": "Равда",
+   "lat": 42.654704,
+   "lon": 27.674976,
+   "elev_m": 32,
+   "groups": [
+    "airport:LBBG"
+   ]
+  },
+  {
+   "id": "NTU:131",
+   "name": "село Добрич",
+   "lat": 42.16906,
+   "lon": 26.66235,
+   "elev_m": 129,
+   "groups": [
+    "road_fog"
+   ]
+  }
+ ]
+}
