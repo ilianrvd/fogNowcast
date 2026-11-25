@@ -28,9 +28,10 @@ def row_to_obs(row: dict) -> dict:
     return {"t": t, "td": td, "dd": dd, "rh": rh, "ws": ws, "wd": wd}
 
 
-def hourly_obs(paths, station_ids):
-    """{(station_id, hour_datetime): obs}. Per station and hour the record nearest to HH:00
-    (+-15 min; ties go to the earlier one) is taken. No averaging, so fog is not smoothed."""
+def slot_obs(paths, station_ids, step_min=60, max_offset_min=MAX_OFFSET_MIN):
+    """{(station_id, slot_datetime): obs} for slots every step_min minutes (UTC). Per station and slot the
+    record nearest to the slot time (within max_offset_min; ties go to the earlier one) is taken.
+    No averaging, so fog is not smoothed."""
     wanted = set(station_ids)
     best = {}
     for path in paths:
@@ -40,15 +41,20 @@ def hourly_obs(paths, station_ids):
                 if sid not in wanted:
                     continue
                 t = parse_time(row["time"])
-                hour = (t + timedelta(minutes=30)).replace(minute=0, second=0, microsecond=0)
-                off = abs((t - hour).total_seconds()) / 60
-                if off > MAX_OFFSET_MIN:
+                sec = t.timestamp()
+                slot_s = int((sec + step_min * 30) // (step_min * 60)) * step_min * 60
+                off = abs(sec - slot_s) / 60
+                if off > max_offset_min:
                     continue
-                key = (sid, hour)
-                cand = (off, t, row)
+                key = (sid, datetime.fromtimestamp(slot_s, tz=timezone.utc))
                 if key not in best or (off, t) < (best[key][0], best[key][1]):
-                    best[key] = cand
+                    best[key] = (off, t, row)
     return {k: row_to_obs(v[2]) for k, v in best.items()}
+
+
+def hourly_obs(paths, station_ids):
+    """Hourly slots: see slot_obs."""
+    return slot_obs(paths, station_ids, step_min=60)
 
 
 def sun_elevation_deg(t: datetime, lat: float, lon: float) -> float:
