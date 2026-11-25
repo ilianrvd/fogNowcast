@@ -1,0 +1,54 @@
+name: verify-stage2
+# Manual: stage-2 verification (docs/verification.md). Raw ICON-EU single runs vs persistence vs residual
+# correction, leads 0-6 h. One request to Open-Meteo per run (~225 runs for Oct-Nov), all points at once.
+on:
+  workflow_dispatch:
+    inputs:
+      months:
+        description: "NTU archive months to read"
+        default: "2026-10 2026-11"
+      train:
+        description: "Training period (start:end)"
+        default: "2026-10-01:2026-10-31"
+      test:
+        description: "Test period (start:end)"
+        default: "2026-11-01:2026-11-24"
+      publish:
+        description: "Publish the result to branch analysis-verification"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verify-stage2
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch observations
+        run: |
+          mkdir -p "$RUNNER_TEMP/archive" "$RUNNER_TEMP/metar"
+          for m in ${{ inputs.months }}; do
+            git fetch --depth 1 origin "archive-$m"
+            git show FETCH_HEAD:"ntu_$m.csv.gz" > "$RUNNER_TEMP/archive/ntu_$m.csv.gz"
+          done
+          git fetch --depth 1 origin analysis-metar
+          for i in LBSF LBBG LBWN LBPD LBGO; do
+            git show FETCH_HEAD:"metar_$i.csv.gz" > "$RUNNER_TEMP/metar/metar_$i.csv.gz"
+          done
+      - run: >
+          python -m verification.build --archive-dir "$RUNNER_TEMP/archive" --metar-dir "$RUNNER_TEMP/metar"
+          --out "$RUNNER_TEMP/out" --train "${{ inputs.train }}" --test "${{ inputs.test }}"
+      - if: ${{ inputs.publish }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tools/publish_verification.sh "$RUNNER_TEMP/out"
