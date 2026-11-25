@@ -8,16 +8,15 @@ print the structure of the first and the last daily file. Nothing is saved.
 """
 import io
 import json
+import os
 import sys
+import tempfile
 import urllib.request
 import zipfile
-
-from stream_unzip import stream_unzip
 
 FOLDER = ("https://www.dropbox.com/scl/fo/3v3asm04vcf3oahhgb39w/AJ8-3EDvwDf7d3a6OGir1wo"
           "?rlkey=i95zfngdxye3lj6zwrk97cgg5&st=4pyajkii&dl=1")
 UA = "fogNowcast-probe/0.1 (+https://github.com/ilianrvd/fogNowcast)"
-MAX_ENTRY_BYTES = 40 * 1024 * 1024
 
 
 def chunks(resp):
@@ -45,50 +44,41 @@ def describe(blob: bytes) -> None:
 
 
 def main() -> int:
+    # The outer zip stores inner zips uncompressed with data descriptors, which cannot be
+    # streamed. Download it to a temp file (outside the repo) and read the central directory.
+    path = os.path.join(tempfile.mkdtemp(), "meteo.zip")
     req = urllib.request.Request(FOLDER, headers={"User-Agent": UA})
-    names = []
-    first_blob = last_blob = None
-    first_name = last_name = None
-    with urllib.request.urlopen(req, timeout=300) as resp:
+    total = 0
+    with urllib.request.urlopen(req, timeout=300) as resp, open(path, "wb") as out:
         print(f"status={resp.status} type={resp.headers.get('Content-Type')} "
               f"length={resp.headers.get('Content-Length')}")
-        for name, size, parts in stream_unzip(chunks(resp)):
-            name = name.decode("utf-8", "replace")
-            is_dir = name.endswith("/")
-            keep = None
-            if not is_dir:
-                buf = io.BytesIO()
-                got = 0
-                for part in parts:
-                    got += len(part)
-                    if got <= MAX_ENTRY_BYTES:
-                        buf.write(part)
-                keep = buf.getvalue()
-            else:
-                for _ in parts:
-                    pass
-            names.append((name, size))
-            if not is_dir:
-                if first_blob is None:
-                    first_blob, first_name = keep, name
-                last_blob, last_name = keep, name
-    files = [n for n, _ in names if not n.endswith("/")]
-    dirs = [n for n, _ in names if n.endswith("/")]
-    print(f"entries: {len(names)} (dirs {len(dirs)}, files {len(files)})")
-    print("dirs:", dirs)
-    print("first files:", files[:6])
-    print("last files:", files[-4:])
-    by_month = {}
-    for n in files:
-        by_month[n.rsplit("/", 1)[0]] = by_month.get(n.rsplit("/", 1)[0], 0) + 1
-    print("files per folder:", by_month)
-    for label, nm, blob in (("FIRST", first_name, first_blob), ("LAST", last_name, last_blob)):
-        print(f"--- {label}: {nm} ({len(blob) if blob else 0} bytes)")
-        if blob and zipfile.is_zipfile(io.BytesIO(blob)):
+        for b in chunks(resp):
+            out.write(b)
+            total += len(b)
+    print(f"downloaded {total} bytes")
+    z = zipfile.ZipFile(path)
+    infos = z.infolist()
+    files = [i for i in infos if not i.is_dir()]
+    print(f"entries: {len(infos)} (dirs {len(infos) - len(files)}, files {len(files)})")
+    print("dirs:", [i.filename for i in infos if i.is_dir()])
+    print("first files:", [i.filename for i in files[:6]])
+    print("last files:", [i.filename for i in files[-4:]])
+    by_dir = {}
+    for i in files:
+        d = i.filename.rsplit("/", 1)[0]
+        by_dir[d] = by_dir.get(d, 0) + 1
+    print("files per folder:", by_dir)
+    sizes = [i.file_size for i in files]
+    print(f"file sizes: min={min(sizes)} max={max(sizes)} mean={sum(sizes) // len(sizes)}")
+    for label, info in (("FIRST", files[0]), ("LAST", files[-1])):
+        print(f"--- {label}: {info.filename} ({info.file_size} bytes)")
+        blob = z.read(info)
+        if zipfile.is_zipfile(io.BytesIO(blob)):
             describe(blob)
-        elif blob:
+        else:
             print("not a zip; first 1200 bytes:")
             print(blob[:1200].decode("utf-8", "replace"))
+    os.remove(path)
     return 0
 
 
