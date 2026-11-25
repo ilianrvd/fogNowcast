@@ -1,0 +1,93 @@
+{
+  "schema": "portal.manifest/1.0",
+  "generated_at": "2026-11-28T20:20:28Z",
+  "source": "fogNowcast",
+  "id": "fognowcast",
+  "name": {
+    "bg": "fogNowcast",
+    "en": "fogNowcast"
+  },
+  "description": {
+    "bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза 0–6 ч: точки и площи с условия за мъгла (модел ICON-EU + корекция от наблюденията)",
+    "en": "NTU road weather stations and an uncalibrated 0–6 h forecast: points and fog-condition areas (ICON-EU + observation correction)"
+  },
+  "url": "https://ilianrvd.github.io/fogNowcast/",
+  "repo": "https://github.com/ilianrvd/fogNowcast",
+  "status": "experimental",
+  "cadence_min": 15,
+  "run": null,
+  "embed": {
+    "url": "index.html?embed=1",
+    "min_height_px": 800,
+    "gated": false
+  },
+  "products": [
+    {
+      "id": "ntu_latest",
+      "path": "obs/ntu_latest.json",
+      "format": "json",
+      "schema": "fognowcast.ntu_latest/1.0",
+      "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md#obsntu_latestjson",
+      "cadence_min": 15,
+      "generated_at": "2026-11-28T20:20:28Z",
+      "data_time": "2026-11-28T20:15:00Z"
+    },
+    {
+      "id": "ntu_recent",
+      "path": "obs/ntu_recent.json",
+      "format": "json",
+      "schema": "fognowcast.ntu_recent/1.0",
+      "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md#obsntu_recentjson",
+      "cadence_min": 15,
+      "generated_at": "2026-11-28T20:20:28Z",
+      "data_time": "2026-11-28T20:15:00Z"
+    },
+    {
+      "id": "ntu_fallback",
+      "path": "obs/ntu_fallback_latest.json",
+      "format": "json",
+      "schema": "fognowcast.ntu_fallback/1.0",
+      "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md#obsntu_fallback_latestjson",
+      "cadence_min": 15,
+      "generated_at": "2026-11-28T20:20:28Z",
+      "data_time": "2026-11-28T20:15:01Z"
+    },
+    {
+      "id": "fog_points",
+      "path": "fog/fog_points.json",
+      "format": "json",
+      "schema": "fognowcast.fog_points/1.0",
+      "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/fog_points.md",
+      "cadence_min": 15,
+      "generated_at": "2026-11-28T20:20:31Z",
+      "data_time": "2026-11-28T20:00:00Z"
+    },
+    {
+      "id": "fog_polygons",
+      "path": "fog/fog_polygons.geojson",
+      "format": "geojson",
+      "schema": "fognowcast.fog_polygons/1.0",
+      "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/fog_polygons.md",
+      "cadence_min": 15,
+      "generated_at": "2026-11-28T20:20:33Z",
+      "data_time": "2026-11-28T20:00:00Z"
+    }
+  ],
+  "consumes": [
+    {
+      "project": "multiconvect",
+      "path": "latest_points.json",
+      "max_age_min": 480
+    },
+    {
+      "project": "multiconvect",
+      "path": "fog_fields_icon_eu.npz",
+      "max_age_min": 480
+    },
+    {
+      "project": "nowcasting-public",
+      "path": "obs/metar_latest.json",
+      "max_age_min": 60
+    }
+  ]
+}
