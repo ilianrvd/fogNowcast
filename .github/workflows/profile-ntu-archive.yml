@@ -1,0 +1,29 @@
+name: profile-ntu-archive
+# Manual one-off profile of the NTU Dropbox archive. Downloads ~230 MB once. No schedule.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: profile-ntu-archive
+  cancel-in-progress: false
+
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python tools/profile_ntu_archive.py
+        env:
+          REPORT_PATH: ${{ runner.temp }}/ntu_profile.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ntu-profile
+          path: ${{ runner.temp }}/ntu_profile.json
+          retention-days: 14
