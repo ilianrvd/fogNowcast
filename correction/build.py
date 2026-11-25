@@ -34,7 +34,7 @@ def split(pairs, start, end):
 
 
 def report_md(meta, ev):
-    lines = [f"# Корекция на ICON-EU по станции", "",
+    lines = [f"# Корекция на ICON-EU по станции", "", "**Изследване, не за оперативна употреба** (виж docs/correction_model.md).", "",
              f"Обучение: {meta['train'][0]} … {meta['train'][1]}; проверка: {meta['test'][0]} … {meta['test'][1]}. "
              f"Минимум {fit.MIN_N} двойки на клетка. `+` = поправката е приета (MAE намалява в проверката).", "",
              "| станция | вел. | n | MAE преди | MAE след | bias преди | bias след | приета | наситен+тих n | MAE преди | MAE след |",

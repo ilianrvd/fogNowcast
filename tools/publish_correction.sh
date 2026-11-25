@@ -11,6 +11,8 @@ cat > "$d/README.md" <<EOT
 
 Резултат от fogNowcast. Формат и метод: docs/correction_model.md в основния клон.
 
+> **Изследване, не за оперативна употреба.** Поправките са проверени само за 24 дни през ноември, срещу Open-Meteo Historical Forecast (първите часове на рънa, не реален срок), с режим по наблюдението, който на живо не е наличен. Не се ползват в продукти, нито за летищата.
+
 Наблюдения: Национално тол управление (bgtoll.bg), лиценз CC BY 4.0
 (https://creativecommons.org/licenses/by/4.0/deed.bg). Модел: ICON-EU чрез Open-Meteo Historical Forecast.
 EOT
