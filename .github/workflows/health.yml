@@ -1,0 +1,46 @@
+name: health
+# Hourly health check of the live NTU pipeline, triggered by cron-job.org (workflow_dispatch).
+# Reads Pages and branch dates only (no request to NTU). Opens, updates or closes one issue.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: health
+  cancel-in-progress: false
+
+env:
+  TITLE: "fogNowcast: данните са спрели"
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/health_check.py --report "$RUNNER_TEMP/report.md"
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OK: ${{ steps.check.outputs.ok }}
+        run: |
+          num="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$TITLE\" in:title" \
+                 --json number,title --jq "map(select(.title == env.TITLE)) | .[0].number // empty")"
+          if [ "$OK" = true ]; then
+            if [ -n "$num" ]; then
+              gh issue close "$num" --repo "$GITHUB_REPOSITORY" --comment "$(cat "$RUNNER_TEMP/report.md")"
+            fi
+          elif [ -n "$num" ]; then
+            gh issue comment "$num" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/report.md"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body-file "$RUNNER_TEMP/report.md"
+          fi
