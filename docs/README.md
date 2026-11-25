@@ -51,6 +51,7 @@
 | `archive-YYYY-MM`: `ntu_YYYY-MM.csv.gz`, `ntu_stations.json`, `ntu_import_meta.json` | [archive_ntu.md](archive_ntu.md) | 1 | чернова |
 | `obs/metar_latest.json`, `obs/synop_latest.json` (METAR: nowcasting-public; SYNOP: не е решено) | [obs_metar_synop.md](obs_metar_synop.md) | 1 | чернова |
 | `obs/sat_fog_mask.json` (публикува nowcasting-public) | [obs_sat_fog_mask.md](obs_sat_fog_mask.md) | 1–2 | чернова |
+| клон `analysis-correction`: `correction_by_station.json`, `correction_report.md` | [correction_model.md](correction_model.md#изход) | 1 | чернова |
 | `fog_fields_<model>.npz` (вход от MultiConvect) | [input_multiconvect.md](input_multiconvect.md) | 1 | чернова, за съгласуване |
 | `fog_map.npz` и `fog_map_meta.json` | [fog_map.md](fog_map.md) | 2 | чернова |
 | `roads_latest.json`, `static/roads_segments.geojson` | [roads.md](roads.md) | 3 | чернова |

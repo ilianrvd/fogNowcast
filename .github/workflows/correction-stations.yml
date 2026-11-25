@@ -1,0 +1,42 @@
+name: correction-stations
+# Manual: per-station correction of ICON-EU against NTU observations (docs/correction_model.md).
+# Reads the archive branches, fetches model values from Open-Meteo (21 requests), fits and evaluates.
+on:
+  workflow_dispatch:
+    inputs:
+      months:
+        description: "Archive months to read (training and test periods)"
+        default: "2026-01 2026-02 2026-03 2026-11"
+      publish:
+        description: "Publish the result to branch analysis-correction"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: correction-stations
+  cancel-in-progress: false
+
+jobs:
+  correction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch archive months
+        run: |
+          mkdir -p "$RUNNER_TEMP/archive"
+          for m in ${{ inputs.months }}; do
+            git fetch --depth 1 origin "archive-$m"
+            git show FETCH_HEAD:"ntu_$m.csv.gz" > "$RUNNER_TEMP/archive/ntu_$m.csv.gz"
+          done
+      - run: python -m correction.build --archive-dir "$RUNNER_TEMP/archive" --out "$RUNNER_TEMP/out"
+      - if: ${{ inputs.publish }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tools/publish_correction.sh "$RUNNER_TEMP/out"
