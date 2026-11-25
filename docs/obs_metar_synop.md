@@ -1,13 +1,13 @@
 # METAR и SYNOP: `obs/metar_latest.json`, `obs/synop_latest.json`
 
-> Чернова (етап 1). Източникът (OGIMET или друг) и честотата се уточняват с вноса.
+> Чернова (етап 1). METAR: Aviation Weather Center (AWC), както в airport-nowcast. SYNOP: Ogimet. Честотата и собственикът на изтеглянето се уточняват с вноса.
 
 Обща структура:
 
 ```json
 {
   "generated_at": "2026-11-25T06:05:00Z",
-  "source": "ogimet",
+  "source": "awc",
   "reports": [
     {
       "id": "LBSF",

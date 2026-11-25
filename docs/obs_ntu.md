@@ -1,6 +1,8 @@
 # Станции на НТУ: `obs/ntu_latest.json`
 
 > Чернова (етап 1).
+>
+> Проверено на 2026-11-25 с една заявка от GitHub Actions: HTTP 200, 96 записа, JSON без BOM проблеми с `utf-8-sig`, обновяване на 10 мин, `time` е в UTC (в 09:33Z последният запис е „09:30:00"). Отговорът е зад Cloudflare с `Cache-Control: no-store`. Координатите са с 6 знака след запетаята. Ключове: `station_id`, `scp`, `name`, `nameENG`, `lat`, `lon`, `air`, `surface`, `humidity`, `pressure`, `wind`, `wind_dir`, `time`. Заявките са с идентифициращ User-Agent.
 
 ## Източник
 
@@ -41,9 +43,9 @@
 | `td` | — | смята се от `t` и `rh` (Magnus, коефициенти на Alduchov–Eskridge) |
 | `rh` | `humidity` | % |
 | `t_surface` | `surface` | °C, настилка |
-| `wind_kt` | `wind` | Източникът вероятно е в km/h (тогава kt = km/h ÷ 1.852), **да се провери**. |
+| `wind_kt` | `wind` | Източникът е в km/h (потвърдено от сайта на АПИ). kt = km/h ÷ 1.852. |
 | `wind_dir` | `wind_dir` | ° |
-| `pressure_hpa` | `pressure` | на нивото на станцията |
+| `pressure_hpa` | `pressure` | налягане на станцията, не е редуцирано до морското равнище |
 
 Полето `scp` от източника не се пренася, докато не е ясно какво значи.
 
