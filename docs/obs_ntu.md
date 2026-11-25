@@ -18,44 +18,71 @@
 - Ключовете са същите като в живия поток, но `nameENG` липсва в ранните файлове. `pressure: 0` и `wind: 0` с `wind_dir: 0` също се срещат като липсваща стойност.
 - Вятърът в архива е в km/h. Пример: Мотел Ихтиман с 42,8 при силен вятър на 23.11.
 
-## Структура
+## Живи файлове (Pages, клон `gh-pages`)
+
+Обновяват се на 15 мин от workflow `ingest-ntu-live` (задейства го cron-job.org, виж [ops_cron.md](ops_cron.md)). Всяко изпълнение прави **една** заявка към `/mto/data`. Ако тя се провали, старите файлове остават. Клонът `gh-pages` има винаги един коммит (презаписва се), така че историята не расте.
+
+### `obs/ntu_latest.json`
 
 ```json
 {
-  "generated_at": "2026-11-25T06:05:12Z",
-  "source": "bgtoll.bg/mto/data",
-  "obs_time_latest": "2026-11-25T06:00:00Z",
+  "generated_at": "2026-11-25T17:20:03Z",
+  "source": "bgtoll.bg/mto/data (Национално тол управление), CC BY 4.0",
+  "obs_time_latest": "2026-11-25T17:15:00Z",
+  "fallback_updated_at": "2026-11-25T17:00:01Z",
+  "omitted_records": 11,
   "stations": [
     {
-      "id": "NTU:57",
-      "name": "Гъмзово",
-      "lat": 44.05, "lon": 22.80, "elev_m": null,
-      "time": "2026-11-25T06:00:00Z",
-      "t": 1.2, "td": 1.0, "rh": 99, "t_surface": 0.4,
-      "wind_kt": 1.6, "wind_dir": 250, "pressure_hpa": 1012.3,
+      "id": "NTU:1", "name": "Мотел Ихтиман", "name_en": "Motel Ihtiman",
+      "lat": 42.426981, "lon": 23.854053, "elev_m": 700,
+      "time": "2026-11-25T17:15:00Z", "age_min": 5,
+      "t": 2.24, "rh": 64.9, "td": -3.7, "t_surface": 2.1,
+      "pressure_hpa": 935.6, "wind_kt": 10.0, "wind_dir": 305,
+      "ntu_status": "ok", "ntu_model_t": 0.6,
       "qc": {"excluded": false, "flags": []}
     }
   ]
 }
 ```
-(Координатите в примера са илюстративни.)
 
-| Поле | От полето на източника | Бележка |
-|---|---|---|
-| `id` | `station_id` | `NTU:` + `station_id` |
-| `name` | `name` | |
-| `lat`, `lon` | `lat`, `lon` | |
-| `elev_m` | — | от DEM (Open-Meteo Elevation API, Copernicus DEM 90 m), проверена със средното налягане; в източника няма. Виж [archive_ntu.md](archive_ntu.md). |
-| `time` | `time` | UTC, преобразувано в ISO 8601 |
-| `t` | `air` | °C |
-| `td` | — | смята се от `t` и `rh` (Magnus, коефициенти на Alduchov–Eskridge) |
-| `rh` | `humidity` | % |
-| `t_surface` | `surface` | °C, настилка |
-| `wind_kt` | `wind` | Източникът е в km/h (потвърдено от сайта на АПИ). kt = km/h ÷ 1.852. |
-| `wind_dir` | `wind_dir` | ° |
-| `pressure_hpa` | `pressure` | налягане на станцията, не е редуцирано до морското равнище |
+- Най-новият запис за станция. Записи по-стари от 6 ч (мъртви или „призрачни" станции) се пропускат и се броят в `omitted_records`.
+- Полетата и правилата са както в архива ([archive_ntu.md](archive_ntu.md)): нула е липсваща стойност, вятърът е в kt, `td` е по Magnus. `elev_m` е от `static/ntu_stations.json`.
+- Допълнителни флагове в `qc.flags`: `late` (записът е по-стар от 30 мин) и `model_fallback` (НТУ ползва модел вместо измерване; тогава `qc.excluded` е `true` и станцията не влиза в корекцията на модела).
+- `ntu_status` и `ntu_model_t` са от `/temperaturefallback` (виж по-долу). Празни, ако той не е наличен.
 
-Полето `scp` от източника не се пренася, докато не е ясно какво значи.
+### `obs/ntu_recent.json`
+
+Последните 24 ч от нормализираните редове за оценка на трайността на грешките на модела.
+
+```json
+{"generated_at": "...", "source": "...", "window_hours": 24,
+ "columns": ["time", "id", "t", "rh", "td", "t_surface", "pressure_hpa", "wind_kt", "wind_dir"],
+ "rows": [["2026-11-25T17:15:00Z", "NTU:1", 2.24, 64.9, -3.7, 2.1, 935.6, 10.0, 305]]}
+```
+
+### `obs/ntu_fallback_latest.json`
+
+Копие на състоянието на `/temperaturefallback`, обновявано най-много веднъж на ~55 мин. Източникът вероятно се обновява на час: в пробата `updated_at` е 19:00:01 местно време.
+
+## `/temperaturefallback` (формат на източника, проверено на 2026-11-25)
+
+Обект с ключ `station_id` (като низ). За всяка станция:
+
+| Поле | Значение |
+|---|---|
+| `scp` | кодът на станцията (1001, 1004, 1005, …) |
+| `station_temp`, `model_temp` | измерена температура и температура на модела на НТУ (кой модел, не е известно) |
+| `difference`, `abs_difference` | `station_temp` − `model_temp` и модулът му |
+| `status` | наблюдавани: `ok` и `check` (`check` при разлика −5,27 °C и 3 превишения). Други стойности не са виждани още. |
+| `hits5`, `seriousHits`, `consecutive5`, `consecutive10`, `consecutiveOk` | броячи на превишенията на прага |
+| `use_model`, `source`, `fallback_active`, `fallback_reason`, `fallback_since_bg` | дали НТУ е заменил измерването с модел и защо |
+| `updated_at`, `updated_at_bg` | време на обновяване (Unix UTC и местно време) |
+
+Голяма разлика между станцията и модела не значи повреда: студените езера и мъглата в котловините са точно онова, което моделът пропуска. Затова `status = check` не изключва станцията сам по себе си. Изключва я само `fallback_active` или `use_model`.
+
+### Архив на `/temperaturefallback`: клон `archive-fallback`
+
+Файлове `fallback_ГГГГ-ММ-ДД.csv`, по един ред на станция на всяко часово обновяване (колони: `updated_at,id,scp,status,source,use_model,fallback_active,fallback_reason,station_temp,model_temp,difference,hits5,seriousHits,consecutive5,consecutive10,consecutiveOk`). Времето е UTC. Данни: Национално тол управление, CC BY 4.0.
 
 ## QC флагове
 
