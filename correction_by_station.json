@@ -1,0 +1,6636 @@
+{
+ "generated_at": "2026-11-25T18:20:02Z",
+ "source": "NTU archive (bgtoll.bg, CC BY 4.0) vs ICON-EU from Open-Meteo Historical Forecast; fogNowcast docs/correction_model.md",
+ "model": "icon_eu (Open-Meteo Historical Forecast)",
+ "train_period": [
+  "2026-01-27",
+  "2026-03-31"
+ ],
+ "test_period": [
+  "2026-11-01",
+  "2026-11-24"
+ ],
+ "min_n": 30,
+ "regime_axes": {
+  "day_night": "sun elevation > 0",
+  "wind": "obs wind < 5.0 kt = calm",
+  "saturation": "obs rh >= 95.0 % = sat"
+ },
+ "stations": {
+  "NTU:9": {
+   "name": "Игнатиево",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|dry": {
+       "median": -0.13,
+       "n": 264
+      },
+      "day|windy|dry": {
+       "median": -0.17,
+       "n": 391
+      },
+      "night|windy|dry": {
+       "median": -0.3,
+       "n": 215
+      },
+      "night|calm|dry": {
+       "median": 0.07,
+       "n": 481
+      },
+      "night|calm|sat": {
+       "median": 0.29,
+       "n": 49
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.11,
+       "n": 1405
+      },
+      "sat": {
+       "median": 0.365,
+       "n": 76
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.07,
+       "n": 1481
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|dry": {
+       "median": 0.33,
+       "n": 264
+      },
+      "day|windy|dry": {
+       "median": 0.4,
+       "n": 391
+      },
+      "night|windy|dry": {
+       "median": 0.46,
+       "n": 215
+      },
+      "night|calm|dry": {
+       "median": 0.75,
+       "n": 481
+      },
+      "night|calm|sat": {
+       "median": 0.17,
+       "n": 49
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.51,
+       "n": 1405
+      },
+      "sat": {
+       "median": 0.07,
+       "n": 76
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.48,
+       "n": 1481
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|dry": {
+       "median": -0.39,
+       "n": 264
+      },
+      "day|windy|dry": {
+       "median": -0.6,
+       "n": 391
+      },
+      "night|windy|dry": {
+       "median": -0.71,
+       "n": 215
+      },
+      "night|calm|dry": {
+       "median": -0.58,
+       "n": 481
+      },
+      "night|calm|sat": {
+       "median": 0.09,
+       "n": 49
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.57,
+       "n": 1405
+      },
+      "sat": {
+       "median": 0.24,
+       "n": 76
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.5,
+       "n": 1481
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|dry": {
+       "median": 1.5,
+       "n": 264
+      },
+      "day|windy|dry": {
+       "median": -0.6,
+       "n": 391
+      },
+      "night|windy|dry": {
+       "median": -1.0,
+       "n": 215
+      },
+      "night|calm|dry": {
+       "median": 1.0,
+       "n": 481
+      },
+      "night|calm|sat": {
+       "median": 0.0,
+       "n": 49
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.4,
+       "n": 1351
+      },
+      "sat": {
+       "median": 0.0,
+       "n": 71
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.3,
+       "n": 1422
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|dry": {
+       "median": 7.0,
+       "n": 118
+      },
+      "day|windy|dry": {
+       "median": 11.0,
+       "n": 391
+      },
+      "night|windy|dry": {
+       "median": 18.0,
+       "n": 215
+      },
+      "night|calm|dry": {
+       "median": 25.0,
+       "n": 173
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 14.0,
+       "n": 897
+      }
+     },
+     "station": {
+      "all": {
+       "median": 14.0,
+       "n": 916
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 575,
+     "coverage": 1.0,
+     "mae_before": 0.952,
+     "mae_after": 0.925,
+     "bias_before": -0.036,
+     "bias_after": 0.044,
+     "within1_before": 0.626,
+     "within1_after": 0.635,
+     "sat_calm": {
+      "n": 3,
+      "mae_before": 0.993,
+      "mae_after": 0.872
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 575,
+     "coverage": 1.0,
+     "mae_before": 0.832,
+     "mae_after": 0.653,
+     "bias_before": 0.58,
+     "bias_after": 0.036,
+     "within1_before": 0.677,
+     "within1_after": 0.803,
+     "sat_calm": {
+      "n": 3,
+      "mae_before": 0.36,
+      "mae_after": 0.337
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 575,
+     "coverage": 1.0,
+     "mae_before": 1.183,
+     "mae_after": 1.025,
+     "bias_before": -0.615,
+     "bias_after": -0.044,
+     "within1_before": 0.51,
+     "within1_after": 0.593,
+     "sat_calm": {
+      "n": 3,
+      "mae_before": 0.887,
+      "mae_after": 0.747
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 564,
+     "coverage": 1.0,
+     "mae_before": 2.37,
+     "mae_after": 2.254,
+     "bias_before": -0.09,
+     "bias_after": -0.39,
+     "within1_before": 0.342,
+     "within1_after": 0.305,
+     "sat_calm": {
+      "n": 3,
+      "mae_before": 1.633,
+      "mae_after": 1.633
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 352,
+     "coverage": 1.0,
+     "mae_before": 31.077,
+     "mae_after": 27.636,
+     "bias_before": 14.349,
+     "bias_after": 0.705,
+     "within1_before": 0.014,
+     "within1_after": 0.023,
+     "sat_calm": {
+      "n": 2,
+      "mae_before": 9.0,
+      "mae_after": 6.0
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:21": {
+   "name": "Чепинци",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|dry": {
+       "median": 0.53,
+       "n": 350
+      },
+      "night|windy|dry": {
+       "median": 0.03,
+       "n": 337
+      },
+      "night|calm|dry": {
+       "median": -0.2,
+       "n": 383
+      },
+      "night|calm|sat": {
+       "median": -0.6,
+       "n": 49
+      },
+      "day|calm|dry": {
+       "median": -0.03,
+       "n": 281
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.07,
+       "n": 1393
+      },
+      "sat": {
+       "median": 0.27,
+       "n": 101
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.08,
+       "n": 1494
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|dry": {
+       "median": -0.73,
+       "n": 350
+      },
+      "night|windy|dry": {
+       "median": -0.06,
+       "n": 337
+      },
+      "night|calm|dry": {
+       "median": 0.08,
+       "n": 383
+      },
+      "night|calm|sat": {
+       "median": -1.0,
+       "n": 49
+      },
+      "day|calm|dry": {
+       "median": -0.65,
+       "n": 281
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.27,
+       "n": 1393
+      },
+      "sat": {
+       "median": -0.46,
+       "n": 101
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.28,
+       "n": 1494
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 1.21,
+       "n": 350
+      },
+      "night|windy|dry": {
+       "median": 0.01,
+       "n": 337
+      },
+      "night|calm|dry": {
+       "median": -0.48,
+       "n": 383
+      },
+      "night|calm|sat": {
+       "median": 0.28,
+       "n": 49
+      },
+      "day|calm|dry": {
+       "median": 0.34,
+       "n": 281
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.14,
+       "n": 1393
+      },
+      "sat": {
+       "median": 0.42,
+       "n": 101
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.15,
+       "n": 1494
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|dry": {
+       "median": -3.2,
+       "n": 350
+      },
+      "night|windy|dry": {
+       "median": -4.1,
+       "n": 337
+      },
+      "night|calm|dry": {
+       "median": -0.5,
+       "n": 383
+      },
+      "night|calm|sat": {
+       "median": -0.7,
+       "n": 49
+      },
+      "day|calm|dry": {
+       "median": -0.6,
+       "n": 281
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -1.6,
+       "n": 1351
+      },
+      "sat": {
+       "median": -1.4,
+       "n": 96
+      }
+     },
+     "station": {
+      "all": {
+       "median": -1.6,
+       "n": 1447
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 0.0,
+       "n": 350
+      },
+      "night|windy|dry": {
+       "median": 0.0,
+       "n": 337
+      },
+      "night|calm|dry": {
+       "median": -2.5,
+       "n": 138
+      },
+      "day|calm|dry": {
+       "median": 13.0,
+       "n": 102
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.0,
+       "n": 927
+      },
+      "sat": {
+       "median": -9.0,
+       "n": 47
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.0,
+       "n": 974
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 559,
+     "coverage": 1.0,
+     "mae_before": 1.274,
+     "mae_after": 1.283,
+     "bias_before": -0.454,
+     "bias_after": -0.459,
+     "within1_before": 0.587,
+     "within1_after": 0.567,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 1.384,
+      "mae_after": 1.556
+     },
+     "accepted": false
+    },
+    "td": {
+     "n": 559,
+     "coverage": 1.0,
+     "mae_before": 0.974,
+     "mae_after": 0.993,
+     "bias_before": -0.185,
+     "bias_after": 0.15,
+     "within1_before": 0.596,
+     "within1_after": 0.594,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 0.962,
+      "mae_after": 1.297
+     },
+     "accepted": false
+    },
+    "dd": {
+     "n": 559,
+     "coverage": 1.0,
+     "mae_before": 1.345,
+     "mae_after": 1.312,
+     "bias_before": -0.268,
+     "bias_after": -0.446,
+     "within1_before": 0.569,
+     "within1_after": 0.606,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 0.94,
+      "mae_after": 0.851
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 543,
+     "coverage": 1.0,
+     "mae_before": 2.664,
+     "mae_after": 1.688,
+     "bias_before": -1.957,
+     "bias_after": -0.086,
+     "within1_before": 0.293,
+     "within1_after": 0.405,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 1.154,
+      "mae_after": 1.163
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 336,
+     "coverage": 1.0,
+     "mae_before": 41.842,
+     "mae_after": 41.734,
+     "bias_before": 6.818,
+     "bias_after": 6.737,
+     "within1_before": 0.009,
+     "within1_after": 0.009,
+     "sat_calm": {
+      "n": 14,
+      "mae_before": 83.929,
+      "mae_after": 82.643
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:33": {
+   "name": "Моравица",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.83,
+       "n": 76
+      },
+      "day|calm|sat": {
+       "median": 0.55,
+       "n": 57
+      },
+      "night|windy|sat": {
+       "median": 0.16,
+       "n": 76
+      },
+      "night|calm|sat": {
+       "median": 0.32,
+       "n": 112
+      },
+      "night|calm|dry": {
+       "median": -1.715,
+       "n": 232
+      },
+      "day|calm|dry": {
+       "median": -1.14,
+       "n": 189
+      },
+      "day|windy|dry": {
+       "median": -0.43,
+       "n": 194
+      },
+      "night|windy|dry": {
+       "median": -1.15,
+       "n": 188
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.41,
+       "n": 328
+      },
+      "dry": {
+       "median": -1.01,
+       "n": 811
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.46,
+       "n": 1139
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|sat": {
+       "median": -0.13,
+       "n": 76
+      },
+      "day|calm|sat": {
+       "median": -0.39,
+       "n": 57
+      },
+      "night|windy|sat": {
+       "median": -0.54,
+       "n": 76
+      },
+      "night|calm|sat": {
+       "median": -0.32,
+       "n": 112
+      },
+      "night|calm|dry": {
+       "median": -0.805,
+       "n": 232
+      },
+      "day|calm|dry": {
+       "median": -0.92,
+       "n": 189
+      },
+      "day|windy|dry": {
+       "median": -0.76,
+       "n": 194
+      },
+      "night|windy|dry": {
+       "median": -0.68,
+       "n": 188
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.31,
+       "n": 328
+      },
+      "dry": {
+       "median": -0.81,
+       "n": 811
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.61,
+       "n": 1139
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.74,
+       "n": 76
+      },
+      "day|calm|sat": {
+       "median": 0.8,
+       "n": 57
+      },
+      "night|windy|sat": {
+       "median": 0.6,
+       "n": 76
+      },
+      "night|calm|sat": {
+       "median": 0.41,
+       "n": 112
+      },
+      "night|calm|dry": {
+       "median": -0.555,
+       "n": 232
+      },
+      "day|calm|dry": {
+       "median": -0.4,
+       "n": 189
+      },
+      "day|windy|dry": {
+       "median": 0.32,
+       "n": 194
+      },
+      "night|windy|dry": {
+       "median": -0.115,
+       "n": 188
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.6,
+       "n": 328
+      },
+      "dry": {
+       "median": -0.22,
+       "n": 811
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.23,
+       "n": 1139
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|sat": {
+       "median": -1.35,
+       "n": 76
+      },
+      "day|calm|sat": {
+       "median": -0.1,
+       "n": 57
+      },
+      "night|windy|sat": {
+       "median": -1.8,
+       "n": 76
+      },
+      "night|calm|sat": {
+       "median": -0.3,
+       "n": 112
+      },
+      "night|calm|dry": {
+       "median": -0.4,
+       "n": 232
+      },
+      "day|calm|dry": {
+       "median": 0.2,
+       "n": 189
+      },
+      "day|windy|dry": {
+       "median": -1.35,
+       "n": 194
+      },
+      "night|windy|dry": {
+       "median": -2.4,
+       "n": 188
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.7,
+       "n": 321
+      },
+      "dry": {
+       "median": -0.7,
+       "n": 803
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.7,
+       "n": 1124
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|sat": {
+       "median": -66.5,
+       "n": 76
+      },
+      "night|windy|sat": {
+       "median": -68.5,
+       "n": 76
+      },
+      "night|calm|sat": {
+       "median": -71.5,
+       "n": 60
+      },
+      "night|calm|dry": {
+       "median": -89.0,
+       "n": 135
+      },
+      "day|calm|dry": {
+       "median": -73.0,
+       "n": 108
+      },
+      "day|windy|dry": {
+       "median": -71.0,
+       "n": 194
+      },
+      "night|windy|dry": {
+       "median": -82.5,
+       "n": 188
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -69.0,
+       "n": 239
+      },
+      "dry": {
+       "median": -79.0,
+       "n": 625
+      }
+     },
+     "station": {
+      "all": {
+       "median": -76.0,
+       "n": 864
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.292,
+     "mae_after": 1.079,
+     "bias_before": -0.766,
+     "bias_after": -0.003,
+     "within1_before": 0.573,
+     "within1_after": 0.592,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 0.66,
+      "mae_after": 0.532
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.324,
+     "mae_after": 0.92,
+     "bias_before": -1.098,
+     "bias_after": -0.427,
+     "within1_before": 0.408,
+     "within1_after": 0.601,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 0.767,
+      "mae_after": 0.733
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.341,
+     "mae_after": 1.249,
+     "bias_before": 0.332,
+     "bias_after": 0.324,
+     "within1_before": 0.501,
+     "within1_after": 0.499,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 0.674,
+      "mae_after": 0.378
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 2.188,
+     "mae_after": 1.696,
+     "bias_before": -1.228,
+     "bias_after": -0.063,
+     "within1_before": 0.297,
+     "within1_after": 0.404,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 1.426,
+      "mae_after": 1.508
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 453,
+     "coverage": 1.0,
+     "mae_before": 79.344,
+     "mae_after": 19.338,
+     "bias_before": -76.501,
+     "bias_after": -1.883,
+     "within1_before": 0.0,
+     "within1_after": 0.024,
+     "sat_calm": {
+      "n": 31,
+      "mae_before": 67.129,
+      "mae_after": 14.629
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:49": {
+   "name": "Борован",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.92,
+       "n": 52
+      },
+      "day|calm|sat": {
+       "median": 0.37,
+       "n": 106
+      },
+      "night|calm|sat": {
+       "median": -0.04,
+       "n": 150
+      },
+      "night|windy|sat": {
+       "median": 0.465,
+       "n": 50
+      },
+      "night|calm|dry": {
+       "median": 0.03,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": -0.09,
+       "n": 287
+      },
+      "day|windy|dry": {
+       "median": -0.105,
+       "n": 224
+      },
+      "night|windy|dry": {
+       "median": -0.12,
+       "n": 159
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.32,
+       "n": 369
+      },
+      "dry": {
+       "median": -0.06,
+       "n": 1129
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.04,
+       "n": 1498
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.045,
+       "n": 52
+      },
+      "day|calm|sat": {
+       "median": 0.035,
+       "n": 106
+      },
+      "night|calm|sat": {
+       "median": -0.23,
+       "n": 150
+      },
+      "night|windy|sat": {
+       "median": -0.08,
+       "n": 50
+      },
+      "night|calm|dry": {
+       "median": -0.06,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": -0.44,
+       "n": 287
+      },
+      "day|windy|dry": {
+       "median": -0.545,
+       "n": 224
+      },
+      "night|windy|dry": {
+       "median": -0.5,
+       "n": 159
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.04,
+       "n": 369
+      },
+      "dry": {
+       "median": -0.32,
+       "n": 1129
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.24,
+       "n": 1498
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.7,
+       "n": 52
+      },
+      "day|calm|sat": {
+       "median": 0.19,
+       "n": 106
+      },
+      "night|calm|sat": {
+       "median": 0.16,
+       "n": 150
+      },
+      "night|windy|sat": {
+       "median": 0.4,
+       "n": 50
+      },
+      "night|calm|dry": {
+       "median": -0.01,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": 0.27,
+       "n": 287
+      },
+      "day|windy|dry": {
+       "median": 0.44,
+       "n": 224
+      },
+      "night|windy|dry": {
+       "median": 0.22,
+       "n": 159
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.3,
+       "n": 369
+      },
+      "dry": {
+       "median": 0.16,
+       "n": 1129
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.19,
+       "n": 1498
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|sat": {
+       "median": -1.7,
+       "n": 52
+      },
+      "day|calm|sat": {
+       "median": -0.3,
+       "n": 106
+      },
+      "night|calm|sat": {
+       "median": 0.1,
+       "n": 150
+      },
+      "night|windy|sat": {
+       "median": -0.9,
+       "n": 50
+      },
+      "night|calm|dry": {
+       "median": 0.3,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": 0.2,
+       "n": 287
+      },
+      "day|windy|dry": {
+       "median": -1.3,
+       "n": 224
+      },
+      "night|windy|dry": {
+       "median": -1.4,
+       "n": 159
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.3,
+       "n": 358
+      },
+      "dry": {
+       "median": -0.1,
+       "n": 1100
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.2,
+       "n": 1458
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|sat": {
+       "median": 2.5,
+       "n": 52
+      },
+      "day|calm|sat": {
+       "median": 7.5,
+       "n": 52
+      },
+      "night|calm|sat": {
+       "median": -11.0,
+       "n": 39
+      },
+      "night|windy|sat": {
+       "median": -6.5,
+       "n": 50
+      },
+      "day|calm|dry": {
+       "median": -7.0,
+       "n": 142
+      },
+      "day|windy|dry": {
+       "median": -9.5,
+       "n": 224
+      },
+      "night|windy|dry": {
+       "median": -12.0,
+       "n": 159
+      },
+      "night|calm|dry": {
+       "median": -7.0,
+       "n": 139
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -2.0,
+       "n": 193
+      },
+      "dry": {
+       "median": -9.0,
+       "n": 664
+      }
+     },
+     "station": {
+      "all": {
+       "median": -8.0,
+       "n": 857
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 572,
+     "coverage": 1.0,
+     "mae_before": 0.927,
+     "mae_after": 0.878,
+     "bias_before": 0.146,
+     "bias_after": 0.092,
+     "within1_before": 0.668,
+     "within1_after": 0.703,
+     "sat_calm": {
+      "n": 173,
+      "mae_before": 0.822,
+      "mae_after": 0.771
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 572,
+     "coverage": 1.0,
+     "mae_before": 0.723,
+     "mae_after": 0.711,
+     "bias_before": -0.121,
+     "bias_after": 0.124,
+     "within1_before": 0.734,
+     "within1_after": 0.748,
+     "sat_calm": {
+      "n": 173,
+      "mae_before": 0.564,
+      "mae_after": 0.653
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 572,
+     "coverage": 1.0,
+     "mae_before": 0.928,
+     "mae_after": 0.853,
+     "bias_before": 0.268,
+     "bias_after": 0.056,
+     "within1_before": 0.673,
+     "within1_after": 0.713,
+     "sat_calm": {
+      "n": 173,
+      "mae_before": 0.443,
+      "mae_after": 0.367
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 549,
+     "coverage": 1.0,
+     "mae_before": 1.673,
+     "mae_after": 1.633,
+     "bias_before": -0.08,
+     "bias_after": 0.239,
+     "within1_before": 0.454,
+     "within1_after": 0.468,
+     "sat_calm": {
+      "n": 173,
+      "mae_before": 1.105,
+      "mae_after": 1.14
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 310,
+     "coverage": 1.0,
+     "mae_before": 24.081,
+     "mae_after": 23.124,
+     "bias_before": -4.552,
+     "bias_after": 3.056,
+     "within1_before": 0.013,
+     "within1_after": 0.042,
+     "sat_calm": {
+      "n": 55,
+      "mae_before": 29.764,
+      "mae_after": 28.073
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:54": {
+   "name": "Одринци",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|dry": {
+       "median": -0.075,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": -0.37,
+       "n": 120
+      },
+      "day|calm|sat": {
+       "median": 1.17,
+       "n": 39
+      },
+      "night|windy|sat": {
+       "median": 0.39,
+       "n": 136
+      },
+      "night|calm|sat": {
+       "median": 0.59,
+       "n": 122
+      },
+      "night|windy|dry": {
+       "median": -0.12,
+       "n": 275
+      },
+      "day|windy|sat": {
+       "median": 0.425,
+       "n": 72
+      },
+      "night|calm|dry": {
+       "median": 0.615,
+       "n": 256
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.02,
+       "n": 1116
+      },
+      "sat": {
+       "median": 0.48,
+       "n": 381
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.15,
+       "n": 1497
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|dry": {
+       "median": -0.275,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": -0.41,
+       "n": 120
+      },
+      "day|calm|sat": {
+       "median": 0.35,
+       "n": 39
+      },
+      "night|windy|sat": {
+       "median": 0.015,
+       "n": 136
+      },
+      "night|calm|sat": {
+       "median": 0.335,
+       "n": 122
+      },
+      "night|windy|dry": {
+       "median": -0.04,
+       "n": 275
+      },
+      "day|windy|sat": {
+       "median": -0.075,
+       "n": 72
+      },
+      "night|calm|dry": {
+       "median": 0.52,
+       "n": 256
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.09,
+       "n": 1116
+      },
+      "sat": {
+       "median": 0.09,
+       "n": 381
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.04,
+       "n": 1497
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 0.105,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": 0.09,
+       "n": 120
+      },
+      "day|calm|sat": {
+       "median": 0.69,
+       "n": 39
+      },
+      "night|windy|sat": {
+       "median": 0.36,
+       "n": 136
+      },
+      "night|calm|sat": {
+       "median": 0.235,
+       "n": 122
+      },
+      "night|windy|dry": {
+       "median": -0.14,
+       "n": 275
+      },
+      "day|windy|sat": {
+       "median": 0.22,
+       "n": 72
+      },
+      "night|calm|dry": {
+       "median": 0.14,
+       "n": 256
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.03,
+       "n": 1116
+      },
+      "sat": {
+       "median": 0.3,
+       "n": 381
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.14,
+       "n": 1497
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|dry": {
+       "median": -1.9,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": 0.3,
+       "n": 120
+      },
+      "day|calm|sat": {
+       "median": 1.0,
+       "n": 39
+      },
+      "night|windy|sat": {
+       "median": -1.9,
+       "n": 136
+      },
+      "night|calm|sat": {
+       "median": 0.0,
+       "n": 122
+      },
+      "night|windy|dry": {
+       "median": -1.9,
+       "n": 275
+      },
+      "day|windy|sat": {
+       "median": -2.05,
+       "n": 72
+      },
+      "night|calm|dry": {
+       "median": 0.2,
+       "n": 256
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -1.0,
+       "n": 1081
+      },
+      "sat": {
+       "median": -0.8,
+       "n": 369
+      }
+     },
+     "station": {
+      "all": {
+       "median": -1.0,
+       "n": 1450
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 21.0,
+       "n": 430
+      },
+      "day|calm|dry": {
+       "median": 30.0,
+       "n": 65
+      },
+      "night|windy|sat": {
+       "median": 28.0,
+       "n": 136
+      },
+      "night|calm|sat": {
+       "median": 29.0,
+       "n": 52
+      },
+      "night|windy|dry": {
+       "median": 25.0,
+       "n": 275
+      },
+      "day|windy|sat": {
+       "median": 28.5,
+       "n": 72
+      },
+      "night|calm|dry": {
+       "median": 31.0,
+       "n": 109
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 24.0,
+       "n": 879
+      },
+      "sat": {
+       "median": 28.0,
+       "n": 281
+      }
+     },
+     "station": {
+      "all": {
+       "median": 25.0,
+       "n": 1160
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.791,
+     "mae_after": 0.768,
+     "bias_before": 0.093,
+     "bias_after": -0.033,
+     "within1_before": 0.715,
+     "within1_after": 0.732,
+     "sat_calm": {
+      "n": 24,
+      "mae_before": 2.075,
+      "mae_after": 1.522
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.749,
+     "mae_after": 0.73,
+     "bias_before": -0.077,
+     "bias_after": -0.085,
+     "within1_before": 0.751,
+     "within1_after": 0.753,
+     "sat_calm": {
+      "n": 24,
+      "mae_before": 1.517,
+      "mae_after": 1.247
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.8,
+     "mae_after": 0.768,
+     "bias_before": 0.17,
+     "bias_after": 0.096,
+     "within1_before": 0.688,
+     "within1_after": 0.72,
+     "sat_calm": {
+      "n": 24,
+      "mae_before": 0.615,
+      "mae_after": 0.531
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 554,
+     "coverage": 1.0,
+     "mae_before": 2.019,
+     "mae_after": 1.889,
+     "bias_before": -0.84,
+     "bias_after": 0.34,
+     "within1_before": 0.35,
+     "within1_after": 0.338,
+     "sat_calm": {
+      "n": 24,
+      "mae_before": 1.408,
+      "mae_after": 1.408
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 463,
+     "coverage": 1.0,
+     "mae_before": 30.073,
+     "mae_after": 17.224,
+     "bias_before": 27.551,
+     "bias_after": 2.189,
+     "within1_before": 0.004,
+     "within1_after": 0.011,
+     "sat_calm": {
+      "n": 7,
+      "mae_before": 49.714,
+      "mae_after": 21.286
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:55": {
+   "name": "Кардам",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.455,
+       "n": 42
+      },
+      "day|calm|dry": {
+       "median": -0.14,
+       "n": 264
+      },
+      "night|calm|sat": {
+       "median": 0.345,
+       "n": 146
+      },
+      "night|windy|sat": {
+       "median": 0.565,
+       "n": 106
+      },
+      "night|windy|dry": {
+       "median": 0.24,
+       "n": 187
+      },
+      "day|windy|dry": {
+       "median": 0.17,
+       "n": 283
+      },
+      "night|calm|dry": {
+       "median": 0.29,
+       "n": 327
+      },
+      "day|windy|sat": {
+       "median": 0.57,
+       "n": 82
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.48,
+       "n": 394
+      },
+      "dry": {
+       "median": 0.14,
+       "n": 1102
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.25,
+       "n": 1496
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.28,
+       "n": 42
+      },
+      "day|calm|dry": {
+       "median": -0.155,
+       "n": 264
+      },
+      "night|calm|sat": {
+       "median": 0.16,
+       "n": 146
+      },
+      "night|windy|sat": {
+       "median": 0.2,
+       "n": 106
+      },
+      "night|windy|dry": {
+       "median": 0.15,
+       "n": 187
+      },
+      "day|windy|dry": {
+       "median": -0.14,
+       "n": 283
+      },
+      "night|calm|dry": {
+       "median": 0.31,
+       "n": 327
+      },
+      "day|windy|sat": {
+       "median": -0.105,
+       "n": 82
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.095,
+       "n": 394
+      },
+      "dry": {
+       "median": 0.07,
+       "n": 1102
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.08,
+       "n": 1496
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.555,
+       "n": 42
+      },
+      "day|calm|dry": {
+       "median": -0.005,
+       "n": 264
+      },
+      "night|calm|sat": {
+       "median": 0.14,
+       "n": 146
+      },
+      "night|windy|sat": {
+       "median": 0.265,
+       "n": 106
+      },
+      "night|windy|dry": {
+       "median": 0.15,
+       "n": 187
+      },
+      "day|windy|dry": {
+       "median": 0.26,
+       "n": 283
+      },
+      "night|calm|dry": {
+       "median": -0.04,
+       "n": 327
+      },
+      "day|windy|sat": {
+       "median": 0.46,
+       "n": 82
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.25,
+       "n": 394
+      },
+      "dry": {
+       "median": 0.07,
+       "n": 1102
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.15,
+       "n": 1496
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.4,
+       "n": 42
+      },
+      "day|calm|dry": {
+       "median": 3.0,
+       "n": 264
+      },
+      "night|calm|sat": {
+       "median": 1.2,
+       "n": 146
+      },
+      "night|windy|sat": {
+       "median": -1.45,
+       "n": 106
+      },
+      "night|windy|dry": {
+       "median": -1.5,
+       "n": 187
+      },
+      "day|windy|dry": {
+       "median": -0.4,
+       "n": 283
+      },
+      "night|calm|dry": {
+       "median": 1.7,
+       "n": 327
+      },
+      "day|windy|sat": {
+       "median": -0.45,
+       "n": 82
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.2,
+       "n": 376
+      },
+      "dry": {
+       "median": 1.1,
+       "n": 1061
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.8,
+       "n": 1437
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "night|windy|sat": {
+       "median": 16.0,
+       "n": 106
+      },
+      "night|calm|sat": {
+       "median": 12.0,
+       "n": 63
+      },
+      "night|windy|dry": {
+       "median": 15.0,
+       "n": 187
+      },
+      "day|windy|dry": {
+       "median": 8.0,
+       "n": 283
+      },
+      "day|calm|dry": {
+       "median": 7.0,
+       "n": 131
+      },
+      "night|calm|dry": {
+       "median": 14.0,
+       "n": 111
+      },
+      "day|windy|sat": {
+       "median": 10.0,
+       "n": 82
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 12.0,
+       "n": 273
+      },
+      "dry": {
+       "median": 10.0,
+       "n": 712
+      }
+     },
+     "station": {
+      "all": {
+       "median": 11.0,
+       "n": 985
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 512,
+     "coverage": 1.0,
+     "mae_before": 0.739,
+     "mae_after": 0.731,
+     "bias_before": 0.002,
+     "bias_after": -0.22,
+     "within1_before": 0.75,
+     "within1_after": 0.766,
+     "sat_calm": {
+      "n": 18,
+      "mae_before": 0.827,
+      "mae_after": 0.596
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 512,
+     "coverage": 1.0,
+     "mae_before": 0.633,
+     "mae_after": 0.63,
+     "bias_before": -0.019,
+     "bias_after": -0.101,
+     "within1_before": 0.828,
+     "within1_after": 0.814,
+     "sat_calm": {
+      "n": 18,
+      "mae_before": 0.611,
+      "mae_after": 0.728
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 512,
+     "coverage": 1.0,
+     "mae_before": 0.681,
+     "mae_after": 0.638,
+     "bias_before": 0.02,
+     "bias_after": -0.092,
+     "within1_before": 0.805,
+     "within1_after": 0.803,
+     "sat_calm": {
+      "n": 18,
+      "mae_before": 0.546,
+      "mae_after": 0.351
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 490,
+     "coverage": 1.0,
+     "mae_before": 3.019,
+     "mae_after": 2.505,
+     "bias_before": 1.203,
+     "bias_after": 0.646,
+     "within1_before": 0.2,
+     "within1_after": 0.227,
+     "sat_calm": {
+      "n": 18,
+      "mae_before": 5.522,
+      "mae_after": 4.411
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 325,
+     "coverage": 1.0,
+     "mae_before": 17.338,
+     "mae_after": 13.738,
+     "bias_before": 12.846,
+     "bias_after": 1.166,
+     "within1_before": 0.009,
+     "within1_after": 0.025,
+     "sat_calm": {
+      "n": 13,
+      "mae_before": 19.846,
+      "mae_after": 18.308
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:56": {
+   "name": "Стожер",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.72,
+       "n": 157
+      },
+      "day|windy|dry": {
+       "median": 0.1,
+       "n": 425
+      },
+      "night|windy|sat": {
+       "median": 0.5,
+       "n": 247
+      },
+      "night|calm|sat": {
+       "median": 0.49,
+       "n": 77
+      },
+      "night|windy|dry": {
+       "median": -0.07,
+       "n": 305
+      },
+      "night|calm|dry": {
+       "median": -0.455,
+       "n": 178
+      },
+      "day|calm|dry": {
+       "median": -0.23,
+       "n": 78
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.57,
+       "n": 499
+      },
+      "dry": {
+       "median": -0.06,
+       "n": 990
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.16,
+       "n": 1489
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.12,
+       "n": 157
+      },
+      "day|windy|dry": {
+       "median": 0.05,
+       "n": 425
+      },
+      "night|windy|sat": {
+       "median": 0.28,
+       "n": 247
+      },
+      "night|calm|sat": {
+       "median": 0.19,
+       "n": 77
+      },
+      "night|windy|dry": {
+       "median": 0.2,
+       "n": 305
+      },
+      "night|calm|dry": {
+       "median": 0.13,
+       "n": 178
+      },
+      "day|calm|dry": {
+       "median": -0.245,
+       "n": 78
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.21,
+       "n": 499
+      },
+      "dry": {
+       "median": 0.1,
+       "n": 990
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.14,
+       "n": 1489
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|sat": {
+       "median": 0.46,
+       "n": 157
+      },
+      "day|windy|dry": {
+       "median": 0.01,
+       "n": 425
+      },
+      "night|windy|sat": {
+       "median": 0.18,
+       "n": 247
+      },
+      "night|calm|sat": {
+       "median": 0.1,
+       "n": 77
+      },
+      "night|windy|dry": {
+       "median": -0.25,
+       "n": 305
+      },
+      "night|calm|dry": {
+       "median": -0.315,
+       "n": 178
+      },
+      "day|calm|dry": {
+       "median": 0.225,
+       "n": 78
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.23,
+       "n": 499
+      },
+      "dry": {
+       "median": -0.14,
+       "n": 990
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.04,
+       "n": 1489
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|sat": {
+       "median": -2.9,
+       "n": 157
+      },
+      "day|windy|dry": {
+       "median": -2.6,
+       "n": 425
+      },
+      "night|windy|sat": {
+       "median": -2.9,
+       "n": 247
+      },
+      "night|calm|sat": {
+       "median": -0.5,
+       "n": 77
+      },
+      "night|windy|dry": {
+       "median": -2.8,
+       "n": 305
+      },
+      "night|calm|dry": {
+       "median": -0.8,
+       "n": 178
+      },
+      "day|calm|dry": {
+       "median": -0.1,
+       "n": 78
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -2.4,
+       "n": 496
+      },
+      "dry": {
+       "median": -2.0,
+       "n": 986
+      }
+     },
+     "station": {
+      "all": {
+       "median": -2.1,
+       "n": 1482
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|sat": {
+       "median": 29.0,
+       "n": 157
+      },
+      "day|windy|dry": {
+       "median": 24.0,
+       "n": 425
+      },
+      "night|windy|sat": {
+       "median": 30.0,
+       "n": 247
+      },
+      "night|windy|dry": {
+       "median": 25.0,
+       "n": 305
+      },
+      "night|calm|dry": {
+       "median": 28.0,
+       "n": 108
+      },
+      "day|calm|dry": {
+       "median": 16.5,
+       "n": 52
+      },
+      "night|calm|sat": {
+       "median": 37.0,
+       "n": 43
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 30.0,
+       "n": 458
+      },
+      "dry": {
+       "median": 25.0,
+       "n": 890
+      }
+     },
+     "station": {
+      "all": {
+       "median": 26.5,
+       "n": 1348
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 0.762,
+     "mae_after": 0.702,
+     "bias_before": -0.051,
+     "bias_after": -0.071,
+     "within1_before": 0.735,
+     "within1_after": 0.777,
+     "sat_calm": {
+      "n": 10,
+      "mae_before": 1.081,
+      "mae_after": 0.751
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 0.694,
+     "mae_after": 0.686,
+     "bias_before": 0.148,
+     "bias_after": 0.017,
+     "within1_before": 0.773,
+     "within1_after": 0.78,
+     "sat_calm": {
+      "n": 10,
+      "mae_before": 0.947,
+      "mae_after": 0.843
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 0.776,
+     "mae_after": 0.72,
+     "bias_before": -0.199,
+     "bias_after": -0.11,
+     "within1_before": 0.726,
+     "within1_after": 0.756,
+     "sat_calm": {
+      "n": 10,
+      "mae_before": 0.56,
+      "mae_after": 0.44
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 3.026,
+     "mae_after": 2.101,
+     "bias_before": -2.619,
+     "bias_after": -0.233,
+     "within1_before": 0.213,
+     "within1_after": 0.334,
+     "sat_calm": {
+      "n": 10,
+      "mae_before": 1.76,
+      "mae_after": 1.72
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 540,
+     "coverage": 1.0,
+     "mae_before": 28.228,
+     "mae_after": 12.899,
+     "bias_before": 27.657,
+     "bias_after": 2.182,
+     "within1_before": 0.004,
+     "within1_after": 0.035,
+     "sat_calm": {
+      "n": 6,
+      "mae_before": 34.333,
+      "mae_after": 21.667
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:58": {
+   "name": "Брестовец",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.67,
+       "n": 103
+      },
+      "day|windy|sat": {
+       "median": 0.56,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.43,
+       "n": 156
+      },
+      "night|windy|sat": {
+       "median": 0.505,
+       "n": 62
+      },
+      "night|calm|dry": {
+       "median": -0.75,
+       "n": 393
+      },
+      "day|calm|dry": {
+       "median": -0.36,
+       "n": 257
+      },
+      "day|windy|dry": {
+       "median": -0.25,
+       "n": 234
+      },
+      "night|windy|dry": {
+       "median": 0.105,
+       "n": 174
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.5,
+       "n": 405
+      },
+      "dry": {
+       "median": -0.345,
+       "n": 1074
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.05,
+       "n": 1479
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.04,
+       "n": 103
+      },
+      "day|windy|sat": {
+       "median": -0.2,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.155,
+       "n": 156
+      },
+      "night|windy|sat": {
+       "median": -0.035,
+       "n": 62
+      },
+      "night|calm|dry": {
+       "median": -0.19,
+       "n": 393
+      },
+      "day|calm|dry": {
+       "median": -0.13,
+       "n": 257
+      },
+      "day|windy|dry": {
+       "median": -0.535,
+       "n": 234
+      },
+      "night|windy|dry": {
+       "median": -0.285,
+       "n": 174
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.02,
+       "n": 405
+      },
+      "dry": {
+       "median": -0.25,
+       "n": 1074
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.16,
+       "n": 1479
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.41,
+       "n": 103
+      },
+      "day|windy|sat": {
+       "median": 0.635,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.195,
+       "n": 156
+      },
+      "night|windy|sat": {
+       "median": 0.5,
+       "n": 62
+      },
+      "night|calm|dry": {
+       "median": -0.19,
+       "n": 393
+      },
+      "day|calm|dry": {
+       "median": -0.16,
+       "n": 257
+      },
+      "day|windy|dry": {
+       "median": 0.37,
+       "n": 234
+      },
+      "night|windy|dry": {
+       "median": 0.165,
+       "n": 174
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.34,
+       "n": 405
+      },
+      "dry": {
+       "median": -0.01,
+       "n": 1074
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.14,
+       "n": 1479
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.1,
+       "n": 103
+      },
+      "day|windy|sat": {
+       "median": 0.85,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.0,
+       "n": 156
+      },
+      "night|windy|sat": {
+       "median": 1.1,
+       "n": 62
+      },
+      "night|calm|dry": {
+       "median": 0.4,
+       "n": 393
+      },
+      "day|calm|dry": {
+       "median": 0.2,
+       "n": 257
+      },
+      "day|windy|dry": {
+       "median": -0.6,
+       "n": 234
+      },
+      "night|windy|dry": {
+       "median": -0.45,
+       "n": 174
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.2,
+       "n": 395
+      },
+      "dry": {
+       "median": 0.1,
+       "n": 1058
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.1,
+       "n": 1453
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 27.5,
+       "n": 52
+      },
+      "day|windy|sat": {
+       "median": 21.0,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 23.0,
+       "n": 47
+      },
+      "night|windy|sat": {
+       "median": 21.0,
+       "n": 62
+      },
+      "night|calm|dry": {
+       "median": 29.0,
+       "n": 186
+      },
+      "day|calm|dry": {
+       "median": 24.0,
+       "n": 147
+      },
+      "day|windy|dry": {
+       "median": 19.0,
+       "n": 234
+      },
+      "night|windy|dry": {
+       "median": 15.0,
+       "n": 174
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 22.0,
+       "n": 235
+      },
+      "dry": {
+       "median": 20.0,
+       "n": 741
+      }
+     },
+     "station": {
+      "all": {
+       "median": 21.0,
+       "n": 976
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.962,
+     "mae_after": 0.864,
+     "bias_before": 0.01,
+     "bias_after": 0.092,
+     "within1_before": 0.654,
+     "within1_after": 0.679,
+     "sat_calm": {
+      "n": 127,
+      "mae_before": 0.923,
+      "mae_after": 0.667
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.788,
+     "mae_after": 0.726,
+     "bias_before": -0.345,
+     "bias_after": -0.186,
+     "within1_before": 0.707,
+     "within1_after": 0.754,
+     "sat_calm": {
+      "n": 127,
+      "mae_before": 0.581,
+      "mae_after": 0.579
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 1.053,
+     "mae_after": 0.943,
+     "bias_before": 0.355,
+     "bias_after": 0.229,
+     "within1_before": 0.618,
+     "within1_after": 0.654,
+     "sat_calm": {
+      "n": 127,
+      "mae_before": 0.706,
+      "mae_after": 0.504
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 563,
+     "coverage": 1.0,
+     "mae_before": 2.053,
+     "mae_after": 2.023,
+     "bias_before": 0.826,
+     "bias_after": 0.709,
+     "within1_before": 0.359,
+     "within1_after": 0.362,
+     "sat_calm": {
+      "n": 127,
+      "mae_before": 1.797,
+      "mae_after": 1.794
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 357,
+     "coverage": 1.0,
+     "mae_before": 24.291,
+     "mae_after": 18.066,
+     "bias_before": 17.126,
+     "bias_after": -4.511,
+     "within1_before": 0.014,
+     "within1_after": 0.031,
+     "sat_calm": {
+      "n": 43,
+      "mae_before": 30.558,
+      "mae_after": 25.477
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:61": {
+   "name": "Тертер",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.59,
+       "n": 69
+      },
+      "day|windy|sat": {
+       "median": 0.28,
+       "n": 68
+      },
+      "night|windy|sat": {
+       "median": 0.66,
+       "n": 97
+      },
+      "night|calm|sat": {
+       "median": 0.29,
+       "n": 125
+      },
+      "day|windy|dry": {
+       "median": 0.06,
+       "n": 363
+      },
+      "day|calm|dry": {
+       "median": 0.12,
+       "n": 171
+      },
+      "night|calm|dry": {
+       "median": -0.165,
+       "n": 306
+      },
+      "night|windy|dry": {
+       "median": 0.21,
+       "n": 281
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.43,
+       "n": 365
+      },
+      "dry": {
+       "median": 0.1,
+       "n": 1125
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.19,
+       "n": 1490
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.17,
+       "n": 69
+      },
+      "day|windy|sat": {
+       "median": -0.135,
+       "n": 68
+      },
+      "night|windy|sat": {
+       "median": 0.34,
+       "n": 97
+      },
+      "night|calm|sat": {
+       "median": 0.1,
+       "n": 125
+      },
+      "day|windy|dry": {
+       "median": -0.37,
+       "n": 363
+      },
+      "day|calm|dry": {
+       "median": -0.22,
+       "n": 171
+      },
+      "night|calm|dry": {
+       "median": -0.03,
+       "n": 306
+      },
+      "night|windy|dry": {
+       "median": 0.2,
+       "n": 281
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.13,
+       "n": 365
+      },
+      "dry": {
+       "median": -0.11,
+       "n": 1125
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.04,
+       "n": 1490
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.37,
+       "n": 69
+      },
+      "day|windy|sat": {
+       "median": 0.43,
+       "n": 68
+      },
+      "night|windy|sat": {
+       "median": 0.35,
+       "n": 97
+      },
+      "night|calm|sat": {
+       "median": 0.06,
+       "n": 125
+      },
+      "day|windy|dry": {
+       "median": 0.35,
+       "n": 363
+      },
+      "day|calm|dry": {
+       "median": 0.18,
+       "n": 171
+      },
+      "night|calm|dry": {
+       "median": -0.105,
+       "n": 306
+      },
+      "night|windy|dry": {
+       "median": 0.07,
+       "n": 281
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.28,
+       "n": 365
+      },
+      "dry": {
+       "median": 0.09,
+       "n": 1125
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.17,
+       "n": 1490
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.2,
+       "n": 69
+      },
+      "day|windy|sat": {
+       "median": -2.8,
+       "n": 68
+      },
+      "night|windy|sat": {
+       "median": -3.0,
+       "n": 97
+      },
+      "night|calm|sat": {
+       "median": -0.6,
+       "n": 125
+      },
+      "day|windy|dry": {
+       "median": -2.3,
+       "n": 363
+      },
+      "day|calm|dry": {
+       "median": 0.1,
+       "n": 171
+      },
+      "night|calm|dry": {
+       "median": -0.4,
+       "n": 306
+      },
+      "night|windy|dry": {
+       "median": -2.9,
+       "n": 281
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -1.4,
+       "n": 359
+      },
+      "dry": {
+       "median": -1.4,
+       "n": 1121
+      }
+     },
+     "station": {
+      "all": {
+       "median": -1.4,
+       "n": 1480
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 7.0,
+       "n": 34
+      },
+      "day|windy|sat": {
+       "median": 10.0,
+       "n": 68
+      },
+      "night|windy|sat": {
+       "median": 9.0,
+       "n": 97
+      },
+      "night|calm|sat": {
+       "median": -0.5,
+       "n": 58
+      },
+      "day|windy|dry": {
+       "median": 5.0,
+       "n": 363
+      },
+      "day|calm|dry": {
+       "median": 14.0,
+       "n": 83
+      },
+      "night|calm|dry": {
+       "median": 12.0,
+       "n": 158
+      },
+      "night|windy|dry": {
+       "median": 6.0,
+       "n": 281
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 7.0,
+       "n": 257
+      },
+      "dry": {
+       "median": 7.0,
+       "n": 885
+      }
+     },
+     "station": {
+      "all": {
+       "median": 7.0,
+       "n": 1142
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 0.713,
+     "mae_after": 0.669,
+     "bias_before": 0.104,
+     "bias_after": -0.017,
+     "within1_before": 0.772,
+     "within1_after": 0.791,
+     "sat_calm": {
+      "n": 14,
+      "mae_before": 0.959,
+      "mae_after": 0.668
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 0.839,
+     "mae_after": 0.829,
+     "bias_before": -0.454,
+     "bias_after": -0.417,
+     "within1_before": 0.656,
+     "within1_after": 0.675,
+     "sat_calm": {
+      "n": 14,
+      "mae_before": 0.499,
+      "mae_after": 0.471
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 569,
+     "coverage": 1.0,
+     "mae_before": 0.962,
+     "mae_after": 0.869,
+     "bias_before": 0.557,
+     "bias_after": 0.414,
+     "within1_before": 0.65,
+     "within1_after": 0.668,
+     "sat_calm": {
+      "n": 14,
+      "mae_before": 0.619,
+      "mae_after": 0.531
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 566,
+     "coverage": 1.0,
+     "mae_before": 2.019,
+     "mae_after": 1.721,
+     "bias_before": -1.186,
+     "bias_after": 0.564,
+     "within1_before": 0.325,
+     "within1_after": 0.389,
+     "sat_calm": {
+      "n": 14,
+      "mae_before": 1.979,
+      "mae_after": 1.85
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 466,
+     "coverage": 1.0,
+     "mae_before": 19.204,
+     "mae_after": 20.568,
+     "bias_before": -1.826,
+     "bias_after": -9.574,
+     "within1_before": 0.028,
+     "within1_after": 0.039,
+     "sat_calm": {
+      "n": 9,
+      "mae_before": 56.778,
+      "mae_after": 54.944
+     },
+     "accepted": false
+    }
+   }
+  },
+  "NTU:64": {
+   "name": "Елена",
+   "cells": {
+    "t": {
+     "sat": {
+      "sat": {
+       "median": 0.77,
+       "n": 304
+      },
+      "dry": {
+       "median": 0.15,
+       "n": 1185
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.45,
+       "n": 1489
+      }
+     },
+     "full": {
+      "day|calm|sat": {
+       "median": 0.85,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.81,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": -1.01,
+       "n": 405
+      },
+      "night|calm|dry": {
+       "median": 1.865,
+       "n": 392
+      }
+     }
+    },
+    "td": {
+     "sat": {
+      "sat": {
+       "median": -0.18,
+       "n": 304
+      },
+      "dry": {
+       "median": 0.45,
+       "n": 1185
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.28,
+       "n": 1489
+      }
+     },
+     "full": {
+      "day|calm|sat": {
+       "median": -0.23,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.03,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": 0.14,
+       "n": 405
+      },
+      "night|calm|dry": {
+       "median": 0.975,
+       "n": 392
+      }
+     }
+    },
+    "dd": {
+     "sat": {
+      "sat": {
+       "median": 1.06,
+       "n": 304
+      },
+      "dry": {
+       "median": 0.0,
+       "n": 1185
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.29,
+       "n": 1489
+      }
+     },
+     "full": {
+      "day|calm|sat": {
+       "median": 1.165,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 0.92,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": -0.85,
+       "n": 405
+      },
+      "night|calm|dry": {
+       "median": 0.33,
+       "n": 392
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.95,
+       "n": 74
+      },
+      "night|calm|sat": {
+       "median": 1.3,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": 2.3,
+       "n": 405
+      },
+      "night|calm|dry": {
+       "median": 1.5,
+       "n": 392
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 1.6,
+       "n": 175
+      },
+      "dry": {
+       "median": 1.7,
+       "n": 840
+      }
+     },
+     "station": {
+      "all": {
+       "median": 1.7,
+       "n": 1015
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|dry": {
+       "median": 16.0,
+       "n": 45
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 14.5,
+       "n": 112
+      }
+     },
+     "station": {
+      "all": {
+       "median": 21.0,
+       "n": 141
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 568,
+     "coverage": 1.0,
+     "mae_before": 1.841,
+     "mae_after": 1.589,
+     "bias_before": 0.971,
+     "bias_after": 0.468,
+     "within1_before": 0.394,
+     "within1_after": 0.431,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 1.272,
+      "mae_after": 0.819
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 568,
+     "coverage": 1.0,
+     "mae_before": 1.197,
+     "mae_after": 1.281,
+     "bias_before": 0.053,
+     "bias_after": -0.367,
+     "within1_before": 0.53,
+     "within1_after": 0.467,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 0.68,
+      "mae_after": 0.685
+     },
+     "accepted": false
+    },
+    "dd": {
+     "n": 568,
+     "coverage": 1.0,
+     "mae_before": 1.571,
+     "mae_after": 1.476,
+     "bias_before": 0.918,
+     "bias_after": 0.819,
+     "within1_before": 0.474,
+     "within1_after": 0.493,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 1.339,
+      "mae_after": 0.903
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 392,
+     "coverage": 1.0,
+     "mae_before": 2.984,
+     "mae_after": 1.962,
+     "bias_before": 2.818,
+     "bias_after": 1.137,
+     "within1_before": 0.217,
+     "within1_after": 0.536,
+     "sat_calm": {
+      "n": 66,
+      "mae_before": 2.111,
+      "mae_after": 1.233
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 63,
+     "coverage": 1.0,
+     "mae_before": 29.19,
+     "mae_after": 26.833,
+     "bias_before": 12.873,
+     "bias_after": -2.04,
+     "within1_before": 0.016,
+     "within1_after": 0.0,
+     "sat_calm": {
+      "n": 0,
+      "mae_before": null,
+      "mae_after": null
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:68": {
+   "name": "Червен",
+   "cells": {
+    "t": {
+     "full": {
+      "night|calm|dry": {
+       "median": -0.61,
+       "n": 583
+      },
+      "day|calm|sat": {
+       "median": 2.17,
+       "n": 32
+      },
+      "day|calm|dry": {
+       "median": -0.24,
+       "n": 471
+      },
+      "night|calm|sat": {
+       "median": 1.005,
+       "n": 36
+      },
+      "night|windy|dry": {
+       "median": -1.685,
+       "n": 78
+      },
+      "day|windy|dry": {
+       "median": -0.36,
+       "n": 72
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.49,
+       "n": 1284
+      },
+      "sat": {
+       "median": 1.7,
+       "n": 77
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.42,
+       "n": 1361
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "night|calm|dry": {
+       "median": 0.03,
+       "n": 583
+      },
+      "day|calm|sat": {
+       "median": 1.905,
+       "n": 32
+      },
+      "day|calm|dry": {
+       "median": -0.09,
+       "n": 471
+      },
+      "night|calm|sat": {
+       "median": 0.95,
+       "n": 36
+      },
+      "night|windy|dry": {
+       "median": -0.355,
+       "n": 78
+      },
+      "day|windy|dry": {
+       "median": -0.385,
+       "n": 72
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.06,
+       "n": 1284
+      },
+      "sat": {
+       "median": 1.52,
+       "n": 77
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.01,
+       "n": 1361
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "night|calm|dry": {
+       "median": -0.71,
+       "n": 583
+      },
+      "day|calm|sat": {
+       "median": 0.055,
+       "n": 32
+      },
+      "day|calm|dry": {
+       "median": -0.27,
+       "n": 471
+      },
+      "night|calm|sat": {
+       "median": -0.095,
+       "n": 36
+      },
+      "night|windy|dry": {
+       "median": -1.2,
+       "n": 78
+      },
+      "day|windy|dry": {
+       "median": 0.035,
+       "n": 72
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.535,
+       "n": 1284
+      },
+      "sat": {
+       "median": 0.0,
+       "n": 77
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.45,
+       "n": 1361
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "night|calm|dry": {
+       "median": 0.2,
+       "n": 583
+      },
+      "day|calm|sat": {
+       "median": 1.5,
+       "n": 32
+      },
+      "day|calm|dry": {
+       "median": 0.6,
+       "n": 471
+      },
+      "night|calm|sat": {
+       "median": -0.15,
+       "n": 36
+      },
+      "night|windy|dry": {
+       "median": -1.7,
+       "n": 78
+      },
+      "day|windy|dry": {
+       "median": -0.95,
+       "n": 72
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.3,
+       "n": 1204
+      },
+      "sat": {
+       "median": 0.3,
+       "n": 74
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.3,
+       "n": 1278
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "night|calm|dry": {
+       "median": -17.0,
+       "n": 189
+      },
+      "night|windy|dry": {
+       "median": -12.0,
+       "n": 78
+      },
+      "day|calm|dry": {
+       "median": -16.5,
+       "n": 124
+      },
+      "day|windy|dry": {
+       "median": -10.0,
+       "n": 72
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -14.0,
+       "n": 463
+      }
+     },
+     "station": {
+      "all": {
+       "median": -14.0,
+       "n": 487
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.16,
+     "mae_after": 1.099,
+     "bias_before": -0.608,
+     "bias_after": -0.206,
+     "within1_before": 0.566,
+     "within1_after": 0.564,
+     "sat_calm": {
+      "n": 37,
+      "mae_before": 0.367,
+      "mae_after": 1.277
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.062,
+     "mae_after": 1.12,
+     "bias_before": 0.089,
+     "bias_after": 0.048,
+     "within1_before": 0.592,
+     "within1_after": 0.546,
+     "sat_calm": {
+      "n": 37,
+      "mae_before": 0.351,
+      "mae_after": 1.118
+     },
+     "accepted": false
+    },
+    "dd": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.502,
+     "mae_after": 1.395,
+     "bias_before": -0.697,
+     "bias_after": -0.179,
+     "within1_before": 0.482,
+     "within1_after": 0.536,
+     "sat_calm": {
+      "n": 37,
+      "mae_before": 0.383,
+      "mae_after": 0.411
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 519,
+     "coverage": 1.0,
+     "mae_before": 1.624,
+     "mae_after": 1.468,
+     "bias_before": 0.411,
+     "bias_after": 0.31,
+     "within1_before": 0.391,
+     "within1_after": 0.434,
+     "sat_calm": {
+      "n": 37,
+      "mae_before": 0.911,
+      "mae_after": 0.78
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 149,
+     "coverage": 1.0,
+     "mae_before": 40.678,
+     "mae_after": 36.326,
+     "bias_before": -12.436,
+     "bias_after": -5.768,
+     "within1_before": 0.007,
+     "within1_after": 0.013,
+     "sat_calm": {
+      "n": 1,
+      "mae_before": 121.0,
+      "mae_after": 135.0
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:76": {
+   "name": "Коларово",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.91,
+       "n": 111
+      },
+      "day|windy|sat": {
+       "median": 0.7,
+       "n": 59
+      },
+      "night|calm|sat": {
+       "median": 1.03,
+       "n": 243
+      },
+      "night|windy|dry": {
+       "median": -0.03,
+       "n": 89
+      },
+      "night|calm|dry": {
+       "median": 0.22,
+       "n": 399
+      },
+      "day|calm|dry": {
+       "median": 0.085,
+       "n": 250
+      },
+      "day|windy|dry": {
+       "median": 0.115,
+       "n": 242
+      },
+      "night|windy|sat": {
+       "median": 0.74,
+       "n": 65
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.92,
+       "n": 494
+      },
+      "dry": {
+       "median": 0.12,
+       "n": 1001
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.36,
+       "n": 1495
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.05,
+       "n": 111
+      },
+      "day|windy|sat": {
+       "median": -0.19,
+       "n": 59
+      },
+      "night|calm|sat": {
+       "median": 0.2,
+       "n": 243
+      },
+      "night|windy|dry": {
+       "median": -0.19,
+       "n": 89
+      },
+      "night|calm|dry": {
+       "median": 0.14,
+       "n": 399
+      },
+      "day|calm|dry": {
+       "median": -0.44,
+       "n": 250
+      },
+      "day|windy|dry": {
+       "median": -0.655,
+       "n": 242
+      },
+      "night|windy|sat": {
+       "median": -0.02,
+       "n": 65
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.005,
+       "n": 494
+      },
+      "dry": {
+       "median": -0.25,
+       "n": 1001
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.17,
+       "n": 1495
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.7,
+       "n": 111
+      },
+      "day|windy|sat": {
+       "median": 0.87,
+       "n": 59
+      },
+      "night|calm|sat": {
+       "median": 0.6,
+       "n": 243
+      },
+      "night|windy|dry": {
+       "median": 0.12,
+       "n": 89
+      },
+      "night|calm|dry": {
+       "median": 0.06,
+       "n": 399
+      },
+      "day|calm|dry": {
+       "median": 0.435,
+       "n": 250
+      },
+      "day|windy|dry": {
+       "median": 0.8,
+       "n": 242
+      },
+      "night|windy|sat": {
+       "median": 0.7,
+       "n": 65
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.66,
+       "n": 494
+      },
+      "dry": {
+       "median": 0.27,
+       "n": 1001
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.45,
+       "n": 1495
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.1,
+       "n": 111
+      },
+      "day|windy|sat": {
+       "median": 0.4,
+       "n": 59
+      },
+      "night|calm|sat": {
+       "median": 0.6,
+       "n": 243
+      },
+      "night|windy|dry": {
+       "median": -0.2,
+       "n": 89
+      },
+      "night|calm|dry": {
+       "median": 1.1,
+       "n": 399
+      },
+      "day|calm|dry": {
+       "median": 1.2,
+       "n": 250
+      },
+      "day|windy|dry": {
+       "median": -0.25,
+       "n": 242
+      },
+      "night|windy|sat": {
+       "median": 0.2,
+       "n": 65
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.7,
+       "n": 478
+      },
+      "dry": {
+       "median": 0.8,
+       "n": 980
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.7,
+       "n": 1458
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 27.0,
+       "n": 49
+      },
+      "day|windy|sat": {
+       "median": 30.0,
+       "n": 59
+      },
+      "night|calm|sat": {
+       "median": 45.0,
+       "n": 66
+      },
+      "night|windy|dry": {
+       "median": 24.0,
+       "n": 89
+      },
+      "night|calm|dry": {
+       "median": 37.5,
+       "n": 130
+      },
+      "day|calm|dry": {
+       "median": 27.0,
+       "n": 126
+      },
+      "day|windy|dry": {
+       "median": 16.0,
+       "n": 242
+      },
+      "night|windy|sat": {
+       "median": 33.0,
+       "n": 65
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 33.0,
+       "n": 239
+      },
+      "dry": {
+       "median": 22.0,
+       "n": 587
+      }
+     },
+     "station": {
+      "all": {
+       "median": 25.5,
+       "n": 826
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 572,
+     "coverage": 1.0,
+     "mae_before": 0.907,
+     "mae_after": 0.883,
+     "bias_before": -0.027,
+     "bias_after": -0.316,
+     "within1_before": 0.614,
+     "within1_after": 0.642,
+     "sat_calm": {
+      "n": 89,
+      "mae_before": 0.936,
+      "mae_after": 0.7
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 572,
+     "coverage": 1.0,
+     "mae_before": 0.816,
+     "mae_after": 0.817,
+     "bias_before": 0.062,
+     "bias_after": 0.194,
+     "within1_before": 0.694,
+     "within1_after": 0.691,
+     "sat_calm": {
+      "n": 89,
+      "mae_before": 0.79,
+      "mae_after": 0.808
+     },
+     "accepted": false
+    },
+    "dd": {
+     "n": 572,
+     "coverage": 1.0,
+     "mae_before": 0.996,
+     "mae_after": 0.976,
+     "bias_before": -0.089,
+     "bias_after": -0.439,
+     "within1_before": 0.607,
+     "within1_after": 0.657,
+     "sat_calm": {
+      "n": 89,
+      "mae_before": 0.819,
+      "mae_after": 0.46
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 561,
+     "coverage": 1.0,
+     "mae_before": 2.381,
+     "mae_after": 2.056,
+     "bias_before": 1.325,
+     "bias_after": 0.594,
+     "within1_before": 0.246,
+     "within1_after": 0.339,
+     "sat_calm": {
+      "n": 89,
+      "mae_before": 2.684,
+      "mae_after": 2.33
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 278,
+     "coverage": 1.0,
+     "mae_before": 34.385,
+     "mae_after": 33.018,
+     "bias_before": 14.486,
+     "bias_after": -6.288,
+     "within1_before": 0.018,
+     "within1_after": 0.018,
+     "sat_calm": {
+      "n": 23,
+      "mae_before": 52.957,
+      "mae_after": 50.391
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:78": {
+   "name": "Бързия",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|dry": {
+       "median": 2.51,
+       "n": 210
+      },
+      "night|windy|dry": {
+       "median": 1.63,
+       "n": 102
+      },
+      "night|windy|sat": {
+       "median": 1.765,
+       "n": 62
+      },
+      "day|windy|sat": {
+       "median": 2.21,
+       "n": 47
+      },
+      "day|calm|dry": {
+       "median": 2.05,
+       "n": 209
+      },
+      "night|calm|sat": {
+       "median": 1.5,
+       "n": 93
+      },
+      "day|calm|sat": {
+       "median": 2.22,
+       "n": 74
+      },
+      "night|calm|dry": {
+       "median": 1.455,
+       "n": 338
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 1.77,
+       "n": 929
+      },
+      "sat": {
+       "median": 1.78,
+       "n": 300
+      }
+     },
+     "station": {
+      "all": {
+       "median": 1.77,
+       "n": 1229
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|dry": {
+       "median": 1.085,
+       "n": 210
+      },
+      "night|windy|dry": {
+       "median": 1.065,
+       "n": 102
+      },
+      "night|windy|sat": {
+       "median": 1.065,
+       "n": 62
+      },
+      "day|windy|sat": {
+       "median": 1.41,
+       "n": 47
+      },
+      "day|calm|dry": {
+       "median": 1.12,
+       "n": 209
+      },
+      "night|calm|sat": {
+       "median": 0.78,
+       "n": 93
+      },
+      "day|calm|sat": {
+       "median": 0.925,
+       "n": 74
+      },
+      "night|calm|dry": {
+       "median": 0.865,
+       "n": 338
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 1.01,
+       "n": 929
+      },
+      "sat": {
+       "median": 0.985,
+       "n": 300
+      }
+     },
+     "station": {
+      "all": {
+       "median": 1.0,
+       "n": 1229
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 1.31,
+       "n": 210
+      },
+      "night|windy|dry": {
+       "median": 0.375,
+       "n": 102
+      },
+      "night|windy|sat": {
+       "median": 0.845,
+       "n": 62
+      },
+      "day|windy|sat": {
+       "median": 0.85,
+       "n": 47
+      },
+      "day|calm|dry": {
+       "median": 1.02,
+       "n": 209
+      },
+      "night|calm|sat": {
+       "median": 0.64,
+       "n": 93
+      },
+      "day|calm|sat": {
+       "median": 0.98,
+       "n": 74
+      },
+      "night|calm|dry": {
+       "median": 0.32,
+       "n": 338
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.72,
+       "n": 929
+      },
+      "sat": {
+       "median": 0.745,
+       "n": 300
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.73,
+       "n": 1229
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|dry": {
+       "median": -0.75,
+       "n": 210
+      },
+      "night|windy|dry": {
+       "median": 0.25,
+       "n": 102
+      },
+      "night|windy|sat": {
+       "median": 0.2,
+       "n": 62
+      },
+      "day|windy|sat": {
+       "median": -1.3,
+       "n": 47
+      },
+      "day|calm|dry": {
+       "median": 1.3,
+       "n": 209
+      },
+      "night|calm|sat": {
+       "median": 1.5,
+       "n": 93
+      },
+      "day|calm|sat": {
+       "median": 2.0,
+       "n": 74
+      },
+      "night|calm|dry": {
+       "median": 1.1,
+       "n": 338
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.6,
+       "n": 859
+      },
+      "sat": {
+       "median": 1.2,
+       "n": 276
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.8,
+       "n": 1135
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|dry": {
+       "median": -7.5,
+       "n": 210
+      },
+      "night|windy|dry": {
+       "median": -14.5,
+       "n": 102
+      },
+      "night|windy|sat": {
+       "median": -2.0,
+       "n": 62
+      },
+      "day|windy|sat": {
+       "median": -12.0,
+       "n": 47
+      },
+      "day|calm|dry": {
+       "median": -13.0,
+       "n": 115
+      },
+      "night|calm|sat": {
+       "median": -10.5,
+       "n": 38
+      },
+      "night|calm|dry": {
+       "median": -14.5,
+       "n": 98
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -11.0,
+       "n": 525
+      },
+      "sat": {
+       "median": -5.0,
+       "n": 171
+      }
+     },
+     "station": {
+      "all": {
+       "median": -10.0,
+       "n": 696
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 2.029,
+     "mae_after": 0.69,
+     "bias_before": 2.022,
+     "bias_after": 0.141,
+     "within1_before": 0.119,
+     "within1_after": 0.746,
+     "sat_calm": {
+      "n": 135,
+      "mae_before": 1.805,
+      "mae_after": 0.704
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.466,
+     "mae_after": 0.914,
+     "bias_before": 1.314,
+     "bias_after": 0.271,
+     "within1_before": 0.342,
+     "within1_after": 0.636,
+     "sat_calm": {
+      "n": 135,
+      "mae_before": 1.398,
+      "mae_after": 0.85
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.006,
+     "mae_after": 0.96,
+     "bias_before": 0.708,
+     "bias_after": -0.061,
+     "within1_before": 0.601,
+     "within1_after": 0.65,
+     "sat_calm": {
+      "n": 135,
+      "mae_before": 0.536,
+      "mae_after": 0.632
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 564,
+     "coverage": 1.0,
+     "mae_before": 2.187,
+     "mae_after": 2.047,
+     "bias_before": 0.124,
+     "bias_after": -0.23,
+     "within1_before": 0.275,
+     "within1_after": 0.309,
+     "sat_calm": {
+      "n": 135,
+      "mae_before": 1.773,
+      "mae_after": 1.591
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 465,
+     "coverage": 1.0,
+     "mae_before": 33.247,
+     "mae_after": 36.586,
+     "bias_before": 13.819,
+     "bias_after": 22.702,
+     "within1_before": 0.009,
+     "within1_after": 0.024,
+     "sat_calm": {
+      "n": 95,
+      "mae_before": 40.484,
+      "mae_after": 41.547
+     },
+     "accepted": false
+    }
+   }
+  },
+  "NTU:82": {
+   "name": "Равнища",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.5,
+       "n": 112
+      },
+      "day|calm|dry": {
+       "median": -0.04,
+       "n": 392
+      },
+      "night|calm|sat": {
+       "median": 0.84,
+       "n": 159
+      },
+      "night|calm|dry": {
+       "median": 0.76,
+       "n": 289
+      },
+      "day|windy|dry": {
+       "median": -0.87,
+       "n": 57
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 1.03,
+       "n": 441
+      },
+      "dry": {
+       "median": 0.295,
+       "n": 1048
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.6,
+       "n": 1489
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.035,
+       "n": 112
+      },
+      "day|calm|dry": {
+       "median": 0.47,
+       "n": 392
+      },
+      "night|calm|sat": {
+       "median": -0.15,
+       "n": 159
+      },
+      "night|calm|dry": {
+       "median": 0.84,
+       "n": 289
+      },
+      "day|windy|dry": {
+       "median": 0.83,
+       "n": 57
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.01,
+       "n": 441
+      },
+      "dry": {
+       "median": 0.71,
+       "n": 1048
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.41,
+       "n": 1489
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.375,
+       "n": 112
+      },
+      "day|calm|dry": {
+       "median": -0.23,
+       "n": 392
+      },
+      "night|calm|sat": {
+       "median": 0.88,
+       "n": 159
+      },
+      "night|calm|dry": {
+       "median": 0.12,
+       "n": 289
+      },
+      "day|windy|dry": {
+       "median": -1.78,
+       "n": 57
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.98,
+       "n": 441
+      },
+      "dry": {
+       "median": -0.05,
+       "n": 1048
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.45,
+       "n": 1489
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.2,
+       "n": 112
+      },
+      "day|calm|dry": {
+       "median": 1.7,
+       "n": 392
+      },
+      "night|calm|sat": {
+       "median": 1.1,
+       "n": 159
+      },
+      "night|calm|dry": {
+       "median": 1.4,
+       "n": 289
+      },
+      "day|windy|dry": {
+       "median": -0.3,
+       "n": 57
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 1.2,
+       "n": 273
+      },
+      "dry": {
+       "median": 1.4,
+       "n": 740
+      }
+     },
+     "station": {
+      "all": {
+       "median": 1.3,
+       "n": 1013
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|dry": {
+       "median": -8.0,
+       "n": 95
+      },
+      "day|windy|dry": {
+       "median": -13.0,
+       "n": 57
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -12.0,
+       "n": 165
+      }
+     },
+     "station": {
+      "all": {
+       "median": -13.0,
+       "n": 176
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 1.441,
+     "mae_after": 1.246,
+     "bias_before": 0.836,
+     "bias_after": 0.355,
+     "within1_before": 0.461,
+     "within1_after": 0.491,
+     "sat_calm": {
+      "n": 62,
+      "mae_before": 1.439,
+      "mae_after": 0.936
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 1.215,
+     "mae_after": 1.025,
+     "bias_before": 0.738,
+     "bias_after": 0.2,
+     "within1_before": 0.512,
+     "within1_after": 0.614,
+     "sat_calm": {
+      "n": 62,
+      "mae_before": 0.878,
+      "mae_after": 0.923
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 1.152,
+     "mae_after": 1.106,
+     "bias_before": 0.098,
+     "bias_after": -0.043,
+     "within1_before": 0.6,
+     "within1_after": 0.618,
+     "sat_calm": {
+      "n": 62,
+      "mae_before": 0.716,
+      "mae_after": 0.541
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 412,
+     "coverage": 1.0,
+     "mae_before": 2.058,
+     "mae_after": 1.579,
+     "bias_before": 1.715,
+     "bias_after": 0.317,
+     "within1_before": 0.357,
+     "within1_after": 0.464,
+     "sat_calm": {
+      "n": 62,
+      "mae_before": 1.252,
+      "mae_after": 0.8
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 46,
+     "coverage": 1.0,
+     "mae_before": 40.674,
+     "mae_after": 40.283,
+     "bias_before": 1.717,
+     "bias_after": 4.326,
+     "within1_before": 0.0,
+     "within1_after": 0.0,
+     "sat_calm": {
+      "n": 3,
+      "mae_before": 74.667,
+      "mae_after": 61.667
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:92": {
+   "name": "Кнежа",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.52,
+       "n": 92
+      },
+      "day|windy|sat": {
+       "median": 0.7,
+       "n": 33
+      },
+      "night|calm|sat": {
+       "median": 0.51,
+       "n": 116
+      },
+      "day|calm|dry": {
+       "median": -0.14,
+       "n": 336
+      },
+      "day|windy|dry": {
+       "median": -0.09,
+       "n": 166
+      },
+      "night|calm|dry": {
+       "median": 0.24,
+       "n": 387
+      },
+      "night|windy|sat": {
+       "median": 0.67,
+       "n": 32
+      },
+      "night|windy|dry": {
+       "median": 0.045,
+       "n": 124
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.54,
+       "n": 321
+      },
+      "dry": {
+       "median": 0.11,
+       "n": 1167
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.23,
+       "n": 1488
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.295,
+       "n": 92
+      },
+      "day|windy|sat": {
+       "median": -0.36,
+       "n": 33
+      },
+      "night|calm|sat": {
+       "median": 0.275,
+       "n": 116
+      },
+      "day|calm|dry": {
+       "median": 0.005,
+       "n": 336
+      },
+      "day|windy|dry": {
+       "median": -0.125,
+       "n": 166
+      },
+      "night|calm|dry": {
+       "median": 0.39,
+       "n": 387
+      },
+      "night|windy|sat": {
+       "median": 0.085,
+       "n": 32
+      },
+      "night|windy|dry": {
+       "median": -0.13,
+       "n": 124
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.13,
+       "n": 321
+      },
+      "dry": {
+       "median": 0.15,
+       "n": 1167
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.14,
+       "n": 1488
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.26,
+       "n": 92
+      },
+      "day|windy|sat": {
+       "median": 1.04,
+       "n": 33
+      },
+      "night|calm|sat": {
+       "median": 0.07,
+       "n": 116
+      },
+      "day|calm|dry": {
+       "median": -0.09,
+       "n": 336
+      },
+      "day|windy|dry": {
+       "median": 0.275,
+       "n": 166
+      },
+      "night|calm|dry": {
+       "median": -0.07,
+       "n": 387
+      },
+      "night|windy|sat": {
+       "median": 0.5,
+       "n": 32
+      },
+      "night|windy|dry": {
+       "median": 0.155,
+       "n": 124
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.26,
+       "n": 321
+      },
+      "dry": {
+       "median": -0.01,
+       "n": 1167
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.07,
+       "n": 1488
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.95,
+       "n": 92
+      },
+      "day|windy|sat": {
+       "median": -0.4,
+       "n": 33
+      },
+      "night|calm|sat": {
+       "median": 0.5,
+       "n": 116
+      },
+      "day|calm|dry": {
+       "median": 1.2,
+       "n": 336
+      },
+      "day|windy|dry": {
+       "median": 0.0,
+       "n": 166
+      },
+      "night|calm|dry": {
+       "median": 1.0,
+       "n": 387
+      },
+      "night|windy|sat": {
+       "median": 0.7,
+       "n": 32
+      },
+      "night|windy|dry": {
+       "median": 0.7,
+       "n": 124
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.6,
+       "n": 273
+      },
+      "dry": {
+       "median": 1.0,
+       "n": 1013
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.9,
+       "n": 1286
+      }
+     }
+    },
+    "wd": {
+     "sat": {
+      "sat": {
+       "median": -19.0,
+       "n": 111
+      },
+      "dry": {
+       "median": -17.0,
+       "n": 480
+      }
+     },
+     "station": {
+      "all": {
+       "median": -18.0,
+       "n": 591
+      }
+     },
+     "full": {
+      "day|windy|sat": {
+       "median": -26.0,
+       "n": 33
+      },
+      "day|calm|dry": {
+       "median": -18.0,
+       "n": 101
+      },
+      "day|windy|dry": {
+       "median": -18.0,
+       "n": 166
+      },
+      "night|calm|dry": {
+       "median": -14.0,
+       "n": 89
+      },
+      "night|windy|sat": {
+       "median": -17.0,
+       "n": 32
+      },
+      "night|windy|dry": {
+       "median": -18.5,
+       "n": 124
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.907,
+     "mae_after": 0.819,
+     "bias_before": 0.235,
+     "bias_after": 0.046,
+     "within1_before": 0.665,
+     "within1_after": 0.698,
+     "sat_calm": {
+      "n": 83,
+      "mae_before": 0.905,
+      "mae_after": 0.576
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.717,
+     "mae_after": 0.698,
+     "bias_before": 0.057,
+     "bias_after": -0.081,
+     "within1_before": 0.749,
+     "within1_after": 0.767,
+     "sat_calm": {
+      "n": 83,
+      "mae_before": 0.536,
+      "mae_after": 0.478
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 1.011,
+     "mae_after": 0.955,
+     "bias_before": 0.177,
+     "bias_after": 0.101,
+     "within1_before": 0.642,
+     "within1_after": 0.67,
+     "sat_calm": {
+      "n": 83,
+      "mae_before": 0.588,
+      "mae_after": 0.512
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 484,
+     "coverage": 1.0,
+     "mae_before": 2.193,
+     "mae_after": 1.907,
+     "bias_before": 1.701,
+     "bias_after": 0.902,
+     "within1_before": 0.362,
+     "within1_after": 0.403,
+     "sat_calm": {
+      "n": 83,
+      "mae_before": 1.773,
+      "mae_after": 1.562
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 213,
+     "coverage": 1.0,
+     "mae_before": 21.357,
+     "mae_after": 14.592,
+     "bias_before": -16.812,
+     "bias_after": 1.479,
+     "within1_before": 0.019,
+     "within1_after": 0.061,
+     "sat_calm": {
+      "n": 32,
+      "mae_before": 26.625,
+      "mae_after": 17.875
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:94": {
+   "name": "Долно войводино",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.93,
+       "n": 131
+      },
+      "night|calm|sat": {
+       "median": 0.81,
+       "n": 169
+      },
+      "day|calm|dry": {
+       "median": -0.275,
+       "n": 374
+      },
+      "day|windy|dry": {
+       "median": -0.6,
+       "n": 55
+      },
+      "night|calm|dry": {
+       "median": -0.07,
+       "n": 294
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.825,
+       "n": 474
+      },
+      "dry": {
+       "median": -0.07,
+       "n": 1018
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.31,
+       "n": 1492
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.34,
+       "n": 131
+      },
+      "night|calm|sat": {
+       "median": -0.22,
+       "n": 169
+      },
+      "day|calm|dry": {
+       "median": -0.625,
+       "n": 374
+      },
+      "day|windy|dry": {
+       "median": -0.84,
+       "n": 55
+      },
+      "night|calm|dry": {
+       "median": -0.085,
+       "n": 294
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.175,
+       "n": 474
+      },
+      "dry": {
+       "median": -0.25,
+       "n": 1018
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.22,
+       "n": 1492
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.9,
+       "n": 131
+      },
+      "night|calm|sat": {
+       "median": 0.6,
+       "n": 169
+      },
+      "day|calm|dry": {
+       "median": 0.34,
+       "n": 374
+      },
+      "day|windy|dry": {
+       "median": 0.49,
+       "n": 55
+      },
+      "night|calm|dry": {
+       "median": 0.21,
+       "n": 294
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.6,
+       "n": 474
+      },
+      "dry": {
+       "median": 0.29,
+       "n": 1018
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.49,
+       "n": 1492
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 3.1,
+       "n": 131
+      },
+      "night|calm|sat": {
+       "median": 1.8,
+       "n": 169
+      },
+      "day|calm|dry": {
+       "median": 2.6,
+       "n": 374
+      },
+      "day|windy|dry": {
+       "median": 1.4,
+       "n": 55
+      },
+      "night|calm|dry": {
+       "median": 1.6,
+       "n": 294
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 2.35,
+       "n": 308
+      },
+      "dry": {
+       "median": 1.9,
+       "n": 744
+      }
+     },
+     "station": {
+      "all": {
+       "median": 2.0,
+       "n": 1052
+      }
+     }
+    },
+    "wd": {
+     "station": {
+      "all": {
+       "median": 4.0,
+       "n": 207
+      }
+     },
+     "full": {
+      "day|calm|dry": {
+       "median": 10.5,
+       "n": 80
+      },
+      "day|windy|dry": {
+       "median": 2.0,
+       "n": 55
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 8.0,
+       "n": 180
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 364,
+     "coverage": 1.0,
+     "mae_before": 1.383,
+     "mae_after": 1.312,
+     "bias_before": 0.465,
+     "bias_after": 0.327,
+     "within1_before": 0.497,
+     "within1_after": 0.577,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 0.879,
+      "mae_after": 0.664
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 364,
+     "coverage": 1.0,
+     "mae_before": 1.055,
+     "mae_after": 0.986,
+     "bias_before": -0.212,
+     "bias_after": 0.109,
+     "within1_before": 0.591,
+     "within1_after": 0.599,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 0.843,
+      "mae_after": 0.724
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 364,
+     "coverage": 1.0,
+     "mae_before": 1.278,
+     "mae_after": 1.143,
+     "bias_before": 0.677,
+     "bias_after": 0.267,
+     "within1_before": 0.541,
+     "within1_after": 0.604,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 1.307,
+      "mae_after": 0.85
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 230,
+     "coverage": 1.0,
+     "mae_before": 2.949,
+     "mae_after": 1.815,
+     "bias_before": 2.62,
+     "bias_after": 0.56,
+     "within1_before": 0.2,
+     "within1_after": 0.47,
+     "sat_calm": {
+      "n": 59,
+      "mae_before": 3.461,
+      "mae_after": 1.646
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 55,
+     "coverage": 1.0,
+     "mae_before": 21.655,
+     "mae_after": 17.982,
+     "bias_before": 13.473,
+     "bias_after": 6.2,
+     "within1_before": 0.0,
+     "within1_after": 0.018,
+     "sat_calm": {
+      "n": 1,
+      "mae_before": 22.0,
+      "mae_after": 26.0
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:107": {
+   "name": "Железно",
+   "cells": {
+    "t": {
+     "sat": {
+      "dry": {
+       "median": 0.08,
+       "n": 1452
+      },
+      "sat": {
+       "median": 0.41,
+       "n": 47
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.1,
+       "n": 1499
+      }
+     },
+     "full": {
+      "day|calm|dry": {
+       "median": 0.155,
+       "n": 356
+      },
+      "night|calm|dry": {
+       "median": 0.235,
+       "n": 338
+      }
+     }
+    },
+    "td": {
+     "sat": {
+      "dry": {
+       "median": 0.22,
+       "n": 1452
+      },
+      "sat": {
+       "median": 0.11,
+       "n": 47
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.21,
+       "n": 1499
+      }
+     },
+     "full": {
+      "day|calm|dry": {
+       "median": -0.155,
+       "n": 356
+      },
+      "night|calm|dry": {
+       "median": 0.42,
+       "n": 338
+      }
+     }
+    },
+    "dd": {
+     "sat": {
+      "dry": {
+       "median": -0.4,
+       "n": 1452
+      },
+      "sat": {
+       "median": 0.69,
+       "n": 47
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.36,
+       "n": 1499
+      }
+     },
+     "full": {
+      "day|calm|dry": {
+       "median": 0.085,
+       "n": 356
+      },
+      "night|calm|dry": {
+       "median": -0.27,
+       "n": 338
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|dry": {
+       "median": 2.1,
+       "n": 356
+      },
+      "night|calm|dry": {
+       "median": 2.25,
+       "n": 338
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 2.15,
+       "n": 728
+      },
+      "sat": {
+       "median": 1.8,
+       "n": 30
+      }
+     },
+     "station": {
+      "all": {
+       "median": 2.1,
+       "n": 758
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "night|calm|dry": {
+       "median": -13.5,
+       "n": 34
+      },
+      "day|calm|dry": {
+       "median": -10.0,
+       "n": 47
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -13.0,
+       "n": 115
+      }
+     },
+     "station": {
+      "all": {
+       "median": -13.0,
+       "n": 127
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 567,
+     "coverage": 1.0,
+     "mae_before": 0.897,
+     "mae_after": 0.898,
+     "bias_before": -0.272,
+     "bias_after": -0.426,
+     "within1_before": 0.656,
+     "within1_after": 0.66,
+     "sat_calm": {
+      "n": 17,
+      "mae_before": 0.761,
+      "mae_after": 0.364
+     },
+     "accepted": false
+    },
+    "td": {
+     "n": 567,
+     "coverage": 1.0,
+     "mae_before": 0.865,
+     "mae_after": 0.827,
+     "bias_before": 0.28,
+     "bias_after": 0.098,
+     "within1_before": 0.66,
+     "within1_after": 0.7,
+     "sat_calm": {
+      "n": 17,
+      "mae_before": 0.468,
+      "mae_after": 0.396
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 567,
+     "coverage": 1.0,
+     "mae_before": 1.001,
+     "mae_after": 0.908,
+     "bias_before": -0.552,
+     "bias_after": -0.363,
+     "within1_before": 0.587,
+     "within1_after": 0.647,
+     "sat_calm": {
+      "n": 17,
+      "mae_before": 0.42,
+      "mae_after": 0.47
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 243,
+     "coverage": 1.0,
+     "mae_before": 3.593,
+     "mae_after": 2.485,
+     "bias_before": 3.404,
+     "bias_after": 1.477,
+     "within1_before": 0.259,
+     "within1_after": 0.395,
+     "sat_calm": {
+      "n": 17,
+      "mae_before": 3.171,
+      "mae_after": 1.747
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 23,
+     "coverage": 1.0,
+     "mae_before": 27.348,
+     "mae_after": 29.109,
+     "bias_before": 5.696,
+     "bias_after": 18.5,
+     "within1_before": 0.0,
+     "within1_after": 0.043,
+     "sat_calm": {
+      "n": 3,
+      "mae_before": 18.667,
+      "mae_after": 31.667
+     },
+     "accepted": false
+    }
+   }
+  },
+  "NTU:113": {
+   "name": "Трилистник",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.59,
+       "n": 53
+      },
+      "day|windy|dry": {
+       "median": 0.22,
+       "n": 178
+      },
+      "night|windy|dry": {
+       "median": 0.1,
+       "n": 151
+      },
+      "night|calm|dry": {
+       "median": 0.37,
+       "n": 502
+      },
+      "day|calm|dry": {
+       "median": 0.17,
+       "n": 415
+      },
+      "night|calm|sat": {
+       "median": 0.36,
+       "n": 99
+      },
+      "night|windy|sat": {
+       "median": 1.085,
+       "n": 30
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.49,
+       "n": 205
+      },
+      "dry": {
+       "median": 0.25,
+       "n": 1293
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.29,
+       "n": 1498
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.14,
+       "n": 53
+      },
+      "day|windy|dry": {
+       "median": -0.505,
+       "n": 178
+      },
+      "night|windy|dry": {
+       "median": -0.31,
+       "n": 151
+      },
+      "night|calm|dry": {
+       "median": 0.475,
+       "n": 502
+      },
+      "day|calm|dry": {
+       "median": 0.15,
+       "n": 415
+      },
+      "night|calm|sat": {
+       "median": 0.11,
+       "n": 99
+      },
+      "night|windy|sat": {
+       "median": -0.02,
+       "n": 30
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.01,
+       "n": 205
+      },
+      "dry": {
+       "median": 0.15,
+       "n": 1293
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.13,
+       "n": 1498
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.35,
+       "n": 53
+      },
+      "day|windy|dry": {
+       "median": 0.765,
+       "n": 178
+      },
+      "night|windy|dry": {
+       "median": 0.46,
+       "n": 151
+      },
+      "night|calm|dry": {
+       "median": -0.315,
+       "n": 502
+      },
+      "day|calm|dry": {
+       "median": -0.06,
+       "n": 415
+      },
+      "night|calm|sat": {
+       "median": 0.2,
+       "n": 99
+      },
+      "night|windy|sat": {
+       "median": 0.6,
+       "n": 30
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.26,
+       "n": 205
+      },
+      "dry": {
+       "median": -0.04,
+       "n": 1293
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.09,
+       "n": 1498
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.0,
+       "n": 53
+      },
+      "day|windy|dry": {
+       "median": -1.1,
+       "n": 178
+      },
+      "night|windy|dry": {
+       "median": -1.2,
+       "n": 151
+      },
+      "night|calm|dry": {
+       "median": 0.6,
+       "n": 502
+      },
+      "day|calm|dry": {
+       "median": 0.2,
+       "n": 415
+      },
+      "night|calm|sat": {
+       "median": 0.6,
+       "n": 99
+      },
+      "night|windy|sat": {
+       "median": -1.3,
+       "n": 30
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.3,
+       "n": 197
+      },
+      "dry": {
+       "median": 0.2,
+       "n": 1246
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.2,
+       "n": 1443
+      }
+     }
+    },
+    "wd": {
+     "sat": {
+      "sat": {
+       "median": 11.0,
+       "n": 85
+      },
+      "dry": {
+       "median": 6.0,
+       "n": 589
+      }
+     },
+     "station": {
+      "all": {
+       "median": 6.0,
+       "n": 674
+      }
+     },
+     "full": {
+      "day|windy|dry": {
+       "median": 6.0,
+       "n": 178
+      },
+      "night|windy|dry": {
+       "median": 5.0,
+       "n": 151
+      },
+      "night|calm|dry": {
+       "median": 8.0,
+       "n": 110
+      },
+      "day|calm|dry": {
+       "median": 0.0,
+       "n": 150
+      },
+      "night|windy|sat": {
+       "median": 9.5,
+       "n": 30
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 567,
+     "coverage": 1.0,
+     "mae_before": 0.791,
+     "mae_after": 0.798,
+     "bias_before": -0.037,
+     "bias_after": -0.345,
+     "within1_before": 0.674,
+     "within1_after": 0.69,
+     "sat_calm": {
+      "n": 82,
+      "mae_before": 0.802,
+      "mae_after": 0.667
+     },
+     "accepted": false
+    },
+    "td": {
+     "n": 567,
+     "coverage": 1.0,
+     "mae_before": 0.802,
+     "mae_after": 0.796,
+     "bias_before": 0.019,
+     "bias_after": -0.132,
+     "within1_before": 0.683,
+     "within1_after": 0.691,
+     "sat_calm": {
+      "n": 82,
+      "mae_before": 0.508,
+      "mae_after": 0.499
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 567,
+     "coverage": 1.0,
+     "mae_before": 0.847,
+     "mae_after": 0.841,
+     "bias_before": -0.056,
+     "bias_after": -0.08,
+     "within1_before": 0.705,
+     "within1_after": 0.72,
+     "sat_calm": {
+      "n": 82,
+      "mae_before": 0.579,
+      "mae_after": 0.487
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 537,
+     "coverage": 1.0,
+     "mae_before": 1.882,
+     "mae_after": 1.781,
+     "bias_before": 0.436,
+     "bias_after": 0.274,
+     "within1_before": 0.352,
+     "within1_after": 0.345,
+     "sat_calm": {
+      "n": 82,
+      "mae_before": 1.822,
+      "mae_after": 1.694
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 226,
+     "coverage": 1.0,
+     "mae_before": 30.314,
+     "mae_after": 29.697,
+     "bias_before": 0.473,
+     "bias_after": -3.569,
+     "within1_before": 0.022,
+     "within1_after": 0.058,
+     "sat_calm": {
+      "n": 20,
+      "mae_before": 40.35,
+      "mae_after": 38.05
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:123": {
+   "name": "Димитровград",
+   "cells": {
+    "t": {
+     "full": {
+      "day|calm|sat": {
+       "median": 1.445,
+       "n": 86
+      },
+      "day|windy|sat": {
+       "median": 0.615,
+       "n": 80
+      },
+      "day|calm|dry": {
+       "median": 0.23,
+       "n": 293
+      },
+      "night|calm|dry": {
+       "median": 0.48,
+       "n": 348
+      },
+      "night|calm|sat": {
+       "median": 0.5,
+       "n": 183
+      },
+      "day|windy|dry": {
+       "median": 0.295,
+       "n": 214
+      },
+      "night|windy|dry": {
+       "median": -0.28,
+       "n": 152
+      },
+      "night|windy|sat": {
+       "median": 0.575,
+       "n": 80
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.62,
+       "n": 451
+      },
+      "dry": {
+       "median": 0.27,
+       "n": 1044
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.35,
+       "n": 1495
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.17,
+       "n": 86
+      },
+      "day|windy|sat": {
+       "median": -0.4,
+       "n": 80
+      },
+      "day|calm|dry": {
+       "median": -0.79,
+       "n": 293
+      },
+      "night|calm|dry": {
+       "median": -0.32,
+       "n": 348
+      },
+      "night|calm|sat": {
+       "median": -0.23,
+       "n": 183
+      },
+      "day|windy|dry": {
+       "median": -1.33,
+       "n": 214
+      },
+      "night|windy|dry": {
+       "median": -0.88,
+       "n": 152
+      },
+      "night|windy|sat": {
+       "median": -0.12,
+       "n": 80
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.25,
+       "n": 451
+      },
+      "dry": {
+       "median": -0.74,
+       "n": 1044
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.59,
+       "n": 1495
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|calm|sat": {
+       "median": 0.87,
+       "n": 86
+      },
+      "day|windy|sat": {
+       "median": 1.17,
+       "n": 80
+      },
+      "day|calm|dry": {
+       "median": 0.95,
+       "n": 293
+      },
+      "night|calm|dry": {
+       "median": 0.83,
+       "n": 348
+      },
+      "night|calm|sat": {
+       "median": 0.6,
+       "n": 183
+      },
+      "day|windy|dry": {
+       "median": 1.57,
+       "n": 214
+      },
+      "night|windy|dry": {
+       "median": 0.52,
+       "n": 152
+      },
+      "night|windy|sat": {
+       "median": 0.8,
+       "n": 80
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": 0.8,
+       "n": 451
+      },
+      "dry": {
+       "median": 0.95,
+       "n": 1044
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.87,
+       "n": 1495
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|calm|sat": {
+       "median": -0.1,
+       "n": 86
+      },
+      "day|windy|sat": {
+       "median": -0.9,
+       "n": 80
+      },
+      "day|calm|dry": {
+       "median": -0.1,
+       "n": 293
+      },
+      "night|calm|dry": {
+       "median": 0.0,
+       "n": 348
+      },
+      "night|calm|sat": {
+       "median": -0.1,
+       "n": 183
+      },
+      "day|windy|dry": {
+       "median": -2.55,
+       "n": 214
+      },
+      "night|windy|dry": {
+       "median": -2.5,
+       "n": 152
+      },
+      "night|windy|sat": {
+       "median": -1.9,
+       "n": 80
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -0.5,
+       "n": 429
+      },
+      "dry": {
+       "median": -0.6,
+       "n": 1007
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.6,
+       "n": 1436
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|calm|sat": {
+       "median": -20.0,
+       "n": 33
+      },
+      "day|windy|sat": {
+       "median": -37.5,
+       "n": 80
+      },
+      "day|calm|dry": {
+       "median": -30.0,
+       "n": 129
+      },
+      "night|calm|dry": {
+       "median": -36.0,
+       "n": 113
+      },
+      "day|windy|dry": {
+       "median": -34.0,
+       "n": 214
+      },
+      "night|windy|dry": {
+       "median": -38.5,
+       "n": 152
+      },
+      "night|calm|sat": {
+       "median": -37.0,
+       "n": 58
+      },
+      "night|windy|sat": {
+       "median": -38.0,
+       "n": 80
+      }
+     },
+     "sat": {
+      "sat": {
+       "median": -37.0,
+       "n": 251
+      },
+      "dry": {
+       "median": -36.0,
+       "n": 608
+      }
+     },
+     "station": {
+      "all": {
+       "median": -36.0,
+       "n": 859
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.99,
+     "mae_after": 1.046,
+     "bias_before": 0.014,
+     "bias_after": -0.333,
+     "within1_before": 0.616,
+     "within1_after": 0.574,
+     "sat_calm": {
+      "n": 119,
+      "mae_before": 1.043,
+      "mae_after": 1.206
+     },
+     "accepted": false
+    },
+    "td": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.979,
+     "mae_after": 0.794,
+     "bias_before": -0.522,
+     "bias_after": 0.066,
+     "within1_before": 0.58,
+     "within1_after": 0.692,
+     "sat_calm": {
+      "n": 119,
+      "mae_before": 0.953,
+      "mae_after": 0.875
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 1.035,
+     "mae_after": 0.988,
+     "bias_before": 0.537,
+     "bias_after": -0.319,
+     "within1_before": 0.594,
+     "within1_after": 0.625,
+     "sat_calm": {
+      "n": 119,
+      "mae_before": 0.801,
+      "mae_after": 0.591
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 544,
+     "coverage": 1.0,
+     "mae_before": 1.824,
+     "mae_after": 1.646,
+     "bias_before": -0.555,
+     "bias_after": 0.278,
+     "within1_before": 0.415,
+     "within1_after": 0.428,
+     "sat_calm": {
+      "n": 119,
+      "mae_before": 1.17,
+      "mae_after": 1.184
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 308,
+     "coverage": 1.0,
+     "mae_before": 47.39,
+     "mae_after": 27.82,
+     "bias_before": -32.123,
+     "bias_after": -2.872,
+     "within1_before": 0.003,
+     "within1_after": 0.052,
+     "sat_calm": {
+      "n": 34,
+      "mae_before": 64.353,
+      "mae_after": 45.294
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:124": {
+   "name": "Равда",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|dry": {
+       "median": 0.22,
+       "n": 441
+      },
+      "day|calm|dry": {
+       "median": 0.02,
+       "n": 190
+      },
+      "night|calm|sat": {
+       "median": 0.06,
+       "n": 95
+      },
+      "night|windy|dry": {
+       "median": -0.2,
+       "n": 327
+      },
+      "night|calm|dry": {
+       "median": 0.09,
+       "n": 343
+      },
+      "night|windy|sat": {
+       "median": -0.045,
+       "n": 38
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.03,
+       "n": 1316
+      },
+      "sat": {
+       "median": 0.13,
+       "n": 181
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.05,
+       "n": 1497
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|dry": {
+       "median": -0.54,
+       "n": 441
+      },
+      "day|calm|dry": {
+       "median": -0.46,
+       "n": 190
+      },
+      "night|calm|sat": {
+       "median": -0.17,
+       "n": 95
+      },
+      "night|windy|dry": {
+       "median": -0.27,
+       "n": 327
+      },
+      "night|calm|dry": {
+       "median": 0.18,
+       "n": 343
+      },
+      "night|windy|sat": {
+       "median": -0.895,
+       "n": 38
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.295,
+       "n": 1316
+      },
+      "sat": {
+       "median": -0.44,
+       "n": 181
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.31,
+       "n": 1497
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 0.82,
+       "n": 441
+      },
+      "day|calm|dry": {
+       "median": 0.38,
+       "n": 190
+      },
+      "night|calm|sat": {
+       "median": 0.32,
+       "n": 95
+      },
+      "night|windy|dry": {
+       "median": 0.03,
+       "n": 327
+      },
+      "night|calm|dry": {
+       "median": -0.1,
+       "n": 343
+      },
+      "night|windy|sat": {
+       "median": 0.935,
+       "n": 38
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.26,
+       "n": 1316
+      },
+      "sat": {
+       "median": 0.57,
+       "n": 181
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.31,
+       "n": 1497
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|dry": {
+       "median": -3.5,
+       "n": 441
+      },
+      "day|calm|dry": {
+       "median": -0.3,
+       "n": 190
+      },
+      "night|calm|sat": {
+       "median": -0.4,
+       "n": 95
+      },
+      "night|windy|dry": {
+       "median": -3.6,
+       "n": 327
+      },
+      "night|calm|dry": {
+       "median": -0.8,
+       "n": 343
+      },
+      "night|windy|sat": {
+       "median": -4.15,
+       "n": 38
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -2.0,
+       "n": 1301
+      },
+      "sat": {
+       "median": -1.0,
+       "n": 180
+      }
+     },
+     "station": {
+      "all": {
+       "median": -1.9,
+       "n": 1481
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 12.0,
+       "n": 441
+      },
+      "day|calm|dry": {
+       "median": 23.0,
+       "n": 95
+      },
+      "night|windy|dry": {
+       "median": 14.0,
+       "n": 327
+      },
+      "night|calm|dry": {
+       "median": 14.0,
+       "n": 175
+      },
+      "night|calm|sat": {
+       "median": 17.5,
+       "n": 34
+      },
+      "night|windy|sat": {
+       "median": 6.0,
+       "n": 38
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 13.5,
+       "n": 1038
+      },
+      "sat": {
+       "median": 15.0,
+       "n": 108
+      }
+     },
+     "station": {
+      "all": {
+       "median": 14.0,
+       "n": 1146
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.775,
+     "mae_after": 0.788,
+     "bias_before": -0.063,
+     "bias_after": -0.095,
+     "within1_before": 0.704,
+     "within1_after": 0.704,
+     "sat_calm": {
+      "n": 0,
+      "mae_before": null,
+      "mae_after": null
+     },
+     "accepted": false
+    },
+    "td": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.842,
+     "mae_after": 0.798,
+     "bias_before": -0.11,
+     "bias_after": 0.141,
+     "within1_before": 0.669,
+     "within1_after": 0.708,
+     "sat_calm": {
+      "n": 0,
+      "mae_before": null,
+      "mae_after": null
+     },
+     "accepted": true
+    },
+    "dd": {
+     "n": 571,
+     "coverage": 1.0,
+     "mae_before": 0.929,
+     "mae_after": 0.913,
+     "bias_before": 0.047,
+     "bias_after": -0.231,
+     "within1_before": 0.644,
+     "within1_after": 0.669,
+     "sat_calm": {
+      "n": 0,
+      "mae_before": null,
+      "mae_after": null
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 566,
+     "coverage": 1.0,
+     "mae_before": 3.073,
+     "mae_after": 1.925,
+     "bias_before": -2.283,
+     "bias_after": 0.192,
+     "within1_before": 0.196,
+     "within1_after": 0.33,
+     "sat_calm": {
+      "n": 0,
+      "mae_before": null,
+      "mae_after": null
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 440,
+     "coverage": 1.0,
+     "mae_before": 21.266,
+     "mae_after": 18.007,
+     "bias_before": 13.493,
+     "bias_after": -0.189,
+     "within1_before": 0.016,
+     "within1_after": 0.023,
+     "sat_calm": {
+      "n": 0,
+      "mae_before": null,
+      "mae_after": null
+     },
+     "accepted": true
+    }
+   }
+  },
+  "NTU:131": {
+   "name": "село Добрич",
+   "cells": {
+    "t": {
+     "full": {
+      "day|windy|dry": {
+       "median": 0.005,
+       "n": 244
+      },
+      "day|windy|sat": {
+       "median": 0.43,
+       "n": 39
+      },
+      "day|calm|sat": {
+       "median": 1.0,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": -0.01,
+       "n": 285
+      },
+      "night|calm|sat": {
+       "median": 0.95,
+       "n": 199
+      },
+      "night|calm|dry": {
+       "median": 0.605,
+       "n": 362
+      },
+      "night|windy|dry": {
+       "median": -0.13,
+       "n": 141
+      },
+      "night|windy|sat": {
+       "median": 0.435,
+       "n": 52
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.15,
+       "n": 1079
+      },
+      "sat": {
+       "median": 0.85,
+       "n": 417
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.335,
+       "n": 1496
+      }
+     }
+    },
+    "td": {
+     "full": {
+      "day|windy|dry": {
+       "median": -1.06,
+       "n": 244
+      },
+      "day|windy|sat": {
+       "median": -0.35,
+       "n": 39
+      },
+      "day|calm|sat": {
+       "median": 0.27,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": -0.82,
+       "n": 285
+      },
+      "night|calm|sat": {
+       "median": 0.37,
+       "n": 199
+      },
+      "night|calm|dry": {
+       "median": 0.46,
+       "n": 362
+      },
+      "night|windy|dry": {
+       "median": -0.44,
+       "n": 141
+      },
+      "night|windy|sat": {
+       "median": -0.165,
+       "n": 52
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": -0.38,
+       "n": 1079
+      },
+      "sat": {
+       "median": 0.17,
+       "n": 417
+      }
+     },
+     "station": {
+      "all": {
+       "median": -0.195,
+       "n": 1496
+      }
+     }
+    },
+    "dd": {
+     "full": {
+      "day|windy|dry": {
+       "median": 1.09,
+       "n": 244
+      },
+      "day|windy|sat": {
+       "median": 0.97,
+       "n": 39
+      },
+      "day|calm|sat": {
+       "median": 0.7,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": 0.61,
+       "n": 285
+      },
+      "night|calm|sat": {
+       "median": 0.4,
+       "n": 199
+      },
+      "night|calm|dry": {
+       "median": 0.175,
+       "n": 362
+      },
+      "night|windy|dry": {
+       "median": 0.21,
+       "n": 141
+      },
+      "night|windy|sat": {
+       "median": 0.66,
+       "n": 52
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.42,
+       "n": 1079
+      },
+      "sat": {
+       "median": 0.58,
+       "n": 417
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.47,
+       "n": 1496
+      }
+     }
+    },
+    "ws": {
+     "full": {
+      "day|windy|dry": {
+       "median": -0.5,
+       "n": 244
+      },
+      "day|windy|sat": {
+       "median": 0.0,
+       "n": 39
+      },
+      "day|calm|sat": {
+       "median": 0.5,
+       "n": 89
+      },
+      "day|calm|dry": {
+       "median": 1.0,
+       "n": 285
+      },
+      "night|calm|sat": {
+       "median": 0.4,
+       "n": 199
+      },
+      "night|calm|dry": {
+       "median": 0.7,
+       "n": 362
+      },
+      "night|windy|dry": {
+       "median": -1.3,
+       "n": 141
+      },
+      "night|windy|sat": {
+       "median": -1.15,
+       "n": 52
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 0.3,
+       "n": 1032
+      },
+      "sat": {
+       "median": 0.3,
+       "n": 379
+      }
+     },
+     "station": {
+      "all": {
+       "median": 0.3,
+       "n": 1411
+      }
+     }
+    },
+    "wd": {
+     "full": {
+      "day|windy|dry": {
+       "median": -2.0,
+       "n": 244
+      },
+      "day|windy|sat": {
+       "median": -2.0,
+       "n": 39
+      },
+      "night|windy|dry": {
+       "median": 2.0,
+       "n": 141
+      },
+      "night|calm|dry": {
+       "median": 2.0,
+       "n": 103
+      },
+      "night|windy|sat": {
+       "median": -3.5,
+       "n": 52
+      },
+      "night|calm|sat": {
+       "median": 11.0,
+       "n": 38
+      },
+      "day|calm|dry": {
+       "median": 3.5,
+       "n": 132
+      }
+     },
+     "sat": {
+      "dry": {
+       "median": 1.0,
+       "n": 620
+      },
+      "sat": {
+       "median": 0.0,
+       "n": 157
+      }
+     },
+     "station": {
+      "all": {
+       "median": 1.0,
+       "n": 777
+      }
+     }
+    }
+   },
+   "test": {
+    "t": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.976,
+     "mae_after": 0.962,
+     "bias_before": 0.209,
+     "bias_after": -0.132,
+     "within1_before": 0.63,
+     "within1_after": 0.593,
+     "sat_calm": {
+      "n": 56,
+      "mae_before": 1.182,
+      "mae_after": 0.862
+     },
+     "accepted": true
+    },
+    "td": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.978,
+     "mae_after": 0.983,
+     "bias_before": -0.114,
+     "bias_after": 0.056,
+     "within1_before": 0.621,
+     "within1_after": 0.609,
+     "sat_calm": {
+      "n": 56,
+      "mae_before": 0.999,
+      "mae_after": 1.001
+     },
+     "accepted": false
+    },
+    "dd": {
+     "n": 570,
+     "coverage": 1.0,
+     "mae_before": 0.869,
+     "mae_after": 0.855,
+     "bias_before": 0.324,
+     "bias_after": -0.138,
+     "within1_before": 0.7,
+     "within1_after": 0.679,
+     "sat_calm": {
+      "n": 56,
+      "mae_before": 0.702,
+      "mae_after": 0.437
+     },
+     "accepted": true
+    },
+    "ws": {
+     "n": 529,
+     "coverage": 1.0,
+     "mae_before": 2.001,
+     "mae_after": 1.947,
+     "bias_before": 0.902,
+     "bias_after": 0.647,
+     "within1_before": 0.389,
+     "within1_after": 0.389,
+     "sat_calm": {
+      "n": 56,
+      "mae_before": 2.198,
+      "mae_after": 2.046
+     },
+     "accepted": true
+    },
+    "wd": {
+     "n": 268,
+     "coverage": 1.0,
+     "mae_before": 23.138,
+     "mae_after": 23.345,
+     "bias_before": -4.28,
+     "bias_after": -5.132,
+     "within1_before": 0.007,
+     "within1_after": 0.015,
+     "sat_calm": {
+      "n": 12,
+      "mae_before": 18.583,
+      "mae_after": 21.333
+     },
+     "accepted": false
+    }
+   }
+  }
+ }
+}
