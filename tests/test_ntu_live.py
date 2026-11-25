@@ -192,5 +192,55 @@ class GuardTests(unittest.TestCase):
         self.assertNotIn("rh_constant", by["NTU:2"]["qc"]["flags"])   # only 3 h of history, needs 6 h
 
 
+class LiveArchiveTests(unittest.TestCase):
+    def setUp(self):
+        d = tempfile.mkdtemp()
+        self.site, self.fb, self.live = (os.path.join(d, x) for x in ("site", "fb", "live"))
+        self.static = os.path.join(d, "st.json")
+        with open(self.static, "w", encoding="utf-8") as f:
+            json.dump({"stations": {}}, f)
+        self._min = ntu_live.MIN_STATIONS
+        ntu_live.MIN_STATIONS = 1
+
+    def tearDown(self):
+        ntu_live.MIN_STATIONS = self._min
+
+    def rows(self, name):
+        import csv, gzip
+        with gzip.open(os.path.join(self.live, name), "rt", encoding="utf-8") as f:
+            return list(csv.reader(f))
+
+    def test_appends_only_new_records_and_splits_by_month(self):
+        fb = {"1": fb_entry(1), "2": fb_entry(2)}
+        st = ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher([rec(1, 5), rec(2, 50)], fb),
+                          now=NOW, live_dir=self.live)
+        self.assertEqual(st["live_archived"], 2)
+        rows = self.rows("ntu_live_2026-11.csv.gz")
+        self.assertEqual(rows[0], ["time", "id", "t", "rh", "td", "t_surface", "pressure_hpa", "wind_kt",
+                                   "wind_dir", "flags"])
+        self.assertEqual(rows[1][1], "NTU:2")                    # sorted by time
+        self.assertNotIn("late", rows[1][9])                     # publication flag is not archived
+        self.assertEqual(rows[2][7], "10.0")                     # kt
+        # 15 min later: station 1 has a new record, station 2 repeats the old one
+        later = NOW + timedelta(minutes=15)
+        data = [rec(1, -10), rec(2, 50)]
+        st = ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(data, fb), now=later, live_dir=self.live)
+        self.assertEqual(st["live_archived"], 1)
+        self.assertEqual(len(self.rows("ntu_live_2026-11.csv.gz")), 4)
+        # a record from the next month goes to its own file
+        nxt = datetime(2026, 12, 1, 0, 5, tzinfo=UTC)
+        data = [dict(rec(1, 0), time="2026-12-01 00:00:00")]
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(data, fb), now=nxt, live_dir=self.live)
+        self.assertEqual(len(self.rows("ntu_live_2026-12.csv.gz")), 2)
+
+    def test_archive_failure_does_not_stop_publishing(self):
+        blocker = os.path.join(os.path.dirname(self.live), "blocker")
+        open(blocker, "w").close()                               # a file where a directory is expected
+        st = ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher([rec(1, 5)], {"1": fb_entry(1)}),
+                          now=NOW, live_dir=os.path.join(blocker, "live"))
+        self.assertIsNone(st["live_archived"])
+        self.assertTrue(os.path.exists(os.path.join(self.site, "obs", "ntu_latest.json")))
+
+
 if __name__ == "__main__":
     unittest.main()
