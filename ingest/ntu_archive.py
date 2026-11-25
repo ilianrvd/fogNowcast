@@ -118,7 +118,7 @@ def import_archive(zip_path: str, out_dir: str) -> dict:
                     last_meta[sid] = (n["time"], n["name"], n["name_en"], n["lat"], n["lon"])
     rows.sort(key=lambda r: (r[0], r[1]))
 
-    stats = defaultdict(lambda: {"n": 0, "flags": Counter(), "repeat": 0, "sat": 0})
+    stats = defaultdict(lambda: {"n": 0, "flags": Counter(), "repeat": 0, "sat": 0, "p_sum": 0.0, "p_n": 0})
     prev = {}
     by_month = defaultdict(list)
     for r in rows:
@@ -142,6 +142,9 @@ def import_archive(zip_path: str, out_dir: str) -> dict:
                 prev[sid] = vals
                 if rh is not None and rh >= RH_SATURATED:
                     s["sat"] += 1
+                if p is not None:
+                    s["p_sum"] += p
+                    s["p_n"] += 1
                 if "first" not in s:
                     s["first"] = epoch_min
                 s["last_epoch"] = epoch_min
@@ -171,6 +174,7 @@ def import_archive(zip_path: str, out_dir: str) -> dict:
             "repeat_share": round(s["repeat"] / n, 4),
             "frozen_suspect": s["repeat"] / n > 0.1,
             "rh_saturated_share": round(s["sat"] / n, 4),
+            "pressure_mean_hpa": round(s["p_sum"] / s["p_n"], 1) if s["p_n"] else None,
             "dropped_stale": per_station[sid]["dropped_stale"],
         }
     ghosts = sorted(f"NTU:{sid}" for sid in per_station if sid not in stats)
