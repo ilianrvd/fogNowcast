@@ -27,13 +27,21 @@ jobs:
           mkdir -p site fb
           for pair in "gh-pages:site" "archive-fallback:fb"; do
             br="${pair%%:*}"; dir="${pair##*:}"
-            if git ls-remote --exit-code --heads origin "$br" >/dev/null 2>&1; then
+            # exit code 2 = branch does not exist (first run); any other failure stops the run, so that a
+            # network error is never mistaken for an empty branch (which would also lose the request time)
+            rc=0; git ls-remote --exit-code --heads origin "$br" >/dev/null 2>&1 || rc=$?
+            if [ "$rc" = 0 ]; then
               rm -rf "$dir"
               git clone -q --depth 1 --branch "$br" "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$dir"
+            elif [ "$rc" != 2 ]; then
+              echo "git ls-remote failed ($rc) for $br"; exit 1
             fi
           done
       - run: python -m ingest.ntu_live --site site --fallback-archive fb
       - name: Publish
+        # also after a failed ingest, so that the time of the request attempt (ntu_fetch_state.json) is kept;
+        # the data files are unchanged in that case
+        if: ${{ always() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: tools/publish_live.sh
