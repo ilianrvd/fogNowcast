@@ -50,9 +50,10 @@ web/       картата
 
 | Източник | Кой го тегли |
 |---|---|
-| Станции на НТУ, METAR, SYNOP, сателит | **fogNowcast** (този проект) |
+| Станции на НТУ | **fogNowcast** (този проект) |
 | Модели на мрежа (ICON-EU, IFS, GFS) | MultiConvect, оттук се четат от Pages |
-| Радар, мълнии | nowcasting-public |
+| Радар, мълнии, METAR, сателит, общ списък на точките | nowcasting-public |
+| SYNOP | още не е решено |
 
 Договореностите за всички проекти са в [`docs/README.md`](docs/README.md).
 
@@ -62,7 +63,7 @@ web/       картата
   Потокът в реално време се тегли най-много веднъж на 15 мин, само от GitHub Actions.
   Системата трябва да работи и без него.
 - **OpenStreetMap**, геометрия на пътищата. © OpenStreetMap contributors, лиценз ODbL.
-- METAR и SYNOP (OGIMET), MTG FCI (EUMETSAT): подробностите ще бъдат в `docs/` с вноса им.
+- METAR (AWC), SYNOP (Ogimet), сателит (EUMETSAT): теглят се от другите проекти, а подробностите са в `docs/`.
 
 ## Лиценз
 

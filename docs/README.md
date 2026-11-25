@@ -5,16 +5,20 @@
 Подготвяме бъдещо обединяване в обща nowcasting система на слоеве: **данни → ядро → продукти → представяне**.
 
 - **Всеки източник се тегли веднъж**, от един проект, и се публикува като файл в Pages с описан формат:
-  - модели на мрежа → MultiConvect;
-  - радар и мълнии → nowcasting-public;
-  - станции на НТУ, METAR, SYNOP и сателит → fogNowcast.
+  - модели на мрежа (ICON-EU, GFS, IFS) → MultiConvect;
+  - радар, мълнии, METAR, сателит и общият списък на точките → nowcasting-public;
+  - станции на НТУ → fogNowcast;
+  - SYNOP → още не е решено.
+
+  Решението е от 2026-11-25. Докато другите проекти не публикуват новите файлове, fogNowcast работи със заместител (виж `docs/` на съответния формат).
 - Никой проект не тегли източник, който друг вече публикува.
 - Всички времена са в **UTC, ISO 8601** с `Z` (`2026-11-25T06:00:00Z`).
 - Всеки публикуван файл има полетата:
   - `generated_at`: кога е създаден файлът;
   - `source`: откъде са данните;
   - `run`: моделният рън, когато има такъв (за смесени входове е обект с по един рън на модел).
-- Общ списък на точките с единни идентификатори: [`points.md`](points.md).
+- Общ списък на точките с единни идентификатори: [`points.md`](points.md). Живее в nowcasting-public.
+- GitHub Pages връща `Cache-Control: max-age=600` и това не се променя. Консуматорите не разчитат на свежест под 10 минути.
 - Всеки публикуван формат е описан тук, в същия PR, в който се появява.
 
 ## Единици
@@ -40,10 +44,10 @@
 
 | Файл в Pages | Описание | Етап | Състояние |
 |---|---|---|---|
-| `static/points.json` | [points.md](points.md) | 0 | чернова |
+| `static/points.json` (публикува nowcasting-public) | [points.md](points.md) | 0 | чернова |
 | `obs/ntu_latest.json` | [obs_ntu.md](obs_ntu.md) | 1 | чернова |
-| `obs/metar_latest.json`, `obs/synop_latest.json` | [obs_metar_synop.md](obs_metar_synop.md) | 1 | чернова |
-| `obs/sat_fog_mask.json` | [obs_sat_fog_mask.md](obs_sat_fog_mask.md) | 1–2 | чернова |
+| `obs/metar_latest.json`, `obs/synop_latest.json` (METAR: nowcasting-public; SYNOP: не е решено) | [obs_metar_synop.md](obs_metar_synop.md) | 1 | чернова |
+| `obs/sat_fog_mask.json` (публикува nowcasting-public) | [obs_sat_fog_mask.md](obs_sat_fog_mask.md) | 1–2 | чернова |
 | `fog_fields_<model>.npz` (вход от MultiConvect) | [input_multiconvect.md](input_multiconvect.md) | 1 | чернова, за съгласуване |
 | `fog_map.npz` и `fog_map_meta.json` | [fog_map.md](fog_map.md) | 2 | чернова |
 | `roads_latest.json`, `static/roads_segments.geojson` | [roads.md](roads.md) | 3 | чернова |

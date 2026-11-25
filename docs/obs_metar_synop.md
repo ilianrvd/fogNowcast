@@ -1,6 +1,6 @@
 # METAR и SYNOP: `obs/metar_latest.json`, `obs/synop_latest.json`
 
-> Чернова (етап 1). METAR: Aviation Weather Center (AWC), както в airport-nowcast. SYNOP: Ogimet. Честотата и собственикът на изтеглянето се уточняват с вноса.
+> Чернова (етап 1). METAR: Aviation Weather Center (AWC). Публикува го **nowcasting-public** (решение от 2026-11-25), fogNowcast го чете от Pages. Форматът се описва в nowcasting-public; тук е очакваното. SYNOP: Ogimet. Честотата и собственикът на изтеглянето се уточняват с вноса.
 
 Обща структура:
 
