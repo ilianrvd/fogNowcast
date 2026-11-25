@@ -1,0 +1,63 @@
+{
+ "generated_at": "2026-11-25T17:06:43Z",
+ "source": "bgtoll.bg/otvoreni-danni (Национално тол управление), CC BY 4.0",
+ "license": "CC BY 4.0",
+ "attribution": "Данни: Национално тол управление (bgtoll.bg), CC BY 4.0. Обработка: fogNowcast.",
+ "range": [
+  "2026-01-27T08:08:00Z",
+  "2026-11-24T21:45:00Z"
+ ],
+ "counts": {
+  "snapshots": 28787,
+  "records_seen": 3061693,
+  "dropped_stale": 16118,
+  "dropped_duplicate": 14846
+ },
+ "rows_written": {
+  "2026-01": 49566,
+  "2026-02": 293926,
+  "2026-03": 312222,
+  "2026-04": 300019,
+  "2026-05": 315635,
+  "2026-06": 313335,
+  "2026-07": 324520,
+  "2026-08": 326220,
+  "2026-09": 294903,
+  "2026-10": 289285,
+  "2026-11": 211098
+ },
+ "bad_files": [
+  "2026/02/meteoData_2026-02-19.zip:stationsData_20260219_2245.json:JSONDecodeError",
+  "2026/02/meteoData_2026-02-20.zip:stationsData_20260220_0515.json:JSONDecodeError"
+ ],
+ "ghost_stations_no_fresh_rows": [
+  "NTU:10",
+  "NTU:115",
+  "NTU:122",
+  "NTU:140",
+  "NTU:142",
+  "NTU:24",
+  "NTU:4",
+  "NTU:50",
+  "NTU:60",
+  "NTU:79",
+  "NTU:80"
+ ],
+ "columns": [
+  "time",
+  "id",
+  "t",
+  "rh",
+  "td",
+  "t_surface",
+  "pressure_hpa",
+  "wind_kt",
+  "wind_dir",
+  "flags"
+ ],
+ "rules": {
+  "max_fresh_lag_min": 20,
+  "max_future_min": 20,
+  "time": "record time field (UTC)"
+ }
+}
