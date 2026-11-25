@@ -8,7 +8,7 @@
   - модели на мрежа (ICON-EU, GFS, IFS) → MultiConvect;
   - радар, мълнии, METAR, сателит и общият списък на точките → nowcasting-public;
   - станции на НТУ → fogNowcast;
-  - SYNOP → още не е решено.
+  - SYNOP → nowcasting-public (заедно с METAR).
 
   Решението е от 2026-11-25. Докато другите проекти не публикуват новите файлове, fogNowcast работи със заместител (виж `docs/` на съответния формат).
 - Никой проект не тегли източник, който друг вече публикува.
@@ -49,7 +49,7 @@
 | `obs/ntu_latest.json`, `obs/ntu_recent.json`, `obs/ntu_fallback_latest.json` | [obs_ntu.md](obs_ntu.md) | 1 | чернова |
 | клон `archive-fallback`: `fallback_ГГГГ-ММ-ДД.csv` | [obs_ntu.md](obs_ntu.md#архив-на-temperaturefallback-клон-archive-fallback) | 1 | чернова |
 | `archive-YYYY-MM`: `ntu_YYYY-MM.csv.gz`, `ntu_stations.json`, `ntu_import_meta.json` | [archive_ntu.md](archive_ntu.md) | 1 | чернова |
-| `obs/metar_latest.json`, `obs/synop_latest.json` (METAR: nowcasting-public; SYNOP: не е решено) | [obs_metar_synop.md](obs_metar_synop.md) | 1 | чернова |
+| `obs/metar_latest.json`, `obs/synop_latest.json` (и двата: nowcasting-public) | [obs_metar_synop.md](obs_metar_synop.md) | 1 | чернова |
 | `obs/sat_fog_mask.json` (публикува nowcasting-public) | [obs_sat_fog_mask.md](obs_sat_fog_mask.md) | 1–2 | чернова |
 | клон `analysis-correction`: `correction_by_station.json`, `correction_report.md` | [correction_model.md](correction_model.md#изход) | 1 | чернова |
 | клон `analysis-metar`: `calibration_metar.json`, `calibration_report.md`, `metar_<ICAO>.csv.gz` | [obs_metar_synop.md](obs_metar_synop.md#исторически-metar-от-iem-и-калибриране-на-флага-за-мъгла-етап-1) | 1 | чернова |
