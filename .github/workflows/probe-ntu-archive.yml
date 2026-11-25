@@ -1,0 +1,22 @@
+name: probe-ntu-archive
+# Manual one-off probe of the NTU Dropbox archive: one page fetch and one daily zip. No schedule.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-ntu-archive
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python tools/probe_ntu_archive.py

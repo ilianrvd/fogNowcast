@@ -2,13 +2,13 @@
 
 > Чернова (етап 1).
 >
-> Проверено на 2026-11-25 с една заявка от GitHub Actions: HTTP 200, 96 записа, JSON без BOM проблеми с `utf-8-sig`, обновяване на 10 мин, `time` е в UTC (в 09:33Z последният запис е „09:30:00"). Отговорът е зад Cloudflare с `Cache-Control: no-store`. Координатите са с 6 знака след запетаята. Ключове: `station_id`, `scp`, `name`, `nameENG`, `lat`, `lon`, `air`, `surface`, `humidity`, `pressure`, `wind`, `wind_dir`, `time`. Заявките са с идентифициращ User-Agent.
+> Проверено на 2026-11-25 с една заявка от GitHub Actions: HTTP 200, 96 записа, JSON с BOM (чете се с `utf-8-sig`), `time` е в UTC (в 09:33Z последният запис е „09:30:00"). Честотата на обновяване не е измерена от една заявка; архивът е на 15 мин. Отговорът е зад Cloudflare с `Cache-Control: no-store`. Координатите са с 6 знака след запетаята. Ключове: `station_id`, `scp`, `name`, `nameENG`, `lat`, `lon`, `air`, `surface`, `humidity`, `pressure`, `wind`, `wind_dir`, `time`. Заявките са с идентифициращ User-Agent.
 
 ## Източник
 
 - Реално време: `https://bgtoll.bg/index.php/mto/data`. Тегли се най-много веднъж на 15 мин, само от GitHub Actions. Файлът започва с BOM и се чете с `utf-8-sig`.
 - Контрол на температурата: `https://bgtoll.bg/index.php/mto/temperaturefallback`.
-- Архив: дневни zip файлове `meteoData_YYYY-MM-DD.zip` в [bgtoll.bg/otvoreni-danni](https://bgtoll.bg/otvoreni-danni). **Имената на файловете вътре са в местно време, а полето `time` е в UTC.**
+- Архив: [bgtoll.bg/otvoreni-danni](https://bgtoll.bg/otvoreni-danni) (папка в Dropbox). Започва от 2026-01-27, JSON, измервания на 15 мин в UTC. Лиценз **CC BY 4.0**: при публикуване на данни или производни се посочва източникът (Национално тол управление). Дневните zip файлове са `meteoData_YYYY-MM-DD.zip`. **Имената на файловете вътре са в местно време, а полето `time` е в UTC.**
 
 ## Структура
 
