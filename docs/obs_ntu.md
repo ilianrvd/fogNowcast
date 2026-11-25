@@ -45,7 +45,7 @@
 }
 ```
 
-- Най-новият запис за станция. Записи по-стари от 6 ч (мъртви или „призрачни" станции) се пропускат и се броят в `omitted_records`.
+- Най-новият запис за станция. Типичната възраст е 5–30 мин: НТУ публикува записите на :00, :15, :30, :45 и част от станциите закъсняват. Записи по-стари от 6 ч (мъртви или „призрачни" станции) се пропускат и се броят в `omitted_records`.
 - Полетата и правилата са както в архива ([archive_ntu.md](archive_ntu.md)): нула е липсваща стойност, вятърът е в kt, `td` е по Magnus. `elev_m` е от `static/ntu_stations.json`.
 - Допълнителни флагове в `qc.flags`: `late` (записът е по-стар от 30 мин) и `model_fallback` (НТУ ползва модел вместо измерване; тогава `qc.excluded` е `true` и станцията не влиза в корекцията на модела).
 - `ntu_status` и `ntu_model_t` са от `/temperaturefallback` (виж по-долу). Празни, ако той не е наличен.
@@ -62,7 +62,7 @@
 
 ### `obs/ntu_fallback_latest.json`
 
-Копие на състоянието на `/temperaturefallback`, обновявано най-много веднъж на ~55 мин. Източникът вероятно се обновява на час: в пробата `updated_at` е 19:00:01 местно време.
+Копие на състоянието на `/temperaturefallback`, обновява се на всяко изпълнение (на 15 мин). Източникът се обновява на 15 мин: `updated_at` е :00:01, :15:01 и т.н. Повторно изпълнение в рамките на 10 мин не пита отново.
 
 ## `/temperaturefallback` (формат на източника, проверено на 2026-11-25)
 
@@ -82,7 +82,7 @@
 
 ### Архив на `/temperaturefallback`: клон `archive-fallback`
 
-Файлове `fallback_ГГГГ-ММ-ДД.csv`, по един ред на станция на всяко часово обновяване (колони: `updated_at,id,scp,status,source,use_model,fallback_active,fallback_reason,station_temp,model_temp,difference,hits5,seriousHits,consecutive5,consecutive10,consecutiveOk`). Времето е UTC. Данни: Национално тол управление, CC BY 4.0.
+Файлове `fallback_ГГГГ-ММ-ДД.csv`, по един ред на станция на всяко обновяване на източника (~на 15 мин, около 7 KB на състояние) (колони: `updated_at,id,scp,status,source,use_model,fallback_active,fallback_reason,station_temp,model_temp,difference,hits5,seriousHits,consecutive5,consecutive10,consecutiveOk`). Времето е UTC. Данни: Национално тол управление, CC BY 4.0.
 
 ## QC флагове
 
