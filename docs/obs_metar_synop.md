@@ -13,7 +13,7 @@
       "id": "LBSF",
       "time": "2026-11-25T06:00:00Z",
       "t": -0.5, "td": -0.8,
-      "wind_ms": 1.0, "wind_dir": null,
+      "wind_kt": 2, "wind_dir": null,
       "vis_m": 300, "rvr_m": null,
       "wx": ["FG"],
       "cloud_base_ft": 0, "vv_ft": 100,

@@ -10,7 +10,7 @@ fog_map.npz
   p_fog      (nt, ny, nx)    uint8, %, 255 = няма данни
   t2m        (nt, ny, nx)    int16, scale 0.01 (коригирана)
   td2m       (nt, ny, nx)    int16, scale 0.01 (коригирана)
-  wind_ms    (nt, ny, nx)    int16, scale 0.01 (коригиран)
+  wind_kt    (nt, ny, nx)    int16, scale 0.01 (коригиран)
   corr_weight(nt, ny, nx)    uint8, %: колко от корекцията е останала (0 = само модел)
 ```
 

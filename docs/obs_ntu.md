@@ -22,7 +22,7 @@
       "lat": 44.05, "lon": 22.80, "elev_m": null,
       "time": "2026-11-25T06:00:00Z",
       "t": 1.2, "td": 1.0, "rh": 99, "t_surface": 0.4,
-      "wind_ms": 0.8, "wind_dir": 250, "pressure_hpa": 1012.3,
+      "wind_kt": 1.6, "wind_dir": 250, "pressure_hpa": 1012.3,
       "qc": {"excluded": false, "flags": []}
     }
   ]
@@ -41,7 +41,7 @@
 | `td` | — | смята се от `t` и `rh` (Magnus, коефициенти на Alduchov–Eskridge) |
 | `rh` | `humidity` | % |
 | `t_surface` | `surface` | °C, настилка |
-| `wind_ms` | `wind` | Източникът вероятно е в km/h, **да се провери** преди превръщането в m/s. |
+| `wind_kt` | `wind` | Източникът вероятно е в km/h (тогава kt = km/h ÷ 1.852), **да се провери**. |
 | `wind_dir` | `wind_dir` | ° |
 | `pressure_hpa` | `pressure` | на нивото на станцията |
 
