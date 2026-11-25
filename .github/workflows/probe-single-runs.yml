@@ -1,0 +1,18 @@
+name: probe-single-runs
+# Manual one-off probe: ten requests to the Open-Meteo Single Runs API (ICON-EU). No schedule.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python tools/probe_single_runs.py
