@@ -1,0 +1,41 @@
+name: import-ntu-archive
+# Manual import of the NTU open-data archive. Downloads ~230 MB from Dropbox once.
+# publish=false (default): dry run, only the log summary and a workflow artifact.
+# publish=true: also pushes one branch archive-YYYY-MM per month.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish archive-YYYY-MM branches"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: import-ntu-archive
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m unittest tests.test_ntu_archive
+      - run: python -m ingest.ntu_archive --download --out "${{ runner.temp }}/ntu_out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ntu-archive
+          path: ${{ runner.temp }}/ntu_out
+          retention-days: 14
+      - if: ${{ inputs.publish }}
+        run: tools/publish_archive.sh "${{ runner.temp }}/ntu_out"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
