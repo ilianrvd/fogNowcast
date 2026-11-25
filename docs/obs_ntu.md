@@ -45,7 +45,7 @@
 | `id` | `station_id` | `NTU:` + `station_id` |
 | `name` | `name` | |
 | `lat`, `lon` | `lat`, `lon` | |
-| `elev_m` | — | от DEM, в източника няма |
+| `elev_m` | — | от DEM (Open-Meteo Elevation API, Copernicus DEM 90 m), проверена със средното налягане; в източника няма. Виж [archive_ntu.md](archive_ntu.md). |
 | `time` | `time` | UTC, преобразувано в ISO 8601 |
 | `t` | `air` | °C |
 | `td` | — | смята се от `t` и `rh` (Magnus, коефициенти на Alduchov–Eskridge) |

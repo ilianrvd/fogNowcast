@@ -1,0 +1,28 @@
+name: elevations-ntu
+# Manual one-off: station elevations from the Open-Meteo Elevation API. Reads ntu_stations.json
+# from the published archive branch (run import-ntu-archive with publish=true first).
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Archive branch that holds ntu_stations.json"
+        default: "archive-2026-11"
+
+permissions:
+  contents: read
+
+jobs:
+  elevations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - run: |
+          git fetch --depth 1 origin "${{ inputs.branch }}"
+          git show FETCH_HEAD:ntu_stations.json > "${{ runner.temp }}/ntu_stations.json"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python tools/fetch_ntu_elevations.py --stations "${{ runner.temp }}/ntu_stations.json" --out "${{ runner.temp }}/ntu_elevations.json"

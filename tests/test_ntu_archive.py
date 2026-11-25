@@ -114,6 +114,7 @@ class ImportTests(unittest.TestCase):
         self.assertTrue(st["NTU:1"]["active"])
         self.assertFalse(st["NTU:3"]["rh_usable"])
         self.assertNotIn("NTU:2", st)
+        self.assertEqual(st["NTU:1"]["pressure_mean_hpa"], 900.0)
 
     def test_time_comes_from_record_not_file_name(self):
         # file name 00:00 local on 2026-11-24 == 22:00Z on 11-23; record time is that UTC time
@@ -122,6 +123,13 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(res["meta"]["rows_written"], {"2026-11": 1})
         with gzip.open(os.path.join(out, "ntu_2026-11.csv.gz"), "rt", encoding="utf-8") as f:
             self.assertIn("2026-11-23T22:00:00Z", f.read())
+
+
+class ElevationTests(unittest.TestCase):
+    def test_isa_elevation(self):
+        from tools.fetch_ntu_elevations import isa_elevation
+        self.assertAlmostEqual(isa_elevation(1016.0), 0.0, places=3)
+        self.assertAlmostEqual(isa_elevation(900.0), 1000, delta=60)   # ~ 1.0 km
 
 
 if __name__ == "__main__":
