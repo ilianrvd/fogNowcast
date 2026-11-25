@@ -4,7 +4,7 @@ GitHub Actions не пуска редовно собствения си `schedul
 
 ## `ingest-ntu-live` (на 15 мин)
 
-Правило на НТУ: най-много една заявка към `/mto/data` на 15 мин. Всяко изпълнение прави точно една.
+Правило на НТУ: най-много една заявка към `/mto/data` на 15 мин. Всяко изпълнение прави точно една заявка към `/mto/data` (и една към `/temperaturefallback`, който се обновява също на 15 мин).
 
 **Токен.** GitHub → Settings → Developer settings → Fine-grained personal access tokens. Собственик: `ilianrvd`. Достъп само до repo `fogNowcast`. Права: **Actions: Read and write**, друго нищо.
 

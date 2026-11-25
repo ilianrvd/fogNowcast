@@ -7,7 +7,7 @@ Writes (see docs/obs_ntu.md):
     site/obs/ntu_latest.json          latest normalised record per station
     site/obs/ntu_recent.json          rolling 24 h of normalised rows (for persistence of model errors)
     site/obs/ntu_fallback_latest.json NTU's own temperature check (/temperaturefallback), refreshed ~hourly
-    fb/fallback_YYYY-MM-DD.csv        archive of every hourly fallback state (branch archive-fallback)
+    fb/fallback_YYYY-MM-DD.csv        archive of every fallback state, ~every 15 min (branch archive-fallback)
 
 /mto/data is requested once per run. /temperaturefallback is requested only when the stored copy is
 older than FALLBACK_REFRESH_MIN. If a request fails the previous files are left untouched.
@@ -29,7 +29,7 @@ UTC = timezone.utc
 LATE_MIN = 30               # flag `late` when the record is older than this
 OMIT_MIN = 360              # drop records older than this (dead or ghost stations)
 RECENT_HOURS = 24
-FALLBACK_REFRESH_MIN = 55
+FALLBACK_REFRESH_MIN = 10   # the source updates every 15 min (seen at :00:01 and :15:01), so ask on every run
 FALLBACK_COLUMNS = ["updated_at", "id", "scp", "status", "source", "use_model", "fallback_active",
                     "fallback_reason", "station_temp", "model_temp", "difference", "hits5",
                     "seriousHits", "consecutive5", "consecutive10", "consecutiveOk"]
@@ -139,7 +139,7 @@ def compact_fallback(raw, now):
 
 
 def archive_fallback(fb_dir, fallback):
-    """Append one hourly state to fallback_YYYY-MM-DD.csv (day of its updated_at, UTC). Idempotent."""
+    """Append one state to fallback_YYYY-MM-DD.csv (day of its updated_at, UTC). Idempotent."""
     if not fallback.get("updated_at"):
         return False
     day = fallback["updated_at"][:10]

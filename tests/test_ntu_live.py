@@ -67,15 +67,19 @@ class LiveTests(unittest.TestCase):
         self.assertIn("surface_missing", by["NTU:4"]["qc"]["flags"])
         self.assertNotIn("NTU:3", by)
 
-    def test_fallback_requested_about_hourly(self):
+    def test_fallback_requested_every_run_but_not_twice_in_a_row(self):
         f = Fetcher([rec(1, 5)], {"1": fb_entry(1)})
         ntu_live.run(self.site, self.fb, self.static, fetch=f, now=NOW)
         f2 = Fetcher([rec(1, 5)], {"1": fb_entry(1)})
-        ntu_live.run(self.site, self.fb, self.static, fetch=f2, now=NOW + timedelta(minutes=15))
-        self.assertEqual(f2.calls, ["data"])               # fallback copy still fresh
-        f3 = Fetcher([rec(1, 5)], {"1": fb_entry(1, updated_at=1795629601)})
-        ntu_live.run(self.site, self.fb, self.static, fetch=f3, now=NOW + timedelta(minutes=60))
+        ntu_live.run(self.site, self.fb, self.static, fetch=f2, now=NOW + timedelta(minutes=3))
+        self.assertEqual(f2.calls, ["data"])               # a re-run minutes later does not ask again
+        f3 = Fetcher([rec(1, 5)], {"1": fb_entry(1, updated_at=1795626901)})
+        ntu_live.run(self.site, self.fb, self.static, fetch=f3, now=NOW + timedelta(minutes=15))
         self.assertEqual(f3.calls, ["temperaturefallback", "data"])
+        files = os.listdir(self.fb)
+        self.assertEqual(len(files), 1)                    # both states in the same daily file
+        with open(os.path.join(self.fb, files[0]), encoding="utf-8") as fh:
+            self.assertEqual(len(fh.read().splitlines()), 3)
 
     def test_fallback_archive_is_idempotent(self):
         fallback = ntu_live.compact_fallback({"1": fb_entry(1), "2": fb_entry(2)}, NOW)
