@@ -10,6 +10,8 @@
 
 ## Метод
 
+Точките са 26: 5 летища (`static/points.json`) и 21 станции на НТУ (`static/correction_stations.json`), както в MultiConvect. Точка, която я няма в модела, се пропуска.
+
 `коригирано(valid) = модел(valid) + (наблюдение − модел)(t_obs) · exp(−(valid − t_obs) / τ)`
 
 - `τ`: 9 ч за `t` и `td`, 6 ч за вятъра (обучение октомври 2026).
@@ -34,8 +36,10 @@
 - `corr_weight`: средно претеглено остатъчно тегло на `t`, `td` и вятъра в %. 0 = само модел.
 - Липсваща стойност е `null`. Температури и `deficit` в °C, вятър в kt.
 
-## Изпълнение
+## Изпълнение и публикуване
 
-`python -m core.fog_points --model latest_points.json --ntu ntu_latest.json [--metar metar_latest.json] --points static/points.json --out fog_points.json`
+`python -m core.fog_points --model latest_points.json --ntu ntu_latest.json [--metar metar_latest.json] --points static/points.json --stations static/correction_stations.json --out fog_points.json`
 
-Публикуването в Pages и картата са отделни стъпки (следващи PR-и). Засега `latest_points.json` е непотвърден от MultiConvect: форматът е по [archive_points.md](archive_points.md).
+Файлът се прави в същата работа `ingest-ntu-live` (на 15 мин), след изтеглянето от НТУ, и се публикува в Pages като `fog/fog_points.json`. Входовете се теглят от Pages: `latest_points.json` от MultiConvect и `obs/metar_latest.json` от nowcasting-public. Без METAR летищата са само по модела; без `latest_points.json` или при грешка в стъпката файлът остава предишният (по `generated_at` и `inputs` се вижда колко е стар), а изтеглянето от НТУ не се влияе. Файлът се записва цял или никак.
+
+Цената е, че моделът се чете на всеки 15 мин, а се сменя на 6 ч: корекцията следва най-новото наблюдение. Манифестът за портала още не включва този файл (отделно решение).

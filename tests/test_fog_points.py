@@ -60,5 +60,19 @@ class FogPoints(unittest.TestCase):
         d = fp.build(m, ntu, None, POINTS, NOW)["points"][0]["series"][0]["deficit"]
         self.assertLess(d, 1.0)                                # over ice the deficit is below t - td
 
+class Cli(unittest.TestCase):
+    def test_stations_file_is_merged(self):
+        import json, os, tempfile
+        d = tempfile.mkdtemp()
+        w = lambda n, o: json.dump(o, open(os.path.join(d, n), "w"))
+        w("m.json", MODEL); w("n.json", NTU)
+        w("p.json", {"points": [POINTS["points"][1]]}); w("s.json", {"stations": [POINTS["points"][0]]})
+        fp.main(["--model", d + "/m.json", "--ntu", d + "/n.json", "--points", d + "/p.json",
+                 "--stations", d + "/s.json", "--out", d + "/o.json"])
+        ids = [p["id"] for p in json.load(open(d + "/o.json"))["points"]]
+        self.assertEqual(sorted(ids), ["LBSF", "NTU:1"])
+        self.assertFalse(os.path.exists(d + "/o.json.tmp"))
+
+
 if __name__ == "__main__":
     unittest.main()
