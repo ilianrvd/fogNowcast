@@ -119,6 +119,35 @@ def paired(cases, var, m1, m2, tau1=3, tau2=3):
     return out
 
 
+# ---- saturation deficit: over water at t >= 0, over ice at t < 0 ----
+
+def e_water(t):
+    return 6.112 * math.exp(17.62 * t / (243.12 + t))
+
+
+def e_ice(t):
+    return 6.112 * math.exp(22.46 * t / (272.62 + t))
+
+
+def frost_point(td):
+    """Frost point from the dew point (both over water as reported): e_ice(tf) = e_water(td)."""
+    a = math.log(e_water(td) / 6.112)
+    return 272.62 * a / (22.46 - a)
+
+
+def sat_deficit(t, td):
+    """t - dew point at t >= 0 C, t - frost point at t < 0 C. Fog below 0 C forms at saturation over ice,
+    i.e. with rh (over water) below 100 % and t - td above 0 (about 1.25 C at -10 C)."""
+    if t is None or td is None:
+        return None
+    td = min(td, t)
+    return max(0.0, t - (frost_point(td) if t < 0 else td))
+
+
+def temp_class(t):
+    return None if t is None else ("t<0" if t < 0 else "t>=0")
+
+
 # ---- fog probability (airports, against METAR) ----
 
 def fog_features(dd, ws, cl, night):
@@ -150,20 +179,23 @@ def predict(w, x):
     return sigmoid(sum(a * b for a, b in zip(w, x)))
 
 
-def fog_rows(cases, method, tau, lat_lon):
-    """(features, truth, fog_at_t0, lead, day) for airport cases with METAR fog flags."""
+def fog_rows(cases, method, taus, lat_lon):
+    """(features, truth, fog_at_t0, lead, day, temp_class_of_truth) for airport cases with METAR fog flags.
+    The deficit is to saturation over ice below 0 C (sat_deficit), from the forecast t and td."""
     rows = []
     for c in cases:
         if "fog" not in c["oL"] or "fog" not in c["o0"]:
             continue
-        dd = forecast(c, "dd", method, tau)
-        ws = forecast(c, "ws", method, tau)
+        t = forecast(c, "t", method, taus.get("t", 3))
+        td = forecast(c, "td", method, taus.get("td", 3))
+        ws = forecast(c, "ws", method, taus.get("ws", 3))
         lat, lon = lat_lon[c["point"]]
         valid = c["t0"] + timedelta(hours=c["lead"])
-        x = fog_features(dd, ws, c["mL"].get("cl"), sun_elevation_deg(valid, lat, lon) <= 0)
+        x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), sun_elevation_deg(valid, lat, lon) <= 0)
         if x is None:
             continue
-        rows.append((x, 1.0 if c["oL"]["fog"] else 0.0, 1.0 if c["o0"]["fog"] else 0.0, c["lead"], c["t0"].date()))
+        rows.append((x, 1.0 if c["oL"]["fog"] else 0.0, 1.0 if c["o0"]["fog"] else 0.0, c["lead"], c["t0"].date(),
+                     temp_class(c["oL"].get("t"))))
     return rows
 
 
