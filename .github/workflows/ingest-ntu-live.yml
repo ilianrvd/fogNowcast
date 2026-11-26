@@ -51,7 +51,7 @@ jobs:
           curl -fsS --retry 2 --max-time 60 -o model.json https://ilianrvd.github.io/multiconvect/latest_points.json
           metar=""
           if curl -fsS --retry 2 --max-time 60 -o metar.json https://ilianrvd.github.io/nowcasting-public/obs/metar_latest.json; then metar="--metar metar.json"; fi
-          python -m core.fog_points --model model.json --ntu site/obs/ntu_latest.json $metar --out site/fog/fog_points.json
+          python -m core.fog_points --model model.json --ntu site/obs/ntu_latest.json $metar --out site/fog/fog_points.json --manifest site/manifest.json
       - name: Station page
         # the page (web/index.html) is published with the data; on a skipped or failed run it changes nothing
         run: cmp -s web/index.html site/index.html || cp web/index.html site/index.html

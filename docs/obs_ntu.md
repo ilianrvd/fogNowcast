@@ -77,8 +77,8 @@
 {
   "schema": "portal.manifest/1.0", "generated_at": "2026-11-26T05:50:31Z", "source": "fogNowcast",
   "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
-  "description": {"bg": "Наблюдения от пътните станции на НТУ; предстои прогноза за мъгла по точки",
-                  "en": "NTU road weather stations; fog point forecast coming"},
+  "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза по точки (модел + корекция от наблюдението)",
+                  "en": "NTU road weather stations and an uncalibrated point forecast (model + observation correction)"},
   "url": "https://ilianrvd.github.io/fogNowcast/", "repo": "https://github.com/ilianrvd/fogNowcast",
   "status": "experimental", "cadence_min": 15, "run": null,
   "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": false},
@@ -92,9 +92,9 @@
 
 - Пише се в края на всяко **успешно** пускане и влиза в същия deploy като `obs/`. `generated_at` е часът на пускането.
 - При прескочено пускане (защитата от 14 мин) или неуспешно пускане **не се пренаписва**: възрастта в портала расте и цветът минава в жълто и червено, вместо да остане зелен с нов час и стари данни.
-- Продукти: `ntu_latest` (`data_time` = най-новият запис от НТУ, `obs_time_latest`; може да е по-стар от `generated_at`, когато НТУ закъснява), `ntu_recent` (`data_time` = най-новият ред) и `ntu_fallback` (`generated_at` = кога е изтеглен, `data_time` = `updated_at` на НТУ). `ntu_fetch_state.json` е служебен и не е продукт. Архивите са клонове в репото, не са в Pages и не са продукти.
+- Продукти: `ntu_latest` (`data_time` = най-новият запис от НТУ, `obs_time_latest`; може да е по-стар от `generated_at`, когато НТУ закъснява), `ntu_recent` (`data_time` = най-новият ред) и `ntu_fallback` (`generated_at` = кога е изтеглен, `data_time` = `updated_at` на НТУ). `fog_points` (`fog/fog_points.json`, [fog_points.md](fog_points.md); `generated_at` = кога е направен, `data_time` = `t0`, текущият час на прогнозата) се добавя от стъпката за мъглата в същото пускане; ако тя се провали, остава последният запис и възрастта му расте. `ntu_fetch_state.json` е служебен и не е продукт. Архивите са клонове в репото, не са в Pages и не са продукти.
 - `status` е `experimental` от появата на страницата (`index.html`), с `embed`: `{"url": "index.html?embed=1", "min_height_px": 800, "gated": false}`.
-- `consumes` липсва: живият поток не чете нищо от другите проекти (заместителят е от самото НТУ). Ще се добавят `latest_points.json` (MultiConvect) и `obs/metar_latest.json` (nowcasting-public) с живата версия на етап 2.
+- `consumes` липсва: живият поток не чете нищо от другите проекти (заместителят е от самото НТУ). Стъпката за мъглата чете `latest_points.json` (MultiConvect) и `obs/metar_latest.json` (nowcasting-public); те още не са във `consumes`, защото формата на полето е на портала и се съгласува отделно.
 
 ### Страница `index.html`
 
