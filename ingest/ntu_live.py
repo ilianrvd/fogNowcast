@@ -40,6 +40,9 @@ SOURCE = "bgtoll.bg/mto/data (Национално тол управление),
 CADENCE_MIN = 15
 DOCS = "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md"
 SITE = "https://ilianrvd.github.io/fogNowcast/"
+# read by core.fog_points (portal manifest.md, consumes[]); the model file is regenerated every 6 h, METAR every 30 min
+CONSUMES = [{"project": "multiconvect", "path": "latest_points.json", "max_age_min": 480},
+            {"project": "nowcasting-public", "path": "obs/metar_latest.json", "max_age_min": 60}]
 
 
 def with_header(schema, d):
@@ -76,7 +79,8 @@ def build_manifest(now, latest, recent, fallback, previous=None):
                             "en": "NTU road weather stations and an uncalibrated point forecast (model + observation correction)"},
             "url": SITE, "repo": "https://github.com/ilianrvd/fogNowcast", "status": "experimental",
             "cadence_min": CADENCE_MIN, "run": None,
-            "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": False}, "products": products}
+            "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": False}, "products": products,
+            "consumes": CONSUMES}
 UTC = timezone.utc
 LATE_MIN = 30               # flag `late` when the record is older than this
 OMIT_MIN = 360              # drop records older than this (dead or ghost stations)

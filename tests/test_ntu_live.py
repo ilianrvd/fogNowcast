@@ -219,7 +219,8 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(m["schema"], "portal.manifest/1.0")
         self.assertEqual((m["id"], m["status"], m["cadence_min"], m["generated_at"]), ("fognowcast", "experimental", 15, "2026-11-25T17:20:00Z"))
         self.assertEqual(m["embed"], {"url": "index.html?embed=1", "min_height_px": 800, "gated": False})
-        self.assertNotIn("consumes", m)
+        self.assertEqual([(c["project"], c["path"]) for c in m["consumes"]],
+                         [("multiconvect", "latest_points.json"), ("nowcasting-public", "obs/metar_latest.json")])
         by = {p["id"]: p for p in m["products"]}
         self.assertEqual(set(by), {"ntu_latest", "ntu_recent", "ntu_fallback"})
         self.assertEqual(by["ntu_latest"]["data_time"], "2026-11-25T17:15:00Z")   # newest record, 5 min old

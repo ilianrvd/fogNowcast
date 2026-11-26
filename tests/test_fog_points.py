@@ -52,7 +52,10 @@ class FogPoints(unittest.TestCase):
         p = fp.build(MODEL, NTU, metar, POINTS, NOW)["points"][1]
         self.assertEqual(p["obs_source"], "metar")
         self.assertEqual(p["series"][0]["wind_kt"], 0)         # wind never negative
-        self.assertFalse(fp.build(MODEL, NTU, metar, POINTS, NOW)["calibrated"])
+        doc = fp.build(MODEL, NTU, metar, POINTS, NOW)
+        self.assertFalse(doc["calibrated"])
+        self.assertEqual(list(doc)[:5], ["schema", "generated_at", "source", "run", "cadence_min"])   # portal header
+        self.assertEqual((doc["schema"], doc["cadence_min"]), ("fognowcast.fog_points/1.0", 15))
 
     def test_deficit_below_zero_uses_frost_point(self):
         ntu = {"stations": [dict(NTU["stations"][0], t=-10.0, td=-11.0)]}

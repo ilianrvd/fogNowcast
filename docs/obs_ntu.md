@@ -94,7 +94,7 @@
 - При прескочено пускане (защитата от 14 мин) или неуспешно пускане **не се пренаписва**: възрастта в портала расте и цветът минава в жълто и червено, вместо да остане зелен с нов час и стари данни.
 - Продукти: `ntu_latest` (`data_time` = най-новият запис от НТУ, `obs_time_latest`; може да е по-стар от `generated_at`, когато НТУ закъснява), `ntu_recent` (`data_time` = най-новият ред) и `ntu_fallback` (`generated_at` = кога е изтеглен, `data_time` = `updated_at` на НТУ). `fog_points` (`fog/fog_points.json`, [fog_points.md](fog_points.md); `generated_at` = кога е направен, `data_time` = `t0`, текущият час на прогнозата) се добавя от стъпката за мъглата в същото пускане; ако тя се провали, остава последният запис и възрастта му расте. `ntu_fetch_state.json` е служебен и не е продукт. Архивите са клонове в репото, не са в Pages и не са продукти.
 - `status` е `experimental` от появата на страницата (`index.html`), с `embed`: `{"url": "index.html?embed=1", "min_height_px": 800, "gated": false}`.
-- `consumes` липсва: живият поток не чете нищо от другите проекти (заместителят е от самото НТУ). Стъпката за мъглата чете `latest_points.json` (MultiConvect) и `obs/metar_latest.json` (nowcasting-public); те още не са във `consumes`, защото формата на полето е на портала и се съгласува отделно.
+- `consumes`: стъпката за мъглата чете `latest_points.json` на `multiconvect` (`max_age_min` 480: файлът се обновява на 6 ч) и `obs/metar_latest.json` на `nowcasting-public` (`max_age_min` 60). Стойностите са предложение; форматът на полето е описан в `manifest.md` на портала.
 
 ### Страница `index.html`
 
