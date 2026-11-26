@@ -17,7 +17,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import core
+from . import core, events
 
 UTC = timezone.utc
 LEADS = {"+1:00": 1, "+2:00": 2, "+3:00": 3, "+4:00": 4, "+5:00": 5, "+6:00": 6}
@@ -82,7 +82,7 @@ def collect(tables_dir, metar):
                 if oL is None:
                     continue
                 rows.append((icao, t0.date(), lead, c["p_lt1000"] / 100.0, c.get("vis_m"),
-                             oL["vis"] < 1000, oL["fog"], o0["vis"] < 1000, o0["fog"]))
+                             oL["vis"] < 1000, oL["fog"], o0["vis"] < 1000, o0["fog"], t0))
     return rows, tables, stale
 
 
@@ -118,6 +118,20 @@ def score(rows, target):
     return out
 
 
+def event_scores(rows, metar, thr):
+    """Onset/clearing/episodes for the fog target, decision p_lt1000 >= thr."""
+    cases = [{"point": r[0], "t0": r[9], "lead": r[2], "day": r[1], "p": r[3], "dec": r[3] >= thr,
+              "y": r[6], "y0": r[8]} for r in rows]
+    days = {r[1] for r in rows}
+    t_min, t_max = min(r[9] for r in rows), max(r[9] for r in rows) + timedelta(hours=6)
+    series = defaultdict(list)
+    for (icao, t), o in metar.items():
+        if t_min - timedelta(hours=3) <= t <= t_max:
+            series[icao].append((t, o["fog"]))
+    return {"threshold": thr, "transitions": events.transition_scores(cases),
+            "episodes": events.episode_scores(cases, dict(series))}
+
+
 def report(res):
     L = ["# Проверка на p_lt1000 на airport-nowcast (изследване, не за оперативна употреба)", "",
          f"Таблици: {res['tables']} ({res['period'][0]} … {res['period'][1]}), случаи летище × срок: {res['rows']}. "
@@ -139,6 +153,8 @@ def report(res):
             for b in r3["reliability"]:
                 L.append(f"| {b['p_from']}–{b['p_to']} | {b['n']} | {b['mean_p']} | {b['obs_freq']} |")
         L.append("")
+    for k, ev in res.get("events", {}).items():
+        L += events.report_lines(ev, f"airport-nowcast, мъгла, {k}")
     return "\n".join(L) + "\n"
 
 
@@ -157,7 +173,8 @@ def main(argv=None):
     res = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "source": SOURCE, "run": None,
            "status": "research, not for operational use", "tables": tables, "stale_metar_skipped": stale,
            "rows": len(rows), "period": [days[0].isoformat(), days[-1].isoformat()],
-           "lt1000": score(rows, "lt1000"), "fog": score(rows, "fog")}
+           "lt1000": score(rows, "lt1000"), "fog": score(rows, "fog"),
+           "events": {f"p>={thr}": event_scores(rows, metar, thr) for thr in THRESHOLDS}}
     os.makedirs(a.out, exist_ok=True)
     with open(os.path.join(a.out, "airport_nowcast_verification.json"), "w", encoding="utf-8") as f:
         json.dump(res, f, ensure_ascii=False, indent=1)

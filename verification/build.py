@@ -17,7 +17,7 @@ from pathlib import Path
 
 from correction.hourly import hourly_obs, parse_time
 
-from . import core
+from . import core, events
 from .runs import fetch_run, from_json, to_json
 
 UTC = timezone.utc
@@ -195,7 +195,7 @@ def _fog_summary(rows, ps):
     return by_lead, by_temp
 
 
-def score_fog_cv(cases, airports, lat_lon, taus):
+def score_fog_cv(cases, airports, lat_lon, taus, fog_series=None):
     """Leave-one-week-out: each ISO week is predicted by a model fitted on all other weeks (fit and threshold
     from the training folds only). Pools the out-of-fold predictions, so every fog case of the period is
     in the test once. Weeks keep fog episodes together, so a case is never predicted by a model that saw
@@ -228,6 +228,10 @@ def score_fog_cv(cases, airports, lat_lon, taus):
         by_lead, by_temp = _fog_summary(rows_k, ps_k)
         out[name] = {"weeks": len(weeks), "weeks_skipped": skipped, "rows": len(rows_k),
                      "fog_rows": int(sum(r[1] for r in rows_k)), "by_lead": by_lead, "by_temp_leads_1_6": by_temp}
+        ev_cases = [{"point": r[6], "t0": r[7], "lead": r[3], "day": r[4], "p": p[0], "dec": p[0] >= p[1],
+                     "y": bool(r[1]), "y0": bool(r[2])} for r, p in zip(rows_k, ps_k)]
+        out[name]["events"] = {"transitions": events.transition_scores(ev_cases),
+                               "episodes": events.episode_scores(ev_cases, fog_series or {})}
     return out
 
 
@@ -275,6 +279,8 @@ def report(res):
                 s, sp = r["scores"], r["scores_persistence"]
                 L.append(f"| {lab} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | {r.get('brier_diff_ci95')} | "
                          f"{s['csi']} | {sp['csi']} | {r.get('csi_diff_ci95')} | {r['mean_p']} / {r['obs_freq']} |")
+            if v.get("events"):
+                L += [""] + events.report_lines(v["events"], m)
     return "\n".join(L) + "\n"
 
 
@@ -333,7 +339,11 @@ def main(argv=None) -> int:
     taus = {v: cont[v]["tau_h"] for v in cont}
     fog = score_fog(fog_train, test, {p["id"] for p in airports}, lat_lon, taus)
     cv_cases = [c for c in cases if ftr[0] <= c["t0"] < te[1] + timedelta(days=1)]
-    fog_cv = score_fog_cv(cv_cases, {p["id"] for p in airports}, lat_lon, taus)
+    fog_series = {}
+    for (pid, t), o in obs.items():
+        if pid in {p["id"] for p in airports} and "fog" in o and ftr[0] <= t <= end:
+            fog_series.setdefault(pid, []).append((t, o["fog"]))
+    fog_cv = score_fog_cv(cv_cases, {p["id"] for p in airports}, lat_lon, taus, fog_series)
     print("fog cross-validation done", flush=True)
     res = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "source": SOURCE,
            "run": "ICON-EU single runs 00/06/12/18 UTC", "status": "research, not for operational use",
