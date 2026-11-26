@@ -40,7 +40,7 @@ def metar_hourly(path, icao):
                 num = lambda x: float(x) if x not in ("", "None") else None
                 tt, td, ws = num(r["t"]), num(r["td"]), num(r["wind_kt"])
                 best[k] = (off, {"t": tt, "td": td, "dd": tt - td if tt is not None and td is not None else None,
-                                 "ws": ws, "fog": r["fog"] == "1"})
+                                 "ws": ws, "fog": r["fog"] == "1", "vis": num(r["vis_m"])})
     return {k: v[1] for k, v in best.items()}
 
 
@@ -52,7 +52,7 @@ def hours(start, end):
     return out
 
 
-WORKERS = 4  # parallel requests to Open-Meteo
+WORKERS = 2  # parallel requests to Open-Meteo (4 gave HTTP 429 on 2026-11-26)
 
 
 def load_runs(run_times, points, cache_dir):
@@ -115,17 +115,24 @@ def score_continuous(train, test, groups):
     return res
 
 
+FOG_VARIANTS = {  # name: (method for t/td/ws, use the METAR at t0)
+    "model": ("model", False),
+    "corrected": ("corrected", False),
+    "corrected+obs": ("corrected", True),
+}
+
+
 def score_fog(train, test, airports, lat_lon, taus):
     out = {}
-    for method in ("model", "corrected"):
-        tr = core.fog_rows([c for c in train if c["point"] in airports], method, taus, lat_lon)
-        te = core.fog_rows([c for c in test if c["point"] in airports], method, taus, lat_lon)
+    for name, (method, use_obs) in FOG_VARIANTS.items():
+        tr = core.fog_rows([c for c in train if c["point"] in airports], method, taus, lat_lon, use_obs)
+        te = core.fog_rows([c for c in test if c["point"] in airports], method, taus, lat_lon, use_obs)
         if not tr or not te or not any(y for _, y, *_ in tr):
-            out[method] = {"note": "too few cases or no fog in training"}
+            out[name] = {"note": "too few cases or no fog in training"}
             continue
         w = core.fit_logistic([x for x, *_ in tr], [y for _, y, *_ in tr])
-        thr_best = max((t / 20 for t in range(1, 20)),
-                       key=lambda t: core.contingency([core.predict(w, x) for x, *_ in tr], [y for _, y, *_ in tr], t)["csi"] or 0)
+        ptr, ytr = [core.predict(w, x) for x, *_ in tr], [y for _, y, *_ in tr]
+        thr_best = max((t / 20 for t in range(1, 20)), key=lambda t: core.contingency(ptr, ytr, t)["csi"] or 0)
         rows = []
         for lead in core.LEADS:
             sel = [r for r in te if r[3] == lead]
@@ -146,14 +153,14 @@ def score_fog(train, test, airports, lat_lon, taus):
                            "brier_persistence": round(core.brier(pers, ys), 4) if ys else None,
                            "scores": core.contingency(ps, ys, thr_best),
                            "scores_persistence": core.contingency(pers, ys, 0.5)}
-        out[method] = {"weights": [round(x, 3) for x in w], "threshold": thr_best, "by_lead": rows,
-                       "by_temp_leads_1_6": by_temp}
+        out[name] = {"weights": [round(x, 3) for x in w], "threshold": thr_best, "train_rows": len(tr),
+                     "train_fog": int(sum(ytr)), "by_lead": rows, "by_temp_leads_1_6": by_temp}
     return out
 
 
 def report(res):
     L = ["# Проверка на етап 2 (изследване, не за оперативна употреба)", "",
-         f"Обучение: {res['train'][0]} … {res['train'][1]}; проверка: {res['test'][0]} … {res['test'][1]}. "
+         f"Обучение: {res['train'][0]} … {res['train'][1]} (мъгла: {res['fog_train'][0]} … {res['fog_train'][1]}); проверка: {res['test'][0]} … {res['test'][1]}. "
          f"Рън: последният с начало ≥ {core.LATENCY_H} ч преди t0. MAE на проверочния период; "
          "`ИД` = 95 % интервал на разликата „корекция − вариант“ (bootstrap по дни; изцяло под 0 = корекцията е по-добра). "
          "При мъглата дефицитът е до насищане спрямо лед под 0 °C; групите по температура са по наблюдението в срока.", ""]
@@ -171,7 +178,7 @@ def report(res):
         if "by_lead" not in v:
             L += [f"- {m}: {v.get('note')}"]
             continue
-        L += ["", f"### p_fog от {m} (праг {v['threshold']})", "",
+        L += ["", f"### p_fog: {m} (праг {v['threshold']}; обучение {v['train_rows']} реда, {v['train_fog']} с мъгла)", "",
               "| срок | n | случаи | Brier | Brier устойч. | POD | FAR | CSI | CSI устойч. |", "|---|---|---|---|---|---|---|---|---|"]
         for r in v["by_lead"]:
             s, sp = r["scores"], r["scores_persistence"]
@@ -191,11 +198,14 @@ def main(argv=None) -> int:
     ap.add_argument("--out", required=True)
     ap.add_argument("--train", default="2026-10-01:2026-10-31")
     ap.add_argument("--test", default="2026-11-01:2026-11-24")
+    ap.add_argument("--fog-train", default="2026-04-05:2026-10-31",
+                    help="training period of the fog model (airports, METAR); longer than --train: fog is rare")
     ap.add_argument("--cache-dir", default=None, help="keep fetched runs here and reuse them")
     a = ap.parse_args(argv)
     tr = [parse_time(x + "T00:00:00Z") for x in a.train.split(":")]
     te = [parse_time(x + "T00:00:00Z") for x in a.test.split(":")]
-    start, end = tr[0], te[1] + timedelta(hours=23)
+    ftr = [parse_time(x + "T00:00:00Z") for x in a.fog_train.split(":")]
+    start, end = min(tr[0], ftr[0]), te[1] + timedelta(hours=23)
 
     airports = [p for p in json.loads(Path("static/points.json").read_text(encoding="utf-8"))["points"]
                 if p["type"] == "airport"]
@@ -231,10 +241,13 @@ def main(argv=None) -> int:
               "всички, t < 0 °C": lambda c: tcls(c) == "t<0",
               "всички, t ≥ 0 °C": lambda c: tcls(c) == "t>=0"}
     cont = score_continuous(train, test, groups)
-    fog = score_fog(train, test, {p["id"] for p in airports}, lat_lon, {v: cont[v]["tau_h"] for v in cont})
+    fog_train = [c for c in cases if ftr[0] <= c["t0"] < ftr[1] + timedelta(days=1)]
+    print(f"fog training cases (all points): {len(fog_train)}", flush=True)
+    fog = score_fog(fog_train, test, {p["id"] for p in airports}, lat_lon, {v: cont[v]["tau_h"] for v in cont})
     res = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "source": SOURCE,
            "run": "ICON-EU single runs 00/06/12/18 UTC", "status": "research, not for operational use",
-           "train": a.train.split(":"), "test": a.test.split(":"), "latency_h": core.LATENCY_H,
+           "train": a.train.split(":"), "fog_train": a.fog_train.split(":"), "test": a.test.split(":"),
+           "latency_h": core.LATENCY_H,
            "runs_failed": failed, "continuous": cont, "fog": fog}
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)

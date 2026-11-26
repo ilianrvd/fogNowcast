@@ -14,6 +14,7 @@ URL = "https://single-runs-api.open-meteo.com/v1/forecast"
 UA = "fogNowcast/0.1 (+https://github.com/ilianrvd/fogNowcast)"
 HOURLY = ["temperature_2m", "dew_point_2m", "wind_speed_10m", "cloud_cover_low"]
 RETRY_WAIT_S = (5, 15)
+RATE_LIMIT_WAIT_S = (60, 180)  # HTTP 429: wait longer (or as long as Retry-After says, up to 300 s)
 MAX_LEAD_H = 16  # a run is used for t0 from run+4 h to run+9 h (next run is usable at run+10 h), plus 6 h ahead
 
 
@@ -55,13 +56,28 @@ def parse(data, points, run):
 
 def fetch_run(run, points, fetch=http_json, sleep=time.sleep):
     url = build_url(run, points)
-    for attempt in range(len(RETRY_WAIT_S) + 1):
+    n_err = n_429 = 0
+    while True:
         try:
             return parse(fetch(url), points, run)
-        except (urllib.error.URLError, TimeoutError, OSError):
-            if attempt == len(RETRY_WAIT_S):
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                if n_429 == len(RATE_LIMIT_WAIT_S):
+                    raise
+                ra = e.headers.get("Retry-After") if e.headers else None
+                wait = min(300, int(ra)) if ra and ra.isdigit() else RATE_LIMIT_WAIT_S[n_429]
+                n_429 += 1
+                sleep(wait)
+                continue
+            if n_err == len(RETRY_WAIT_S):
                 raise
-            sleep(RETRY_WAIT_S[attempt])
+            sleep(RETRY_WAIT_S[n_err])
+            n_err += 1
+        except (urllib.error.URLError, TimeoutError, OSError):
+            if n_err == len(RETRY_WAIT_S):
+                raise
+            sleep(RETRY_WAIT_S[n_err])
+            n_err += 1
 
 
 def to_json(series_by_point):

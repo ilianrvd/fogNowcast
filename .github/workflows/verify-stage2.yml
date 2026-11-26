@@ -1,7 +1,7 @@
 name: verify-stage2
 # Manual: stage-2 verification (docs/verification.md). Raw ICON-EU single runs vs persistence vs residual
 # correction, leads 0-6 h. One request to Open-Meteo per run (~225 runs for Oct-Nov), all points at once,
-# 4 in parallel; fetched runs are cached between attempts.
+# 2 in parallel (4 gave HTTP 429); fetched runs are cached between attempts. April-November is ~940 runs.
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +11,9 @@ on:
       train:
         description: "Training period (start:end)"
         default: "2026-10-01:2026-10-31"
+      fog_train:
+        description: "Training period of the fog model (start:end)"
+        default: "2026-04-05:2026-10-31"
       test:
         description: "Test period (start:end)"
         default: "2026-11-01:2026-11-24"
@@ -29,12 +32,13 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - run: pip install numpy
       - name: Cache of fetched model runs
         # runs fetched by an earlier (even cancelled) attempt are reused; the key grows with every attempt
         uses: actions/cache@v4
@@ -56,6 +60,7 @@ jobs:
       - run: >
           python -m verification.build --archive-dir "$RUNNER_TEMP/archive" --metar-dir "$RUNNER_TEMP/metar"
           --out "$RUNNER_TEMP/out" --train "${{ inputs.train }}" --test "${{ inputs.test }}"
+          --fog-train "${{ inputs.fog_train }}"
           --cache-dir .cache/single-runs
       - if: ${{ inputs.publish }}
         env:
