@@ -32,7 +32,11 @@ jobs:
             rc=0; git ls-remote --exit-code --heads origin "$br" >/dev/null 2>&1 || rc=$?
             if [ "$rc" = 0 ]; then
               rm -rf "$dir"
-              git clone -q --depth 1 --branch "$br" "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$dir"
+              # archive-fallback gets normal (non-forced) commits: a shallow clone made GitHub reject
+              # some of those pushes ("missing necessary objects", 3 of 20 runs on 2026-11-26), so it is
+              # cloned in full (small: one CSV per day). The other two branches are single-commit, force-pushed.
+              depth="--depth 1"; [ "$br" = archive-fallback ] && depth=""
+              git clone -q $depth --single-branch --branch "$br" "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$dir"
             elif [ "$rc" != 2 ]; then
               echo "git ls-remote failed ($rc) for $br"; exit 1
             fi
