@@ -18,6 +18,8 @@ TAU_H = {"t": 9.0, "td": 9.0, "wind_kt": 6.0}   # from verification (training Oc
 HORIZON_H = 6
 MAX_OBS_AGE_MIN = 90      # older observation: point is given by the model only
 SOURCE = "fogNowcast core v1 (research, uncalibrated)"
+SCHEMA = "fognowcast.fog_points/1.0"   # <project>.<product>/<major>.<minor>, as in the portal header.md
+CADENCE_MIN = 15
 
 
 def parse_time(s):
@@ -122,8 +124,8 @@ def build(model, ntu, metar, points, now=None):
         inputs["ntu_age_min"] = round((now - parse_time(ntu["obs_time_latest"])).total_seconds() / 60)
     if metar and metar.get("fetched_at"):
         inputs["metar_age_min"] = round((now - parse_time(metar["fetched_at"])).total_seconds() / 60)
-    return {"schema": "fog_points/1.0", "generated_at": iso(now), "source": SOURCE,
-            "run": {"icon_eu": model["run"]}, "t0": iso(t0), "calibrated": False,
+    return {"schema": SCHEMA, "generated_at": iso(now), "source": SOURCE,
+            "run": {"icon_eu": model["run"]}, "cadence_min": CADENCE_MIN, "t0": iso(t0), "calibrated": False,
             "units": {"t": "degC", "td": "degC", "deficit": "degC", "wind_kt": "kt", "wind_dir": "deg",
                       "cloud_low_pct": "%", "corr_weight": "%"},
             "inputs": inputs, "tau_h": TAU_H, "points": result}
@@ -136,8 +138,8 @@ def update_manifest(path, doc):
             m = json.load(f)
     except (OSError, ValueError):
         return False
-    entry = {"id": "fog_points", "path": "fog/fog_points.json", "format": "json", "schema": "fog_points/1.0",
-             "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/fog_points.md", "cadence_min": 15,
+    entry = {"id": "fog_points", "path": "fog/fog_points.json", "format": "json", "schema": SCHEMA,
+             "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/fog_points.md", "cadence_min": CADENCE_MIN,
              "generated_at": doc["generated_at"], "data_time": doc["t0"]}
     m["products"] = [p for p in m.get("products", []) if p.get("id") != "fog_points"] + [entry]
     tmp = path + ".tmp"

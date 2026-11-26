@@ -23,7 +23,7 @@
 
 ## Файл
 
-Заглавие: `schema` (`fog_points/1.0`), `generated_at`, `source`, `run` (`{"icon_eu": ISO}`), `t0` (текущият час, UTC), `calibrated` (`false`), `units`, `inputs` (`model_age_min`, `ntu_age_min`, `metar_age_min`), `tau_h`.
+Заглавие по общия блок на портала (`docs/header.md` там): `schema` (`fognowcast.fog_points/1.0`), `generated_at`, `source`, `run` (`{"icon_eu": ISO}`), `cadence_min` (15); после `t0` (текущият час, UTC), `calibrated` (`false`), `units`, `inputs` (`model_age_min`, `ntu_age_min`, `metar_age_min`), `tau_h`.
 
 ```json
 {"id": "NTU:1", "name": "Мотел Ихтиман", "lat": 42.43, "lon": 23.85, "elev_m": 700, "model_elev_m": 650.0,
