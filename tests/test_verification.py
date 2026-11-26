@@ -76,9 +76,23 @@ class CoreTests(unittest.TestCase):
         c = {"point": "LBSF", "t0": T0, "lead": 1, "o0": obs(1, 0.8, 1, fog=True), "m0": obs(2), "mL": dict(obs(2), cl=80),
              "oL": obs(1, 0.9, 1, fog=True)}
         c2 = dict(c, o0=obs(1), oL=obs(1))   # NTU-like, no fog flag
-        rows = core.fog_rows([c, c2], "corrected", 3, {"LBSF": (42.7, 23.4)})
+        rows = core.fog_rows([c, c2], "corrected", {}, {"LBSF": (42.7, 23.4)})
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][1:4], (1.0, 1.0, 1))
+
+
+class IceTests(unittest.TestCase):
+    def test_saturation_over_ice_counts_as_saturated(self):
+        for t in (-15, -10, -5, -2):
+            e = core.e_ice(t)
+            a = math.log(e / 6.112)
+            td = 243.12 * a / (17.62 - a)                     # dew point (over water) of ice-saturated air
+            self.assertGreater(t - td, 0.25)                  # rh over water < 100 %, t - td > 0
+            self.assertLess(core.sat_deficit(t, td), 0.01)    # but saturated for fog
+        self.assertAlmostEqual(core.sat_deficit(5.0, 4.0), 1.0)
+        self.assertEqual(core.sat_deficit(-3.0, -2.0), 0.0)   # td above t is clipped
+        self.assertIsNone(core.sat_deficit(None, 1.0))
+        self.assertEqual(core.temp_class(-0.1), "t<0")
 
 
 class RunsParseTests(unittest.TestCase):

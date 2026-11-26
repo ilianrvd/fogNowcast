@@ -13,13 +13,13 @@ from datetime import datetime, timezone
 URL = "https://single-runs-api.open-meteo.com/v1/forecast"
 UA = "fogNowcast/0.1 (+https://github.com/ilianrvd/fogNowcast)"
 HOURLY = ["temperature_2m", "dew_point_2m", "wind_speed_10m", "cloud_cover_low"]
-RETRY_WAIT_S = (5, 15, 45)
+RETRY_WAIT_S = (5, 15)
 MAX_LEAD_H = 16  # a run is used for t0 from run+4 h to run+9 h (next run is usable at run+10 h), plus 6 h ahead
 
 
 def http_json(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=90) as r:
+    with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)
 
 
@@ -62,3 +62,12 @@ def fetch_run(run, points, fetch=http_json, sleep=time.sleep):
             if attempt == len(RETRY_WAIT_S):
                 raise
             sleep(RETRY_WAIT_S[attempt])
+
+
+def to_json(series_by_point):
+    return {pid: {v.strftime("%Y-%m-%dT%H:%M"): vals for v, vals in s.items()} for pid, s in series_by_point.items()}
+
+
+def from_json(d):
+    return {pid: {datetime.strptime(k, "%Y-%m-%dT%H:%M").replace(tzinfo=timezone.utc): vals for k, vals in s.items()}
+            for pid, s in d.items()}
