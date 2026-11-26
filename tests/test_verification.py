@@ -74,7 +74,7 @@ class CoreTests(unittest.TestCase):
 
     def test_fog_rows_only_with_metar_flag(self):
         c = {"point": "LBSF", "t0": T0, "lead": 1, "o0": dict(obs(1, 0.8, 1, fog=True), vis=300), "m0": obs(2),
-             "mL": dict(obs(2), cl=80),
+             "mL": dict(obs(2), cl=80, vis=800),
              "oL": obs(1, 0.9, 1, fog=True)}
         c2 = dict(c, o0=obs(1), oL=obs(1))   # NTU-like, no fog flag
         rows = core.fog_rows([c, c2], "corrected", {}, {"LBSF": (42.7, 23.4)})
@@ -83,6 +83,11 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(len(rows[0][0]), 10)                       # model terms + observation terms
         rows_m = core.fog_rows([c], "model", {}, {"LBSF": (42.7, 23.4)}, use_obs=False)
         self.assertEqual(len(rows_m[0][0]), 5)
+        self.assertEqual(core.fog_rows([c], "model", {}, {"LBSF": (42.7, 23.4)}, vis_only=True)[0][0][1],
+                         core.vis_index(800))
+        self.assertEqual(len(core.fog_rows([c], "corrected", {}, {"LBSF": (42.7, 23.4)}, use_vis=True)[0][0]), 12)
+        no_vis = dict(c, mL=dict(obs(2), cl=80, vis=None))
+        self.assertEqual(core.fog_rows([no_vis], "corrected", {}, {"LBSF": (42.7, 23.4)}), [])  # same cases for all
 
     def test_observation_terms_learn_persistence_that_fades(self):
         X, y = [], []
@@ -126,7 +131,7 @@ class FogCVTests(unittest.TestCase):
                 o0 = dict(obs(1, 0.9 if fog else -3, 1.0, fog=fog), vis=300 if fog else 9999)
                 oL = obs(1, 0.9, 1.0, fog=fog and lead <= 2)
                 cases.append({"point": "LBSF", "t0": t0, "lead": lead, "o0": o0, "m0": obs(2),
-                              "mL": dict(obs(2), cl=50), "oL": oL})
+                              "mL": dict(obs(2), cl=50, vis=400 if (fog and lead <= 2) else 20000), "oL": oL})
         out = score_fog_cv(cases, {"LBSF"}, {"LBSF": (42.7, 23.4)}, {})
         v = out["corrected+obs"]
         self.assertEqual(v["weeks"], 4)
@@ -134,6 +139,8 @@ class FogCVTests(unittest.TestCase):
         lead1 = v["by_lead"][1]
         self.assertGreater(lead1["scores"]["pod"], 0.8)       # fog at t0 carries to +1 h
         self.assertEqual(v["by_lead"][6]["fog_events"], 0)
+        iv = out["icon_vis"]                                   # model visibility that is right gets skill alone
+        self.assertGreater(iv["by_lead"][2]["scores"]["csi"], 0.8)
 
 
 class FogCITests(unittest.TestCase):

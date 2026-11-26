@@ -115,19 +115,28 @@ def score_continuous(train, test, groups):
     return res
 
 
-FOG_VARIANTS = {  # name: (method for t/td/ws, use the METAR at t0, temperature class as a feature)
-    "model": ("model", False, False),
-    "corrected": ("corrected", False, False),
-    "corrected+obs": ("corrected", True, False),
-    "corrected+obs+cold": ("corrected", True, True),
+FOG_VARIANTS = {  # name: options of core.fog_rows
+    "icon_vis": {"method": "model", "vis_only": True},                 # ICON-EU visibility alone, calibrated
+    "model": {"method": "model", "use_obs": False},
+    "corrected": {"method": "corrected", "use_obs": False},
+    "corrected+vis": {"method": "corrected", "use_obs": False, "use_vis": True},
+    "corrected+obs": {"method": "corrected", "use_obs": True},
+    "corrected+obs+cold": {"method": "corrected", "use_obs": True, "use_cold": True},
+    "corrected+obs+vis": {"method": "corrected", "use_obs": True, "use_vis": True},
 }
+
+
+def _rows(cases, taus, lat_lon, opt):
+    o = dict(opt)
+    method = o.pop("method")
+    return core.fog_rows(cases, method, taus, lat_lon, **o)
 
 
 def score_fog(train, test, airports, lat_lon, taus):
     out = {}
-    for name, (method, use_obs, use_cold) in FOG_VARIANTS.items():
-        tr = core.fog_rows([c for c in train if c["point"] in airports], method, taus, lat_lon, use_obs, use_cold)
-        te = core.fog_rows([c for c in test if c["point"] in airports], method, taus, lat_lon, use_obs, use_cold)
+    for name, opt in FOG_VARIANTS.items():
+        tr = _rows([c for c in train if c["point"] in airports], taus, lat_lon, opt)
+        te = _rows([c for c in test if c["point"] in airports], taus, lat_lon, opt)
         if not tr or not te or not any(y for _, y, *_ in tr):
             out[name] = {"note": "too few cases or no fog in training"}
             continue
@@ -193,8 +202,8 @@ def score_fog_cv(cases, airports, lat_lon, taus):
     the same episode."""
     out = {}
     ap = [c for c in cases if c["point"] in airports]
-    for name, (method, use_obs, use_cold) in FOG_VARIANTS.items():
-        rows = core.fog_rows(ap, method, taus, lat_lon, use_obs, use_cold)
+    for name, opt in FOG_VARIANTS.items():
+        rows = _rows(ap, taus, lat_lon, opt)
         if not rows:
             out[name] = {"note": "no cases"}
             continue
