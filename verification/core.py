@@ -210,7 +210,7 @@ def predict(w, x):
 
 
 def fog_rows(cases, method, taus, lat_lon, use_obs=True, use_cold=False, use_vis=False, vis_only=False):
-    """(features, truth, fog_at_t0, lead, day, temp_class_of_truth) for airport cases with METAR fog flags.
+    """(features, truth, fog_at_t0, lead, day, temp_class_of_truth, point, t0) for airport cases with METAR fog flags.
     The deficit is to saturation over ice below 0 C (sat_deficit), from the forecast t and td.
     use_vis adds the ICON-EU visibility; vis_only uses nothing but it (calibrated raw model visibility).
     Cases are the same for all variants (METAR at t0 and model visibility required)."""
@@ -237,7 +237,7 @@ def fog_rows(cases, method, taus, lat_lon, use_obs=True, use_cold=False, use_vis
         if x is None:
             continue
         rows.append((x, 1.0 if c["oL"]["fog"] else 0.0, 1.0 if c["o0"]["fog"] else 0.0, c["lead"], c["t0"].date(),
-                     temp_class(c["oL"].get("t"))))
+                     temp_class(c["oL"].get("t")), c["point"], c["t0"]))
     return rows
 
 
