@@ -115,18 +115,19 @@ def score_continuous(train, test, groups):
     return res
 
 
-FOG_VARIANTS = {  # name: (method for t/td/ws, use the METAR at t0)
-    "model": ("model", False),
-    "corrected": ("corrected", False),
-    "corrected+obs": ("corrected", True),
+FOG_VARIANTS = {  # name: (method for t/td/ws, use the METAR at t0, temperature class as a feature)
+    "model": ("model", False, False),
+    "corrected": ("corrected", False, False),
+    "corrected+obs": ("corrected", True, False),
+    "corrected+obs+cold": ("corrected", True, True),
 }
 
 
 def score_fog(train, test, airports, lat_lon, taus):
     out = {}
-    for name, (method, use_obs) in FOG_VARIANTS.items():
-        tr = core.fog_rows([c for c in train if c["point"] in airports], method, taus, lat_lon, use_obs)
-        te = core.fog_rows([c for c in test if c["point"] in airports], method, taus, lat_lon, use_obs)
+    for name, (method, use_obs, use_cold) in FOG_VARIANTS.items():
+        tr = core.fog_rows([c for c in train if c["point"] in airports], method, taus, lat_lon, use_obs, use_cold)
+        te = core.fog_rows([c for c in test if c["point"] in airports], method, taus, lat_lon, use_obs, use_cold)
         if not tr or not te or not any(y for _, y, *_ in tr):
             out[name] = {"note": "too few cases or no fog in training"}
             continue
@@ -158,28 +159,30 @@ def score_fog(train, test, airports, lat_lon, taus):
     return out
 
 
+def _fog_block(rows, ps, idx):
+    ys, pp, pers = [rows[i][1] for i in idx], [ps[i][0] for i in idx], [rows[i][2] for i in idx]
+    dec = [ps[i][0] >= ps[i][1] for i in idx]
+    out = {"n": len(idx), "fog_events": int(sum(ys)),
+           "brier": round(core.brier(pp, ys), 4) if ys else None,
+           "brier_persistence": round(core.brier(pers, ys), 4) if ys else None,
+           "mean_p": round(sum(pp) / len(pp), 4) if pp else None,          # reliability: compare with obs_freq
+           "obs_freq": round(sum(ys) / len(ys), 4) if ys else None,
+           "scores": core.contingency(dec, ys, 0.5),
+           "scores_persistence": core.contingency(pers, ys, 0.5)}
+    if ys:
+        out.update(core.bootstrap_fog([rows[i][4] for i in idx], list(zip(dec, pp)), pers, ys) or {})
+    return out
+
+
 def _fog_summary(rows, ps):
-    """Scores by lead and by temperature class (leads 1-6) for pooled out-of-fold predictions."""
+    """Scores by lead and by temperature class (leads 1-6) for pooled out-of-fold predictions,
+    with 95 % intervals of the difference to persistence (bootstrap by day)."""
     by_lead = []
     for lead in core.LEADS:
         idx = [i for i, r in enumerate(rows) if r[3] == lead]
-        ys, pp, pers = [rows[i][1] for i in idx], [ps[i][0] for i in idx], [rows[i][2] for i in idx]
-        thr = [ps[i][1] for i in idx]
-        by_lead.append({"lead_h": lead, "n": len(idx), "fog_events": int(sum(ys)),
-                        "brier": round(core.brier(pp, ys), 4) if ys else None,
-                        "brier_persistence": round(core.brier(pers, ys), 4) if ys else None,
-                        "scores": core.contingency([p >= t for p, t in zip(pp, thr)], ys, 0.5),
-                        "scores_persistence": core.contingency(pers, ys, 0.5)})
-    by_temp = {}
-    for tc in ("t<0", "t>=0"):
-        idx = [i for i, r in enumerate(rows) if r[5] == tc and r[3] >= 1]
-        ys, pp, pers = [rows[i][1] for i in idx], [ps[i][0] for i in idx], [rows[i][2] for i in idx]
-        thr = [ps[i][1] for i in idx]
-        by_temp[tc] = {"n": len(idx), "fog_events": int(sum(ys)),
-                       "brier": round(core.brier(pp, ys), 4) if ys else None,
-                       "brier_persistence": round(core.brier(pers, ys), 4) if ys else None,
-                       "scores": core.contingency([p >= t for p, t in zip(pp, thr)], ys, 0.5),
-                       "scores_persistence": core.contingency(pers, ys, 0.5)}
+        by_lead.append({"lead_h": lead, **_fog_block(rows, ps, idx)})
+    by_temp = {tc: _fog_block(rows, ps, [i for i, r in enumerate(rows) if r[5] == tc and r[3] >= 1])
+               for tc in ("t<0", "t>=0")}
     return by_lead, by_temp
 
 
@@ -190,8 +193,8 @@ def score_fog_cv(cases, airports, lat_lon, taus):
     the same episode."""
     out = {}
     ap = [c for c in cases if c["point"] in airports]
-    for name, (method, use_obs) in FOG_VARIANTS.items():
-        rows = core.fog_rows(ap, method, taus, lat_lon, use_obs)
+    for name, (method, use_obs, use_cold) in FOG_VARIANTS.items():
+        rows = core.fog_rows(ap, method, taus, lat_lon, use_obs, use_cold)
         if not rows:
             out[name] = {"note": "no cases"}
             continue
@@ -257,15 +260,12 @@ def report(res):
                 L += [f"- {m}: {v.get('note')}"]
                 continue
             L += ["", f"### {m} ({v['weeks']} седмици, {v['rows']} реда, {v['fog_rows']} с мъгла)", "",
-                  "| срок | n | случаи | Brier | Brier устойч. | POD | FAR | CSI | CSI устойч. |", "|---|---|---|---|---|---|---|---|---|"]
-            for r in v["by_lead"]:
+                  "| срок | случаи | Brier | Brier устойч. | ИД Brier | CSI | CSI устойч. | ИД CSI | ср. p / честота |",
+                  "|---|---|---|---|---|---|---|---|---|"]
+            for lab, r in [(x["lead_h"], x) for x in v["by_lead"]] + [(f"1–6, {k}", x) for k, x in v["by_temp_leads_1_6"].items()]:
                 s, sp = r["scores"], r["scores_persistence"]
-                L.append(f"| {r['lead_h']} | {r['n']} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | "
-                         f"{s['pod']} | {s['far']} | {s['csi']} | {sp['csi']} |")
-            for tc, r in v["by_temp_leads_1_6"].items():
-                s, sp = r["scores"], r["scores_persistence"]
-                L.append(f"| 1–6, {tc} | {r['n']} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | "
-                         f"{s['pod']} | {s['far']} | {s['csi']} | {sp['csi']} |")
+                L.append(f"| {lab} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | {r.get('brier_diff_ci95')} | "
+                         f"{s['csi']} | {sp['csi']} | {r.get('csi_diff_ci95')} | {r['mean_p']} / {r['obs_freq']} |")
     return "\n".join(L) + "\n"
 
 

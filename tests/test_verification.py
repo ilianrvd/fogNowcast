@@ -136,6 +136,26 @@ class FogCVTests(unittest.TestCase):
         self.assertEqual(v["by_lead"][6]["fog_events"], 0)
 
 
+class FogCITests(unittest.TestCase):
+    def test_bootstrap_sign_and_cold_features(self):
+        from datetime import date
+        days, ps, pers, ys = [], [], [], []
+        for d in range(20):
+            for h in range(10):
+                y = 1.0 if h < 3 else 0.0
+                days.append(date(2026, 10, 1) + timedelta(days=d))
+                ps.append((h < 3, 0.9 if h < 3 else 0.05))      # method catches all fog
+                pers.append(1.0 if h < 1 else 0.0)            # persistence catches a third
+                ys.append(y)
+        ci = core.bootstrap_fog(days, ps, pers, ys)
+        self.assertGreater(ci["csi_diff_ci95"][0], 0)         # method better: whole interval above 0
+        self.assertLess(ci["brier_diff_ci95"][1], 0)          # lower Brier: whole interval below 0
+        self.assertIsNone(core.bootstrap_fog(days[:20], ps[:20], pers[:20], ys[:20]))  # < 3 days
+        x = core.fog_features(0.5, 2.0, 0, True, True, 300, 2, cold=True)
+        self.assertEqual(len(x), 12)
+        self.assertEqual(x[-2:], [1.0, 1.0])
+
+
 class RateLimitTests(unittest.TestCase):
     def test_429_waits_longer_then_succeeds(self):
         import io

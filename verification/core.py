@@ -157,7 +157,7 @@ def vis_index(vis_m):
     return min(1.0, max(0.0, (math.log10(max(vis_m, 1)) - 2.0) / 2.0))
 
 
-def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0):
+def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0, cold=None):
     """Feature vector; missing dd/ws -> None (case skipped). fog0/vis0 are the METAR at t0: the fog
     probability starts from what is observed now and moves towards the model with the lead
     (interaction terms with lead/6). Without them only the model terms are used."""
@@ -167,6 +167,9 @@ def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0):
     if fog0 is not None and vis0 is not None:
         f, v, l = (1.0 if fog0 else 0.0), vis_index(vis0), lead / 6.0
         x += [f, f * l, v, v * l, l]
+    if cold is not None:  # forecast t < 0 C: fog persists and behaves differently in the cold
+        c = 1.0 if cold else 0.0
+        x += [c, c * (1.0 if fog0 else 0.0)]
     return x
 
 
@@ -203,7 +206,7 @@ def predict(w, x):
     return sigmoid(sum(a * b for a, b in zip(w, x)))
 
 
-def fog_rows(cases, method, taus, lat_lon, use_obs=True):
+def fog_rows(cases, method, taus, lat_lon, use_obs=True, use_cold=False):
     """(features, truth, fog_at_t0, lead, day, temp_class_of_truth) for airport cases with METAR fog flags.
     The deficit is to saturation over ice below 0 C (sat_deficit), from the forecast t and td."""
     rows = []
@@ -217,7 +220,8 @@ def fog_rows(cases, method, taus, lat_lon, use_obs=True):
         valid = c["t0"] + timedelta(hours=c["lead"])
         night = sun_elevation_deg(valid, lat, lon) <= 0
         if use_obs:
-            x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night, c["o0"]["fog"], c["o0"]["vis"], c["lead"])
+            x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night, c["o0"]["fog"], c["o0"]["vis"], c["lead"],
+                             cold=(t is not None and t < 0) if use_cold else None)
         else:
             x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night)
         if x is None:
@@ -225,6 +229,34 @@ def fog_rows(cases, method, taus, lat_lon, use_obs=True):
         rows.append((x, 1.0 if c["oL"]["fog"] else 0.0, 1.0 if c["o0"]["fog"] else 0.0, c["lead"], c["t0"].date(),
                      temp_class(c["oL"].get("t"))))
     return rows
+
+
+def bootstrap_fog(days, ps, pers, ys, n=500, seed=1):
+    """95 % intervals, by day, of CSI(method) - CSI(persistence) and Brier(method) - Brier(persistence).
+    ps are 0/1 decisions for CSI and probabilities for Brier: pass (decision, prob) pairs."""
+    agg = defaultdict(lambda: [0, 0, 0, 0, 0, 0, 0.0, 0.0, 0])  # tp fp fn  tp_p fp_p fn_p  se se_p  n
+    for d, (dec, prob), pp, y in zip(days, ps, pers, ys):
+        a = agg[d]
+        a[0] += dec and y; a[1] += dec and not y; a[2] += (not dec) and y
+        a[3] += pp and y; a[4] += pp and not y; a[5] += (not pp) and y
+        a[6] += (prob - y) ** 2; a[7] += (pp - y) ** 2; a[8] += 1
+    keys = sorted(agg)
+    if len(keys) < 3:
+        return None
+    rnd = random.Random(seed)
+    dcsi, dbr = [], []
+    for _ in range(n):
+        s = [0] * 9
+        for k in (rnd.choice(keys) for _ in keys):
+            s = [x + y for x, y in zip(s, agg[k])]
+        c1 = s[0] / (s[0] + s[1] + s[2]) if s[0] + s[1] + s[2] else 0.0
+        c0 = s[3] / (s[3] + s[4] + s[5]) if s[3] + s[4] + s[5] else 0.0
+        dcsi.append(c1 - c0)
+        dbr.append((s[6] - s[7]) / s[8])
+    dcsi.sort(); dbr.sort()
+    lo, hi = int(0.025 * n), int(0.975 * n) - 1
+    return {"csi_diff_ci95": [round(dcsi[lo], 3), round(dcsi[hi], 3)],
+            "brier_diff_ci95": [round(dbr[lo], 5), round(dbr[hi], 5)]}
 
 
 def brier(ps, ys):
