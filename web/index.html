@@ -52,6 +52,7 @@
 <header>
   <h1>fogNowcast — станции на НТУ и летища</h1>
   <span id="fresh" class="muted">зареждане…</span>
+  <span id="warn" style="color:var(--bad)" role="status"></span>
   <span class="muted">Прогнозата е некалибрирана: модел + затихваща корекция от наблюдението; вероятност за мъгла няма.</span>
 </header>
 <div id="timebar">
@@ -119,6 +120,8 @@ legend.onAdd = () => {
 legend.addTo(map);
 
 let recent = null, fog = null, mode = "obs", lead = 0, selected = null;
+let latestDoc = null, manifestDoc = null, lastLoad = 0, lastObsTime = null, loading = false;
+const REFRESH_MIN = 5;       // data refresh while the page stays open (the sources update every 15 min; Pages caches up to 10)
 const markers = new Map();   // id -> {marker, station, name, fp}
 const fogById = () => new Map(((fog && fog.points) || []).map(p => [p.id, p]));
 const rowAt = (fp, h) => fp && fp.series.find(r => r.lead_h === h);
@@ -244,38 +247,76 @@ function showFog(fogDoc) {
     + (inp.model_age_min != null && inp.model_age_min > 12 * 60 ? ` · <b>моделът е стар (${Math.round(inp.model_age_min / 60)} ч)</b>` : "");
 }
 
-(async () => {
+function openMarker(id) {
+  const m = markers.get(id);
+  if (!m) return;
+  if (m.station) showStation(m.station, m.station.qc.excluded ? null : satDeficit(m.station.t, m.station.td), m.fp);
+  else if (mode === "fc") showStation(null, null, m.fp);
+}
+
+function showAges() {
+  if (latestDoc) showFresh(manifestDoc, latestDoc);
+  if (fog) showFog(fog);
+}
+
+// One read of the data; the map, the selected station, the mode and the slider keep their state.
+async function loadAll() {
+  if (loading) return;
+  loading = true;
   try {
     const [latest, manifest, fogDoc] = await Promise.all([getJSON("obs/ntu_latest.json"), getJSON("manifest.json").catch(() => null),
       getJSON("fog/fog_points.json").catch(() => null)]);
-    showFresh(manifest, latest);
-    getJSON("obs/ntu_recent.json").then(r => { recent = r; }).catch(() => {});
-    fog = fogDoc;
-    const byId = fogById();
+    latestDoc = latest; manifestDoc = manifest || manifestDoc;
+    if (fogDoc) fog = fogDoc;                 // a failed read of the forecast keeps the previous one (its age grows)
+    if (latest.obs_time_latest !== lastObsTime) {
+      lastObsTime = latest.obs_time_latest;
+      getJSON("obs/ntu_recent.json").then(r => { recent = r; if (selected) openMarker(selected); }).catch(() => {});
+    }
+    const byId = fogById(), seen = new Set();
     for (const s of latest.stations) {
-      const m = L.circleMarker([s.lat, s.lon], {radius: 7, weight: 1, color: "#333", fillOpacity: 0.9}).addTo(map).bindTooltip("");
-      markers.set(s.id, {marker: m, station: s, name: s.name, fp: byId.get(s.id)});
-      m.on("click", () => showStation(s, s.qc.excluded ? null : satDeficit(s.t, s.td), byId.get(s.id)));
-    }
-    if (fog) {
-      for (const fp of fog.points.filter(p => !markers.has(p.id) && p.id.indexOf("NTU:") !== 0)) {   // airports
-        const m = L.circleMarker([fp.lat, fp.lon], {radius: 9, weight: 3, color: "#000", fillOpacity: 0.9}).bindTooltip("");
-        markers.set(fp.id, {marker: m, station: null, name: fp.name || fp.id, fp});
-        m.on("click", () => { if (mode === "fc") showStation(null, null, fp); });
+      seen.add(s.id);
+      let m = markers.get(s.id);
+      if (!m) {
+        const mk = L.circleMarker([s.lat, s.lon], {radius: 7, weight: 1, color: "#333", fillOpacity: 0.9}).addTo(map).bindTooltip("");
+        mk.on("click", () => openMarker(s.id));
+        m = {marker: mk, name: s.name}; markers.set(s.id, m);
       }
-      showFog(fog);
-      document.getElementById("mFc").disabled = false;
-    } else {
-      document.getElementById("fogInfo").textContent = "Прогнозата още не е налична.";
+      m.station = s; m.name = s.name; m.fp = byId.get(s.id);
     }
-    document.getElementById("mObs").onclick = () => { mode = "obs"; render(); };
-    document.getElementById("mFc").onclick = () => { mode = "fc"; render(); };
-    document.getElementById("lead").oninput = e => { lead = +e.target.value; render(); };
+    for (const fp of ((fog && fog.points) || []).filter(p => p.id.indexOf("NTU:") !== 0)) {   // airports
+      let m = markers.get(fp.id);
+      if (!m) {
+        const mk = L.circleMarker([fp.lat, fp.lon], {radius: 9, weight: 3, color: "#000", fillOpacity: 0.9}).bindTooltip("");
+        mk.on("click", () => openMarker(fp.id));
+        m = {marker: mk, station: null, name: fp.name || fp.id}; markers.set(fp.id, m);
+      }
+      m.fp = fp;
+    }
+    for (const [id, m] of [...markers]) {     // a station that no longer reports
+      if (id.indexOf("NTU:") === 0 && !seen.has(id)) { map.removeLayer(m.marker); markers.delete(id); }
+    }
+    document.getElementById("mFc").disabled = !fog;
+    if (!fog) document.getElementById("fogInfo").textContent = "Прогнозата още не е налична.";
+    lastLoad = Date.now();
+    document.getElementById("warn").textContent = "";
+    showAges();
     render();
   } catch (e) {
-    document.getElementById("fresh").innerHTML = `<span class="dot" style="background:var(--bad)"></span>Данните не могат да се заредят (${esc(e.message)})`;
+    document.getElementById("warn").textContent = latestDoc ? "Не може да се обнови (" + e.message + "); показани са старите данни." : "";
+    if (!latestDoc) document.getElementById("fresh").innerHTML = `<span class="dot" style="background:var(--bad)"></span>Данните не могат да се заредят (${esc(e.message)})`;
+    else showAges();
+  } finally {
+    loading = false;
   }
-})();
+}
+
+document.getElementById("mObs").onclick = () => { mode = "obs"; render(); };
+document.getElementById("mFc").onclick = () => { mode = "fc"; render(); };
+document.getElementById("lead").oninput = e => { lead = +e.target.value; render(); };
+const stale = () => Date.now() - lastLoad >= REFRESH_MIN * 60000;
+setInterval(() => { if (document.hidden) return; if (stale()) loadAll(); else showAges(); }, 60000);   // ages every minute, data every 5
+document.addEventListener("visibilitychange", () => { if (!document.hidden && stale()) loadAll(); });
+loadAll();
 </script>
 </body>
 </html>
