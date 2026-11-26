@@ -158,6 +158,67 @@ def score_fog(train, test, airports, lat_lon, taus):
     return out
 
 
+def _fog_summary(rows, ps):
+    """Scores by lead and by temperature class (leads 1-6) for pooled out-of-fold predictions."""
+    by_lead = []
+    for lead in core.LEADS:
+        idx = [i for i, r in enumerate(rows) if r[3] == lead]
+        ys, pp, pers = [rows[i][1] for i in idx], [ps[i][0] for i in idx], [rows[i][2] for i in idx]
+        thr = [ps[i][1] for i in idx]
+        by_lead.append({"lead_h": lead, "n": len(idx), "fog_events": int(sum(ys)),
+                        "brier": round(core.brier(pp, ys), 4) if ys else None,
+                        "brier_persistence": round(core.brier(pers, ys), 4) if ys else None,
+                        "scores": core.contingency([p >= t for p, t in zip(pp, thr)], ys, 0.5),
+                        "scores_persistence": core.contingency(pers, ys, 0.5)})
+    by_temp = {}
+    for tc in ("t<0", "t>=0"):
+        idx = [i for i, r in enumerate(rows) if r[5] == tc and r[3] >= 1]
+        ys, pp, pers = [rows[i][1] for i in idx], [ps[i][0] for i in idx], [rows[i][2] for i in idx]
+        thr = [ps[i][1] for i in idx]
+        by_temp[tc] = {"n": len(idx), "fog_events": int(sum(ys)),
+                       "brier": round(core.brier(pp, ys), 4) if ys else None,
+                       "brier_persistence": round(core.brier(pers, ys), 4) if ys else None,
+                       "scores": core.contingency([p >= t for p, t in zip(pp, thr)], ys, 0.5),
+                       "scores_persistence": core.contingency(pers, ys, 0.5)}
+    return by_lead, by_temp
+
+
+def score_fog_cv(cases, airports, lat_lon, taus):
+    """Leave-one-week-out: each ISO week is predicted by a model fitted on all other weeks (fit and threshold
+    from the training folds only). Pools the out-of-fold predictions, so every fog case of the period is
+    in the test once. Weeks keep fog episodes together, so a case is never predicted by a model that saw
+    the same episode."""
+    out = {}
+    ap = [c for c in cases if c["point"] in airports]
+    for name, (method, use_obs) in FOG_VARIANTS.items():
+        rows = core.fog_rows(ap, method, taus, lat_lon, use_obs)
+        if not rows:
+            out[name] = {"note": "no cases"}
+            continue
+        week = [r[4].isocalendar()[:2] for r in rows]
+        weeks = sorted(set(week))
+        ps = [None] * len(rows)
+        skipped = 0
+        for wk in weeks:
+            test_i = [i for i, w in enumerate(week) if w == wk]
+            tr = [rows[i] for i, w in enumerate(week) if w != wk]
+            ytr = [r[1] for r in tr]
+            if not any(ytr):
+                skipped += 1
+                continue
+            w = core.fit_logistic([r[0] for r in tr], ytr)
+            ptr = [core.predict(w, r[0]) for r in tr]
+            thr = max((t / 20 for t in range(1, 20)), key=lambda t: core.contingency(ptr, ytr, t)["csi"] or 0)
+            for i in test_i:
+                ps[i] = (core.predict(w, rows[i][0]), thr)
+        keep = [i for i, p in enumerate(ps) if p is not None]
+        rows_k, ps_k = [rows[i] for i in keep], [ps[i] for i in keep]
+        by_lead, by_temp = _fog_summary(rows_k, ps_k)
+        out[name] = {"weeks": len(weeks), "weeks_skipped": skipped, "rows": len(rows_k),
+                     "fog_rows": int(sum(r[1] for r in rows_k)), "by_lead": by_lead, "by_temp_leads_1_6": by_temp}
+    return out
+
+
 def report(res):
     L = ["# Проверка на етап 2 (изследване, не за оперативна употреба)", "",
          f"Обучение: {res['train'][0]} … {res['train'][1]} (мъгла: {res['fog_train'][0]} … {res['fog_train'][1]}); проверка: {res['test'][0]} … {res['test'][1]}. "
@@ -188,6 +249,23 @@ def report(res):
             s, sp = r["scores"], r["scores_persistence"]
             L.append(f"| 1–6, {tc} | {r['n']} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | "
                      f"{s['pod']} | {s['far']} | {s['csi']} | {sp['csi']} |")
+    if res.get("fog_cv"):
+        L += ["", f"## Мъгла: кръстосана проверка по седмици ({res['fog_cv_period'][0]} … {res['fog_cv_period'][1]})", "",
+              "Всяка седмица е предсказана от модел, обучен на останалите седмици."]
+        for m, v in res["fog_cv"].items():
+            if "by_lead" not in v:
+                L += [f"- {m}: {v.get('note')}"]
+                continue
+            L += ["", f"### {m} ({v['weeks']} седмици, {v['rows']} реда, {v['fog_rows']} с мъгла)", "",
+                  "| срок | n | случаи | Brier | Brier устойч. | POD | FAR | CSI | CSI устойч. |", "|---|---|---|---|---|---|---|---|---|"]
+            for r in v["by_lead"]:
+                s, sp = r["scores"], r["scores_persistence"]
+                L.append(f"| {r['lead_h']} | {r['n']} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | "
+                         f"{s['pod']} | {s['far']} | {s['csi']} | {sp['csi']} |")
+            for tc, r in v["by_temp_leads_1_6"].items():
+                s, sp = r["scores"], r["scores_persistence"]
+                L.append(f"| 1–6, {tc} | {r['n']} | {r['fog_events']} | {r['brier']} | {r['brier_persistence']} | "
+                         f"{s['pod']} | {s['far']} | {s['csi']} | {sp['csi']} |")
     return "\n".join(L) + "\n"
 
 
@@ -243,12 +321,17 @@ def main(argv=None) -> int:
     cont = score_continuous(train, test, groups)
     fog_train = [c for c in cases if ftr[0] <= c["t0"] < ftr[1] + timedelta(days=1)]
     print(f"fog training cases (all points): {len(fog_train)}", flush=True)
-    fog = score_fog(fog_train, test, {p["id"] for p in airports}, lat_lon, {v: cont[v]["tau_h"] for v in cont})
+    taus = {v: cont[v]["tau_h"] for v in cont}
+    fog = score_fog(fog_train, test, {p["id"] for p in airports}, lat_lon, taus)
+    cv_cases = [c for c in cases if ftr[0] <= c["t0"] < te[1] + timedelta(days=1)]
+    fog_cv = score_fog_cv(cv_cases, {p["id"] for p in airports}, lat_lon, taus)
+    print("fog cross-validation done", flush=True)
     res = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "source": SOURCE,
            "run": "ICON-EU single runs 00/06/12/18 UTC", "status": "research, not for operational use",
            "train": a.train.split(":"), "fog_train": a.fog_train.split(":"), "test": a.test.split(":"),
            "latency_h": core.LATENCY_H,
-           "runs_failed": failed, "continuous": cont, "fog": fog}
+           "runs_failed": failed, "continuous": cont, "fog": fog,
+           "fog_cv_period": [a.fog_train.split(":")[0], a.test.split(":")[1]], "fog_cv": fog_cv}
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     (out / "verification.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
