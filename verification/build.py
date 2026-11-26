@@ -9,6 +9,7 @@ import csv
 import glob
 import gzip
 import json
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -25,6 +26,30 @@ SOURCE = ("ICON-EU single runs (Open-Meteo Single Runs API); NTU archive (bgtoll
           "Environmental Mesonet); fogNowcast docs/verification.md")
 
 
+COVER = {"FEW": 0.19, "SCT": 0.44, "BKN": 0.75, "OVC": 1.0}
+_CLOUD = re.compile(r"\b(FEW|SCT|BKN|OVC)(\d{3})")
+_VV = re.compile(r"\bVV(\d{3})")
+
+
+def parse_clouds(raw):
+    """(low_cover 0-1, ceiling_ft) from a METAR: largest cover of layers based at or below 3000 ft, and the
+    lowest BKN/OVC/VV base (None if there is none). (None, None) for an empty report."""
+    if not raw:
+        return None, None
+    body = raw.split(" RMK")[0].split(" TEMPO")[0].split(" BECMG")[0].split(" NOSIG")[0]
+    cover, ceil = 0.0, None
+    for amt, h in _CLOUD.findall(body):
+        ft = int(h) * 100
+        if ft <= 3000:
+            cover = max(cover, COVER[amt])
+        if amt in ("BKN", "OVC"):
+            ceil = ft if ceil is None else min(ceil, ft)
+    for h in _VV.findall(body):
+        cover, ft = 1.0, int(h) * 100
+        ceil = ft if ceil is None else min(ceil, ft)
+    return cover, ceil
+
+
 def metar_hourly(path, icao):
     """{(icao, hour): obs} from metar_<ICAO>.csv.gz (analysis-metar); report nearest to HH:00 within 15 min."""
     best = {}
@@ -39,8 +64,10 @@ def metar_hourly(path, icao):
             if k not in best or off < best[k][0]:
                 num = lambda x: float(x) if x not in ("", "None") else None
                 tt, td, ws = num(r["t"]), num(r["td"]), num(r["wind_kt"])
+                cover, ceil = parse_clouds(r.get("raw") or "")
                 best[k] = (off, {"t": tt, "td": td, "dd": tt - td if tt is not None and td is not None else None,
-                                 "ws": ws, "fog": r["fog"] == "1", "vis": num(r["vis_m"])})
+                                 "ws": ws, "fog": r["fog"] == "1", "vis": num(r["vis_m"]),
+                                 "low_cover": cover, "ceil_ft": ceil})
     return {k: v[1] for k, v in best.items()}
 
 

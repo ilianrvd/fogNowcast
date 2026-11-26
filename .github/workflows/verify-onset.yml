@@ -1,0 +1,65 @@
+name: verify-onset
+# Manual: fog onset at the airports (docs/fog_onset.md). Rule, climatology, logistic regression and shallow
+# gradient boosting, leave-one-week-out, with a stop criterion fixed before the run. Model runs come from the
+# cache of verify-stage2 (single-runs-v3); only runs missing there are fetched from Open-Meteo.
+on:
+  workflow_dispatch:
+    inputs:
+      months:
+        description: "NTU archive months to read (neighbour stations of the airports)"
+        default: "2026-04 2026-05 2026-06 2026-07 2026-08 2026-09 2026-10 2026-11"
+      period:
+        description: "Period (start:end)"
+        default: "2026-04-05:2026-11-24"
+      publish:
+        description: "Publish the result to branch analysis-onset"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verify-stage2
+  cancel-in-progress: false
+
+jobs:
+  onset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install numpy scikit-learn
+      - name: Restore fetched model runs
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/single-runs-v3
+          key: single-runs-v3-${{ github.run_id }}
+          restore-keys: single-runs-v3-
+      - name: Fetch observations
+        run: |
+          mkdir -p "$RUNNER_TEMP/archive" "$RUNNER_TEMP/metar"
+          for m in ${{ inputs.months }}; do
+            git fetch --depth 1 origin "archive-$m"
+            git show FETCH_HEAD:"ntu_$m.csv.gz" > "$RUNNER_TEMP/archive/ntu_$m.csv.gz"
+          done
+          git fetch --depth 1 origin analysis-metar
+          for i in LBSF LBBG LBWN LBPD LBGO; do
+            git show FETCH_HEAD:"metar_$i.csv.gz" > "$RUNNER_TEMP/metar/metar_$i.csv.gz"
+          done
+      - run: >
+          python -m verification.onset --archive-dir "$RUNNER_TEMP/archive" --metar-dir "$RUNNER_TEMP/metar"
+          --out "$RUNNER_TEMP/out" --period "${{ inputs.period }}" --cache-dir .cache/single-runs-v3
+      - name: Save fetched model runs
+        if: ${{ always() }}
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/single-runs-v3
+          key: single-runs-v3-${{ github.run_id }}
+      - if: ${{ inputs.publish }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tools/publish_onset.sh "$RUNNER_TEMP/out"
