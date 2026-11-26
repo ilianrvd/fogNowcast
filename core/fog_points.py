@@ -4,11 +4,12 @@ corrected(valid) = model(valid) + (obs(t_obs) - model(t_obs)) * exp(-(valid - t_
 
 No fog probability yet: the saturation deficit is published as is. Calibration comes from verification/.
 Usage: python -m core.fog_points --model latest_points.json --ntu ntu_latest.json [--metar metar_latest.json]
-                               --points static/points.json --out fog_points.json
+                               --points static/points.json --stations static/correction_stations.json --out fog_points.json
 """
 import argparse
 import json
 import math
+import os
 from datetime import datetime, timedelta, timezone
 
 from verification.core import sat_deficit
@@ -134,12 +135,17 @@ def main(argv=None):
     ap.add_argument("--ntu", required=True)
     ap.add_argument("--metar")
     ap.add_argument("--points", default="static/points.json")
+    ap.add_argument("--stations", default="static/correction_stations.json")
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     load = lambda p: json.load(open(p, encoding="utf-8"))
-    doc = build(load(a.model), load(a.ntu), load(a.metar) if a.metar else None, load(a.points))
-    with open(a.out, "w", encoding="utf-8") as f:
+    points = load(a.points)
+    points = {"points": points["points"] + load(a.stations)["stations"]}   # airports + NTU stations (as MultiConvect)
+    doc = build(load(a.model), load(a.ntu), load(a.metar) if a.metar else None, points)
+    tmp = a.out + ".tmp"          # written whole or not at all: a broken run never leaves a partial file
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp, a.out)
     print(f"fog_points: {len(doc['points'])} points, {sum(1 for p in doc['points'] if p['obs_source'])} with observation")
 
 
