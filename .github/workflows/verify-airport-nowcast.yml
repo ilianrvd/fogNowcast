@@ -1,0 +1,51 @@
+name: verify-airport-nowcast
+# Manual: verification of airport-nowcast's p_lt1000 and visibility against METAR and persistence
+# (docs/verification.md). Reads the public archive branches of ilianrvd/airport-nowcast; changes nothing there.
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: "Archive branches of airport-nowcast to read"
+        default: "archive archive-2026-11"
+      publish:
+        description: "Publish the result to branch analysis-airport-nowcast"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch archived tables and METAR
+        run: |
+          mkdir -p "$RUNNER_TEMP/tables" "$RUNNER_TEMP/metar"
+          for br in ${{ inputs.branches }}; do
+            d="$RUNNER_TEMP/an-$br"
+            git clone -q --filter=blob:none --no-checkout --single-branch --branch "$br" \
+              https://github.com/ilianrvd/airport-nowcast.git "$d"
+            git -C "$d" sparse-checkout set --no-cone '/*/*/*/table_*.json.gz'
+            git -C "$d" -c gc.auto=0 checkout -q HEAD
+            cp -r "$d"/20* "$RUNNER_TEMP/tables/" 2>/dev/null || true
+          done
+          git fetch --depth 1 origin analysis-metar
+          for i in LBSF LBBG LBWN LBPD LBGO; do
+            git show FETCH_HEAD:"metar_$i.csv.gz" > "$RUNNER_TEMP/metar/metar_$i.csv.gz"
+          done
+      - run: python -m verification.airport_nowcast --tables "$RUNNER_TEMP/tables" --metar-dir "$RUNNER_TEMP/metar" --out "$RUNNER_TEMP/out"
+      - if: ${{ inputs.publish }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          d="$(mktemp -d)"; cp "$RUNNER_TEMP"/out/* "$d/"
+          printf '# Проверка на p_lt1000 на airport-nowcast\n\n> **Изследване, не за оперативна употреба.** Метод: docs/verification.md в основния клон на fogNowcast.\n\nТаблици: github.com/ilianrvd/airport-nowcast (архивни клонове). METAR: Iowa Environmental Mesonet.\n' > "$d/README.md"
+          cd "$d" && git init -q && git checkout -q -b analysis-airport-nowcast && git add -A
+          git -c user.name="fogNowcast Actions" -c user.email="actions@users.noreply.github.com" commit -q -m "airport-nowcast verification"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" analysis-airport-nowcast
