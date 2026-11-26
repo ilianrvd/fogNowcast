@@ -36,8 +36,11 @@
 
 ```json
 {
+  "schema": "fognowcast.ntu_latest/1.0",
   "generated_at": "2026-11-25T17:20:03Z",
   "source": "bgtoll.bg/mto/data (Национално тол управление), CC BY 4.0",
+  "run": null,
+  "cadence_min": 15,
   "obs_time_latest": "2026-11-25T17:15:00Z",
   "fallback_updated_at": "2026-11-25T17:00:01Z",
   "fallback_used": true,
@@ -62,10 +65,41 @@
 - `fallback_used`: дали `/temperaturefallback` е бил достатъчно пресен (до 60 мин), за да се решава `model_fallback`.
 - `ntu_status` и `ntu_model_t` са от `/temperaturefallback` (виж по-долу). Празни, ако той не е наличен.
 
+### `manifest.json` и заглавия за портала
+
+Порталът https://ilianrvd.github.io/ чете `manifest.json` на всеки проект, за да показва свежестта (договорено в `docs/manifest.md` и `docs/header.md` в репото `ilianrvd.github.io`).
+
+**Заглавие на всеки публикуван JSON** (`obs/ntu_latest.json`, `obs/ntu_recent.json`, `obs/ntu_fallback_latest.json`, `obs/ntu_fetch_state.json`): първите полета са `schema` (`fognowcast.<продукт>/1.0`), `generated_at`, `source`, `run` и `cadence_min` (15). `run` е `null`, защото данните са наблюдения, а не моделен рън. Старите полета остават; главната версия на `schema` се сменя само при промяна, която чупи четящите.
+
+**`manifest.json`** (в корена на Pages, https://ilianrvd.github.io/fogNowcast/manifest.json):
+
+```json
+{
+  "schema": "portal.manifest/1.0", "generated_at": "2026-11-26T05:50:31Z", "source": "fogNowcast",
+  "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
+  "description": {"bg": "Наблюдения от пътните станции на НТУ; предстои прогноза за мъгла по точки",
+                  "en": "NTU road weather stations; fog point forecast coming"},
+  "url": "https://ilianrvd.github.io/fogNowcast/", "repo": "https://github.com/ilianrvd/fogNowcast",
+  "status": "draft", "cadence_min": 15, "run": null, "embed": null,
+  "products": [
+    {"id": "ntu_latest", "path": "obs/ntu_latest.json", "format": "json", "schema": "fognowcast.ntu_latest/1.0",
+     "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md#obsntu_latestjson",
+     "cadence_min": 15, "generated_at": "2026-11-26T05:50:31Z", "data_time": "2026-11-26T05:45:00Z"}
+  ]
+}
+```
+
+- Пише се в края на всяко **успешно** пускане и влиза в същия deploy като `obs/`. `generated_at` е часът на пускането.
+- При прескочено пускане (защитата от 14 мин) или неуспешно пускане **не се пренаписва**: възрастта в портала расте и цветът минава в жълто и червено, вместо да остане зелен с нов час и стари данни.
+- Продукти: `ntu_latest` (`data_time` = най-новият запис от НТУ, `obs_time_latest`; може да е по-стар от `generated_at`, когато НТУ закъснява), `ntu_recent` (`data_time` = най-новият ред) и `ntu_fallback` (`generated_at` = кога е изтеглен, `data_time` = `updated_at` на НТУ). `ntu_fetch_state.json` е служебен и не е продукт. Архивите са клонове в репото, не са в Pages и не са продукти.
+- `status` е `draft`, докато няма страница; тогава става `experimental` и се попълва `embed`.
+- `consumes` липсва: живият поток не чете нищо от другите проекти (заместителят е от самото НТУ). Ще се добавят `latest_points.json` (MultiConvect) и `obs/metar_latest.json` (nowcasting-public) с живата версия на етап 2.
+
 ### `obs/ntu_fetch_state.json`
 
 ```json
-{"generated_at": "2026-11-25T17:20:01Z", "source": "fogNowcast ingest.ntu_live", "last_request_at": "2026-11-25T17:20:01Z"}
+{"schema": "fognowcast.ntu_fetch_state/1.0", "generated_at": "2026-11-25T17:20:01Z", "source": "fogNowcast ingest.ntu_live",
+ "run": null, "cadence_min": 15, "last_request_at": "2026-11-25T17:20:01Z"}
 ```
 
 Часът на последния опит за заявка към НТУ. Служебен файл за защитата от честите заявки.
