@@ -13,9 +13,9 @@ import urllib.request
 
 URL = "https://single-runs-api.open-meteo.com/v1/forecast"
 UA = "fogNowcast-probe/0.1 (+https://github.com/ilianrvd/fogNowcast)"
-VARS = ["temperature_2m", "dew_point_2m", "wind_speed_10m", "wind_direction_10m", "cloud_cover_low"]
-RUNS = ["2026-04-03T00:00", "2026-10-15T00:00", "2026-10-15T03:00", "2026-11-20T06:00", "2026-11-24T12:00"]
-MODELS = ["icon_eu", "dwd_icon_eu"]
+VARS = ["temperature_2m", "dew_point_2m", "wind_speed_10m", "wind_direction_10m", "cloud_cover_low", "visibility"]
+RUNS = ["2026-04-03T00:00", "2026-10-15T00:00", "2026-11-20T06:00"]
+MODELS = ["icon_eu"]
 
 
 def fetch(model, run):
@@ -44,7 +44,11 @@ def main() -> int:
                 print(f"{model} {run}: hours={len(t)} first={t[0] if t else '-'} last={t[-1] if t else '-'} "
                       f"present={present} grid={d.get('latitude')},{d.get('longitude')}")
                 if t:
+                    vis = h.get("visibility") or []
                     print(f"   first 3 t: {h['temperature_2m'][:3]} td: {h['dew_point_2m'][:3]}")
+                    print(f"   visibility units: {d.get('hourly_units', {}).get('visibility')}; first 12: {vis[:12]}")
+                    print(f"   visibility min/max: {min((v for v in vis if v is not None), default=None)} / "
+                          f"{max((v for v in vis if v is not None), default=None)}; distinct: {len(set(vis))}")
             time.sleep(2)
     return 0
 
