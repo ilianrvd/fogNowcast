@@ -52,7 +52,8 @@ def hours(start, end):
     return out
 
 
-WORKERS = 2  # parallel requests to Open-Meteo (4 gave HTTP 429 on 2026-11-26)
+WORKERS = 1    # requests to Open-Meteo one at a time: 2-4 in parallel with 26 points each gave HTTP 429 (2026-11-26)
+PAUSE_S = 1.0  # pause after each request
 
 
 def load_runs(run_times, points, cache_dir):
@@ -72,7 +73,10 @@ def load_runs(run_times, points, cache_dir):
 
     def one(r):
         t = time.time()
-        return fetch_run(r, points), time.time() - t
+        data = fetch_run(r, points)
+        dt = time.time() - t
+        time.sleep(PAUSE_S)
+        return data, dt
 
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         futs = {ex.submit(one, r): (r, f) for r, f in todo}
@@ -319,8 +323,20 @@ def main(argv=None) -> int:
         if r.hour in core.RUN_HOURS:
             run_times.append(r)
         r += timedelta(hours=6)
-    model, runs, failed = load_runs(run_times, points, a.cache_dir)
-    print(f"runs: {len(runs)} ok, {len(failed)} failed", flush=True)
+    # Fewer requests: the airports (fog, visibility) for the whole period; the NTU stations only for the
+    # training/test period of the continuous variables. Open-Meteo counts a request with many points as many calls.
+    ap_points = [p for p in points if p["id"] in {x["id"] for x in airports}]
+    st_points = [p for p in points if p["id"] not in {x["id"] for x in airports}]
+    st_times = [r for r in run_times if r >= tr[0] - timedelta(hours=12)]
+    sub_dir = lambda name: str(Path(a.cache_dir) / name) if a.cache_dir else None
+    model_ap, _, failed_ap = load_runs(run_times, ap_points, sub_dir("airports"))
+    model_st, _, failed_st = load_runs(st_times, st_points, sub_dir("stations"))
+    model = {}
+    for r in set(model_ap) | set(model_st):
+        model[r] = {**model_ap.get(r, {}), **model_st.get(r, {})}
+    runs = sorted(model)
+    failed = sorted(set(failed_ap) | {f + " (stations)" for f in failed_st})
+    print(f"runs: {len(runs)} ok, {len(failed_ap)} airport runs failed, {len(failed_st)} station runs failed", flush=True)
 
     ids = [p["id"] for p in points]
     cases = core.build_cases(hours(start, end), obs, model, runs, ids)
