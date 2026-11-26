@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fogNowcast — пътни станции на НТУ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<style>
+  :root { --bg:#f7f7f5; --fg:#1d1d1b; --muted:#6b6b66; --line:#d9d9d4; --card:#fff;
+          --ok:#2e7d32; --warn:#b26a00; --bad:#c62828; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161615; --fg:#ececea; --muted:#a3a39e; --line:#34342f; --card:#20201e; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg);
+               font:14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display:flex; flex-direction:column; }
+  header, footer { padding:8px 14px; }
+  header { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:baseline; border-bottom:1px solid var(--line); }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  #fresh { font-variant-numeric:tabular-nums; }
+  #fresh .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+  .muted { color:var(--muted); }
+  main { flex:1; display:flex; min-height:0; }
+  #map { flex:1; min-height:420px; }
+  aside { width:340px; max-width:45%; overflow:auto; border-left:1px solid var(--line); padding:12px 14px; background:var(--card); }
+  @media (max-width: 760px) { main { flex-direction:column; } aside { width:auto; max-width:none; border-left:0; border-top:1px solid var(--line); } #map { min-height:55vh; } }
+  aside h2 { font-size:15px; margin:0 0 4px; }
+  table.kv { border-collapse:collapse; width:100%; margin:8px 0; font-variant-numeric:tabular-nums; }
+  table.kv td { padding:3px 0; border-bottom:1px solid var(--line); }
+  table.kv td:last-child { text-align:right; }
+  .flag { display:inline-block; font-size:12px; padding:1px 6px; margin:2px 3px 0 0; border:1px solid var(--line); border-radius:9px; }
+  .legend { background:var(--card); color:var(--fg); padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12px; line-height:1.5; }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:6px; vertical-align:-1px; border:1px solid rgba(0,0,0,.25); }
+  svg text { fill:var(--muted); font-size:10px; }
+  footer { border-top:1px solid var(--line); font-size:12px; }
+  body.embed header, body.embed footer { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>fogNowcast — пътни станции на НТУ</h1>
+  <span id="fresh" class="muted">зареждане…</span>
+  <span class="muted">Само наблюдения; прогноза за мъгла предстои.</span>
+</header>
+<main>
+  <div id="map" role="region" aria-label="Карта на станциите"></div>
+  <aside id="panel">
+    <h2>Изберете станция</h2>
+    <p class="muted">Цветът е дефицитът до насищане: <i>t − td</i> над 0 °C и <i>t</i> минус точката на скреж под 0 °C (под нулата мъглата се образува при насищане спрямо лед, при <i>rh</i> под 100 %). Малкият дефицит не означава мъгла: срещу METAR на летищата насищането на близка станция дава много фалшиви тревоги.</p>
+    <p class="muted">Сиво: станцията е изключена от проверката на качеството (например моделна температура или заседнал сензор).</p>
+  </aside>
+</main>
+<footer class="muted">
+  Данни: Национално тол управление (bgtoll.bg), лиценз <a href="https://creativecommons.org/licenses/by/4.0/deed.bg">CC BY 4.0</a>; вятърът е в kt, часовете в UTC.
+  Личен проект, не е официален продукт на сертифициран доставчик. Не за оперативна употреба.
+  Контакт: Илиан Манафов, ilianm@mail.bg · <a href="https://github.com/ilianrvd/fogNowcast">github.com/ilianrvd/fogNowcast</a>
+</footer>
+<script>
+"use strict";
+const EMBED = new URLSearchParams(location.search).get("embed") === "1";
+if (EMBED) document.body.classList.add("embed");
+const CADENCE = 15;
+const BINS = [  // saturation deficit, °C
+  {max: 0.5, color: "#6a1b9a", label: "≤ 0,5 °C (наситен)"},
+  {max: 1,   color: "#3949ab", label: "0,5–1 °C"},
+  {max: 2,   color: "#1e88e5", label: "1–2 °C"},
+  {max: 4,   color: "#80cbc4", label: "2–4 °C"},
+  {max: 1e9, color: "#e0d9b8", label: "> 4 °C"},
+];
+const EXCLUDED = "#9e9e9e";
+
+const eW = t => 6.112 * Math.exp(17.62 * t / (243.12 + t));
+function satDeficit(t, td) {
+  if (t == null || td == null) return null;
+  td = Math.min(td, t);
+  if (t >= 0) return Math.max(0, t - td);
+  const a = Math.log(eW(td) / 6.112);            // frost point: e_ice(tf) = e_water(td)
+  const tf = 272.62 * a / (22.46 - a);
+  return Math.max(0, t - tf);
+}
+const colorFor = d => d == null ? EXCLUDED : BINS.find(b => d <= b.max).color;
+const fmt = (v, n = 1, u = "") => v == null ? "—" : v.toFixed(n).replace(".", ",") + u;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ageMin = iso => iso ? Math.round((Date.now() - Date.parse(iso)) / 60000) : null;
+const hhmm = iso => iso ? iso.slice(11, 16) + " UTC" : "—";
+const FLAG_BG = {late: "закъснял запис", model_fallback: "моделна температура (НТУ)", fallback_unknown: "неизвестно дали е моделна",
+  t_frozen: "заседнала температура", rh_constant: "непроменена влажност 6 ч", surface_missing: "без настилка",
+  surface_suspect: "съмнителна настилка", wind_zero_both: "вятър 0/0 (неясно)", rh_missing: "без влажност",
+  t_missing: "без температура", pressure_missing: "без налягане", rh_clipped: "rh > 100 % (отрязано)"};
+
+const map = L.map("map", {zoomSnap: 0.5}).setView([42.75, 25.4], 7);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 13, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+const legend = L.control({position: "bottomleft"});
+legend.onAdd = () => {
+  const d = L.DomUtil.create("div", "legend");
+  d.innerHTML = "<b>Дефицит до насищане</b><br>" + BINS.map(b => `<i style="background:${b.color}"></i>${b.label}`).join("<br>")
+    + `<br><i style="background:${EXCLUDED}"></i>изключена / без данни`;
+  return d;
+};
+legend.addTo(map);
+
+let recent = null;
+async function getJSON(path) {
+  const r = await fetch(path + "?t=" + Date.now(), {cache: "no-store"});
+  if (!r.ok) throw new Error(path + ": HTTP " + r.status);
+  return r.json();
+}
+
+function showFresh(manifest, latest) {
+  const el = document.getElementById("fresh");
+  const gen = (manifest && manifest.generated_at) || latest.generated_at;
+  const a = ageMin(gen);
+  const cls = a == null ? "bad" : a <= CADENCE + 15 ? "ok" : a <= 2 * CADENCE + 15 ? "warn" : "bad";
+  el.className = "";
+  el.innerHTML = `<span class="dot" style="background:var(--${cls})"></span>Данни от ${hhmm(latest.obs_time_latest)}`
+    + ` · обновено преди ${a} мин · ${latest.stations.length} станции`;
+}
+
+function sparkline(id) {
+  if (!recent) return "";
+  const it = recent.columns.indexOf("t"), itd = recent.columns.indexOf("td");
+  const rows = recent.rows.filter(r => r[1] === id && r[it] != null);
+  if (rows.length < 2) return "<p class='muted'>Няма достатъчно данни за 24 ч.</p>";
+  const W = 300, H = 120, P = 22;
+  const xs = rows.map(r => Date.parse(r[0])), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const vals = rows.flatMap(r => [r[it], r[itd]]).filter(v => v != null);
+  let y0 = Math.floor(Math.min(...vals)) - 1, y1 = Math.ceil(Math.max(...vals)) + 1;
+  const X = t => P + (W - P - 4) * (t - x0) / Math.max(1, x1 - x0);
+  const Y = v => H - 14 - (H - 24) * (v - y0) / (y1 - y0);
+  const path = col => rows.filter(r => r[col] != null).map((r, i) => (i ? "L" : "M") + X(Date.parse(r[0])).toFixed(1) + "," + Y(r[col]).toFixed(1)).join("");
+  const zero = (y0 < 0 && y1 > 0) ? `<line x1="${P}" x2="${W - 4}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" stroke-dasharray="3 3"/>` : "";
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Температура и роса за 24 ч">
+    ${zero}<path d="${path(it)}" fill="none" stroke="#c62828" stroke-width="1.6"/>
+    <path d="${path(itd)}" fill="none" stroke="#1e88e5" stroke-width="1.6"/>
+    <text x="2" y="${Y(y1) + 8}">${y1}°</text><text x="2" y="${Y(y0)}">${y0}°</text>
+    <text x="${P}" y="${H - 2}">${hhmm(rows[0][0])}</text><text x="${W - 60}" y="${H - 2}">${hhmm(rows[rows.length - 1][0])}</text>
+  </svg><p class="muted" style="margin:2px 0 0"><span style="color:#c62828">■</span> температура · <span style="color:#1e88e5">■</span> точка на оросяване</p>`;
+}
+
+function showStation(s, d) {
+  const flags = (s.qc.flags || []).map(f => `<span class="flag">${esc(FLAG_BG[f] || f)}</span>`).join("");
+  document.getElementById("panel").innerHTML = `
+    <h2>${esc(s.name)}</h2>
+    <div class="muted">${esc(s.id)} · ${s.elev_m != null ? s.elev_m + " m" : "височина —"} · ${hhmm(s.time)} (преди ${s.age_min} мин)</div>
+    <table class="kv">
+      <tr><td>Температура</td><td>${fmt(s.t, 1, " °C")}</td></tr>
+      <tr><td>Точка на оросяване</td><td>${fmt(s.td, 1, " °C")}</td></tr>
+      <tr><td>Влажност</td><td>${fmt(s.rh, 0, " %")}</td></tr>
+      <tr><td>Дефицит до насищане</td><td>${fmt(d, 1, " °C")}${s.t != null && s.t < 0 ? " (спрямо лед)" : ""}</td></tr>
+      <tr><td>Настилка</td><td>${fmt(s.t_surface, 1, " °C")}</td></tr>
+      <tr><td>Вятър</td><td>${s.wind_kt == null ? "—" : fmt(s.wind_kt, 0, " kt") + (s.wind_dir != null ? " / " + Math.round(s.wind_dir) + "°" : "")}</td></tr>
+      <tr><td>Налягане</td><td>${fmt(s.pressure_hpa, 1, " hPa")}</td></tr>
+    </table>
+    ${s.qc.excluded ? "<p><b>Изключена от проверката на качеството.</b></p>" : ""}
+    <div>${flags}</div>
+    <h2 style="margin-top:12px">Последните 24 ч</h2>
+    ${sparkline(s.id)}`;
+}
+
+(async () => {
+  try {
+    const [latest, manifest] = await Promise.all([getJSON("obs/ntu_latest.json"), getJSON("manifest.json").catch(() => null)]);
+    showFresh(manifest, latest);
+    getJSON("obs/ntu_recent.json").then(r => { recent = r; }).catch(() => {});
+    for (const s of latest.stations) {
+      const d = s.qc.excluded ? null : satDeficit(s.t, s.td);
+      const m = L.circleMarker([s.lat, s.lon], {radius: 7, weight: 1, color: "#333", fillColor: colorFor(d), fillOpacity: 0.9})
+        .addTo(map).bindTooltip(`${esc(s.name)}: ${fmt(s.t, 1, " °C")}, дефицит ${fmt(d, 1, " °C")}`);
+      m.on("click", () => showStation(s, d));
+    }
+  } catch (e) {
+    document.getElementById("fresh").innerHTML = `<span class="dot" style="background:var(--bad)"></span>Данните не могат да се заредят (${esc(e.message)})`;
+  }
+})();
+</script>
+</body>
+</html>

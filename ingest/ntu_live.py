@@ -71,8 +71,9 @@ def build_manifest(now, latest, recent, fallback):
             "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
             "description": {"bg": "Наблюдения от пътните станции на НТУ; предстои прогноза за мъгла по точки",
                             "en": "NTU road weather stations; fog point forecast coming"},
-            "url": SITE, "repo": "https://github.com/ilianrvd/fogNowcast", "status": "draft",
-            "cadence_min": CADENCE_MIN, "run": None, "embed": None, "products": products}
+            "url": SITE, "repo": "https://github.com/ilianrvd/fogNowcast", "status": "experimental",
+            "cadence_min": CADENCE_MIN, "run": None,
+            "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": False}, "products": products}
 UTC = timezone.utc
 LATE_MIN = 30               # flag `late` when the record is older than this
 OMIT_MIN = 360              # drop records older than this (dead or ghost stations)

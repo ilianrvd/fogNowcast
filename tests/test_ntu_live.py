@@ -217,7 +217,8 @@ class PortalTests(unittest.TestCase):
             self.assertEqual((d["schema"], d["run"], d["cadence_min"]), (schema, None, 15))
         m = self.load("manifest.json")
         self.assertEqual(m["schema"], "portal.manifest/1.0")
-        self.assertEqual((m["id"], m["status"], m["cadence_min"], m["generated_at"]), ("fognowcast", "draft", 15, "2026-11-25T17:20:00Z"))
+        self.assertEqual((m["id"], m["status"], m["cadence_min"], m["generated_at"]), ("fognowcast", "experimental", 15, "2026-11-25T17:20:00Z"))
+        self.assertEqual(m["embed"], {"url": "index.html?embed=1", "min_height_px": 800, "gated": False})
         self.assertNotIn("consumes", m)
         by = {p["id"]: p for p in m["products"]}
         self.assertEqual(set(by), {"ntu_latest", "ntu_recent", "ntu_fallback"})
