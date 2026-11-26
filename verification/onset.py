@@ -28,6 +28,10 @@ WINDOWS = {"1-3": (1, 3), "3-6": (3, 6)}
 TAUS = {"t": 9, "td": 9, "ws": 6}          # from the stage-2 verification (training October 2026)
 STOP = {"warned_2h_share_min": 0.25, "far_max": 0.7}   # plus: 95 % interval of CSI above 0
 RULE = {"dd_max": 1.0, "ws_max": 5.0}       # night, deficit <= 1 C, wind <= 5 kt, deficit falling over 3 h
+# Dynamic regime (from the fog-model-bulgaria experience, Ilian Manafov 2026-11-26): wind above 4.9 kt or
+# BKN/OVC/VV below 5000 ft. Wind: METAR at t0 AND the corrected model mean in the window both above the limit
+# (calm now or calm later can still give radiation fog). Ceiling: METAR at t0.
+REGIME = {"ws_max_kt": 4.9, "ceil_min_ft": 5000}
 SOURCE = ("METAR (Iowa Environmental Mesonet); ICON-EU single runs (Open-Meteo); NTU archive (bgtoll.bg, CC BY 4.0); "
           "fogNowcast docs/fog_onset.md")
 
@@ -131,7 +135,10 @@ def samples(obs, model, runs, airports, lat_lon, near, t0s):
                      "mod_dd_min": min(dds), "mod_dd_drop": min(dds) - dd0,
                      "mod_ws_mean": sum(wss) / len(wss), "mod_cl_mean": (sum(cls) / len(cls)) if cls else 0.0,
                      "ntu_dd_min": ntu[0], "ntu_d_dd_3h": ntu[1], "ntu_missing": ntu[2]}
-                out.append({"point": pid, "t0": t0, "window": wname, "y": bool(y), "f": f,
+                ceil = o0.get("ceil_ft")
+                dyn = (o0["ws"] > REGIME["ws_max_kt"] and f["mod_ws_mean"] > REGIME["ws_max_kt"]) or \
+                      (ceil is not None and ceil < REGIME["ceil_min_ft"])
+                out.append({"point": pid, "t0": t0, "window": wname, "y": bool(y), "f": f, "dynamic": dyn,
                             "x": [f[k] for k in FEATURES]})
     return out
 
@@ -237,7 +244,20 @@ def best_threshold(ps, ys):
 
 
 def _predict_batch(method, train, test):
-    """Probabilities for test from a model fitted on train; None if the method is unavailable."""
+    """Probabilities for test from a model fitted on train; None if the method is unavailable.
+    *_calm: fitted on the calm regime only; a sample in the dynamic regime gets probability 0."""
+    if method.endswith("_calm"):
+        tr = [s for s in train if not s["dynamic"]]
+        calm = [i for i, s in enumerate(test) if not s["dynamic"]]
+        out = [0.0] * len(test)
+        if not calm or not any(s["y"] for s in tr):
+            return out
+        p = _predict_batch(method[:-5], tr, [test[i] for i in calm])
+        if p is None:
+            return None
+        for i, v in zip(calm, p):
+            out[i] = v
+        return out
     if method == "climatology":
         f = fit_climatology(train)
         return [f(s) for s in test]
@@ -358,9 +378,11 @@ def run_all(rows_all, eps):
     for wname in WINDOWS:
         rows = [s for s in rows_all if s["window"] == wname]
         rule_dec = [rule_decision(s) for s in rows]
-        w = {"rows": len(rows), "events": sum(s["y"] for s in rows)}
+        w = {"rows": len(rows), "events": sum(s["y"] for s in rows),
+             "dynamic_rows": sum(s["dynamic"] for s in rows),
+             "dynamic_events": sum(1 for s in rows if s["dynamic"] and s["y"])}
         w["rule"] = score(rows, [(1.0 if d else 0.0, d) for d in rule_dec], rule_dec, eps, wname, with_prob=False)
-        for m in ("climatology", "logistic", "boosting"):
+        for m in ("climatology", "logistic", "boosting", "logistic_calm", "boosting_calm"):
             p = cv_predict(rows, m)
             w[m] = {"note": "scikit-learn not installed"} if p is None else score(rows, p, rule_dec, eps, wname)
         if rows and any(s["y"] for s in rows):
@@ -372,7 +394,10 @@ def run_all(rows_all, eps):
 
 
 METHOD_BG = {"rule": "правило", "climatology": "климатология", "logistic": "логистична регресия",
-             "boosting": "gradient boosting"}
+             "boosting": "gradient boosting", "logistic_calm": "регресия, само спокоен режим",
+             "boosting_calm": "boosting, само спокоен режим"}
+METHODS = ("rule", "climatology", "logistic", "boosting", "logistic_calm", "boosting_calm")
+LEARNED = ("logistic", "boosting", "logistic_calm", "boosting_calm")
 
 
 def report(res):
@@ -385,9 +410,12 @@ def report(res):
          f"Епизоди: {res['episodes']} (начало след поне 2 ч без мъгла).", ""]
     for wname, w in res["windows"].items():
         L += [f"## Прозорец {wname} ч ({w['rows']} случая, {w['events']} с мъгла)", "",
+              f"Динамичен режим (вятър > {REGIME['ws_max_kt']} kt сега и в модела, или таван < {REGIME['ceil_min_ft']} ft): "
+              f"{w.get('dynamic_rows')} случая, от тях {w.get('dynamic_events')} с мъгла в прозореца "
+              "(тях методите „само спокоен режим“ изпускат по построение).", "",
               "| метод | POD | FAR | CSI | ИД CSI | ИД CSI − правило | Brier | ср. p / честота | епизоди ≥ 2 ч | изпуснати | минава |",
               "|---|---|---|---|---|---|---|---|---|---|---|"]
-        for m in ("rule", "climatology", "logistic", "boosting"):
+        for m in METHODS:
             r = w.get(m, {})
             if "csi" not in r:
                 L.append(f"| {METHOD_BG[m]} | {r.get('note', '—')} |||||||||| ")
@@ -403,9 +431,9 @@ def report(res):
                   + ", ".join(f"`{k}` {v}" for k, v in top) + "."]
         L.append("")
     verdict = [f"{METHOD_BG[m]} ({wn} ч)" for wn, w in res["windows"].items()
-               for m in ("logistic", "boosting") if w.get(m, {}).get("passes")]
+               for m in LEARNED if w.get(m, {}).get("passes")]
     L += ["## Извод", "", ("Минават стоп-условието: " + ", ".join(verdict) + ".") if verdict else
-          "Нито регресията, нито gradient boosting минава стоп-условието.", ""]
+          "Никой от научените методи не минава стоп-условието.", ""]
     return "\n".join(L) + "\n"
 
 
@@ -451,7 +479,7 @@ def main(argv=None):
     eps = events.episodes(fog_series)
     res = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "source": SOURCE,
            "run": "ICON-EU single runs 00/06/12/18 UTC", "status": "research, not for operational use",
-           "period": a.period.split(":"), "windows_h": WINDOWS, "stop": STOP, "rule": RULE, "taus_h": TAUS,
+           "period": a.period.split(":"), "windows_h": WINDOWS, "stop": STOP, "rule": RULE, "regime": REGIME, "taus_h": TAUS,
            "features": FEATURES, "runs_failed": failed, "episodes": sum(len(v) for v in eps.values()),
            "windows": run_all(rows, eps)}
     out = Path(a.out)
