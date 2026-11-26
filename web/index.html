@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>fogNowcast — пътни станции на НТУ</title>
+<title>fogNowcast — станции на НТУ и летища</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <style>
@@ -34,21 +34,37 @@
   .legend { background:var(--card); color:var(--fg); padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12px; line-height:1.5; }
   .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:6px; vertical-align:-1px; border:1px solid rgba(0,0,0,.25); }
   svg text { fill:var(--muted); font-size:10px; }
+  #timebar { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; padding:6px 14px; border-bottom:1px solid var(--line); background:var(--card); }
+  #timebar button { font:inherit; padding:3px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); cursor:pointer; }
+  #timebar button[aria-pressed="true"] { background:var(--fg); color:var(--bg); }
+  #timebar input[type=range] { width:200px; vertical-align:middle; }
+  #timebar button:disabled { opacity:.45; cursor:default; }
+  body.embed #timebar .muted:first-of-type { display:none; }
+  table.fc { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; font-size:12px; }
+  table.fc th, table.fc td { padding:2px 3px; text-align:right; border-bottom:1px solid var(--line); }
+  table.fc th:first-child, table.fc td:first-child { text-align:left; }
+  table.fc tr.sel { font-weight:600; background:rgba(128,128,128,.15); }
   footer { border-top:1px solid var(--line); font-size:12px; }
   body.embed header, body.embed footer { display:none; }
 </style>
 </head>
 <body>
 <header>
-  <h1>fogNowcast — пътни станции на НТУ</h1>
+  <h1>fogNowcast — станции на НТУ и летища</h1>
   <span id="fresh" class="muted">зареждане…</span>
-  <span class="muted">Само наблюдения; прогноза за мъгла предстои.</span>
+  <span class="muted">Прогнозата е некалибрирана: модел + затихваща корекция от наблюдението; вероятност за мъгла няма.</span>
 </header>
+<div id="timebar">
+  <span><button id="mObs" aria-pressed="true">Наблюдения</button> <button id="mFc" aria-pressed="false" disabled>Прогноза</button></span>
+  <span id="slider" hidden><input id="lead" type="range" min="0" max="6" step="1" value="0" aria-label="Час на прогнозата"> <b id="leadLabel"></b></span>
+  <span id="fogInfo" class="muted"></span>
+</div>
 <main>
   <div id="map" role="region" aria-label="Карта на станциите"></div>
   <aside id="panel">
     <h2>Изберете станция</h2>
     <p class="muted">Цветът е дефицитът до насищане: <i>t − td</i> над 0 °C и <i>t</i> минус точката на скреж под 0 °C (под нулата мъглата се образува при насищане спрямо лед, при <i>rh</i> под 100 %). Малкият дефицит не означава мъгла: срещу METAR на летищата насищането на близка станция дава много фалшиви тревоги.</p>
+    <p class="muted">Прогноза: цветът е дефицитът на коригираните t и td за избрания час. Плътен кръг: има пресно наблюдение; блед: само модел. Кръг с дебела рамка: летище (METAR). Дефицитът не е вероятност за мъгла.</p>
     <p class="muted">Сиво: станцията е изключена от проверката на качеството (например моделна температура или заседнал сензор).</p>
   </aside>
 </main>
@@ -102,7 +118,10 @@ legend.onAdd = () => {
 };
 legend.addTo(map);
 
-let recent = null;
+let recent = null, fog = null, mode = "obs", lead = 0, selected = null;
+const markers = new Map();   // id -> {marker, station, name, fp}
+const fogById = () => new Map(((fog && fog.points) || []).map(p => [p.id, p]));
+const rowAt = (fp, h) => fp && fp.series.find(r => r.lead_h === h);
 async function getJSON(path) {
   const r = await fetch(path + "?t=" + Date.now(), {cache: "no-store"});
   if (!r.ok) throw new Error(path + ": HTTP " + r.status);
@@ -140,7 +159,23 @@ function sparkline(id) {
   </svg><p class="muted" style="margin:2px 0 0"><span style="color:#c62828">■</span> температура · <span style="color:#1e88e5">■</span> точка на оросяване</p>`;
 }
 
-function showStation(s, d) {
+function forecastTable(fp) {
+  if (!fp) return "";
+  const rows = fp.series.map(r => `<tr class="${r.lead_h === lead && mode === "fc" ? "sel" : ""}"><td>${r.valid.slice(11, 16)}</td>`
+    + `<td>${fmt(r.t, 1)}</td><td>${fmt(r.td, 1)}</td><td>${fmt(r.deficit, 1)}</td><td>${r.wind_kt == null ? "—" : r.wind_kt}</td><td>${r.corr_weight} %</td></tr>`).join("");
+  const src = fp.obs_source ? `корекция от ${fp.obs_source === "metar" ? "METAR" : "НТУ"} ${hhmm(fp.obs_time)}` : "само модел (без пресно наблюдение)";
+  return `<h2 style="margin-top:12px">Прогноза (некалибрирана)</h2>
+    <div class="muted">${src}${fp.model_elev_m != null && fp.elev_m != null ? ` · модел ${Math.round(fp.model_elev_m)} m, точка ${fp.elev_m} m` : ""}</div>
+    <table class="fc"><tr><th>UTC</th><th>t °C</th><th>td °C</th><th>деф. °C</th><th>kt</th><th>корекция</th></tr>${rows}</table>
+    <p class="muted" style="margin:2px 0 0">Вятърът е в kt, часовете в UTC. Корекцията е тежестта на наблюдението: намалява със срока.</p>`;
+}
+
+function showStation(s, d, fp) {
+  selected = s ? s.id : (fp && fp.id);
+  if (!s) {
+    document.getElementById("panel").innerHTML = `<h2>${esc(fp.name)}</h2><div class="muted">${esc(fp.id)} · летище${fp.elev_m != null ? " · " + fp.elev_m + " m" : ""}</div>${forecastTable(fp)}`;
+    return;
+  }
   const flags = (s.qc.flags || []).map(f => `<span class="flag">${esc(FLAG_BG[f] || f)}</span>`).join("");
   document.getElementById("panel").innerHTML = `
     <h2>${esc(s.name)}</h2>
@@ -156,21 +191,87 @@ function showStation(s, d) {
     </table>
     ${s.qc.excluded ? "<p><b>Изключена от проверката на качеството.</b></p>" : ""}
     <div>${flags}</div>
+    ${forecastTable(fp)}
     <h2 style="margin-top:12px">Последните 24 ч</h2>
     ${sparkline(s.id)}`;
 }
 
+function styleFor(id) {
+  const m = markers.get(id), fp = m.fp;
+  if (mode === "fc") {
+    const r = rowAt(fp, lead);
+    const hasObs = !!(fp && fp.obs_source && r && r.corr_weight > 0);
+    return {fill: r ? colorFor(r.deficit) : EXCLUDED, opacity: hasObs ? 0.95 : 0.45, tip: r
+      ? `${esc(m.name)}: ${fmt(r.t, 1, " °C")}, дефицит ${fmt(r.deficit, 1, " °C")}, ${r.wind_kt ?? "—"} kt${hasObs ? "" : " (само модел)"}`
+      : `${esc(m.name)}: няма прогноза`};
+  }
+  const s = m.station;
+  const d = s && !s.qc.excluded ? satDeficit(s.t, s.td) : null;
+  return {fill: colorFor(d), opacity: 0.9, tip: s ? `${esc(s.name)}: ${fmt(s.t, 1, " °C")}, дефицит ${fmt(d, 1, " °C")}` : esc(m.name)};
+}
+
+function render() {
+  const fc = mode === "fc";
+  document.getElementById("mObs").setAttribute("aria-pressed", String(!fc));
+  document.getElementById("mFc").setAttribute("aria-pressed", String(fc));
+  document.getElementById("slider").hidden = !fc;
+  if (fc && fog) {
+    const t = new Date(Date.parse(fog.t0) + lead * 3600000).toISOString();
+    document.getElementById("leadLabel").textContent = `${t.slice(11, 16)} UTC (+${lead} ч)`;
+  }
+  for (const [id, m] of markers) {
+    const st = styleFor(id);
+    // forecast view: only the 26 points with a forecast (airports appear there); observation view: all NTU stations
+    const vis = fc ? !!m.fp : !!m.station;
+    if (vis && !map.hasLayer(m.marker)) m.marker.addTo(map);
+    if (!vis && map.hasLayer(m.marker)) map.removeLayer(m.marker);
+    m.marker.setStyle({fillColor: st.fill, fillOpacity: st.opacity});
+    m.marker.setTooltipContent(st.tip);
+  }
+  if (selected && markers.has(selected)) {
+    const m = markers.get(selected);
+    if (m.station) showStation(m.station, m.station.qc.excluded ? null : satDeficit(m.station.t, m.station.td), m.fp);
+    else if (fc) showStation(null, null, m.fp);
+  }
+}
+
+function showFog(fogDoc) {
+  const el = document.getElementById("fogInfo");
+  const a = ageMin(fogDoc.generated_at), inp = fogDoc.inputs || {};
+  const cls = a == null ? "bad" : a <= CADENCE + 15 ? "ok" : a <= 2 * CADENCE + 15 ? "warn" : "bad";
+  el.innerHTML = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:var(--${cls})"></span>`
+    + `Прогноза: модел ${esc(((fogDoc.run && fogDoc.run.icon_eu) || "").slice(5, 16).replace("T", " "))} UTC, обновена преди ${a} мин`
+    + (inp.model_age_min != null && inp.model_age_min > 12 * 60 ? ` · <b>моделът е стар (${Math.round(inp.model_age_min / 60)} ч)</b>` : "");
+}
+
 (async () => {
   try {
-    const [latest, manifest] = await Promise.all([getJSON("obs/ntu_latest.json"), getJSON("manifest.json").catch(() => null)]);
+    const [latest, manifest, fogDoc] = await Promise.all([getJSON("obs/ntu_latest.json"), getJSON("manifest.json").catch(() => null),
+      getJSON("fog/fog_points.json").catch(() => null)]);
     showFresh(manifest, latest);
     getJSON("obs/ntu_recent.json").then(r => { recent = r; }).catch(() => {});
+    fog = fogDoc;
+    const byId = fogById();
     for (const s of latest.stations) {
-      const d = s.qc.excluded ? null : satDeficit(s.t, s.td);
-      const m = L.circleMarker([s.lat, s.lon], {radius: 7, weight: 1, color: "#333", fillColor: colorFor(d), fillOpacity: 0.9})
-        .addTo(map).bindTooltip(`${esc(s.name)}: ${fmt(s.t, 1, " °C")}, дефицит ${fmt(d, 1, " °C")}`);
-      m.on("click", () => showStation(s, d));
+      const m = L.circleMarker([s.lat, s.lon], {radius: 7, weight: 1, color: "#333", fillOpacity: 0.9}).addTo(map).bindTooltip("");
+      markers.set(s.id, {marker: m, station: s, name: s.name, fp: byId.get(s.id)});
+      m.on("click", () => showStation(s, s.qc.excluded ? null : satDeficit(s.t, s.td), byId.get(s.id)));
     }
+    if (fog) {
+      for (const fp of fog.points.filter(p => !markers.has(p.id) && p.id.indexOf("NTU:") !== 0)) {   // airports
+        const m = L.circleMarker([fp.lat, fp.lon], {radius: 9, weight: 3, color: "#000", fillOpacity: 0.9}).bindTooltip("");
+        markers.set(fp.id, {marker: m, station: null, name: fp.name || fp.id, fp});
+        m.on("click", () => { if (mode === "fc") showStation(null, null, fp); });
+      }
+      showFog(fog);
+      document.getElementById("mFc").disabled = false;
+    } else {
+      document.getElementById("fogInfo").textContent = "Прогнозата още не е налична.";
+    }
+    document.getElementById("mObs").onclick = () => { mode = "obs"; render(); };
+    document.getElementById("mFc").onclick = () => { mode = "fc"; render(); };
+    document.getElementById("lead").oninput = e => { lead = +e.target.value; render(); };
+    render();
   } catch (e) {
     document.getElementById("fresh").innerHTML = `<span class="dot" style="background:var(--bad)"></span>Данните не могат да се заредят (${esc(e.message)})`;
   }
