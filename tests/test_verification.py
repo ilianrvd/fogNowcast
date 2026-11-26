@@ -73,12 +73,32 @@ class CoreTests(unittest.TestCase):
         self.assertLess(core.brier(ps, y), 0.1)
 
     def test_fog_rows_only_with_metar_flag(self):
-        c = {"point": "LBSF", "t0": T0, "lead": 1, "o0": obs(1, 0.8, 1, fog=True), "m0": obs(2), "mL": dict(obs(2), cl=80),
+        c = {"point": "LBSF", "t0": T0, "lead": 1, "o0": dict(obs(1, 0.8, 1, fog=True), vis=300), "m0": obs(2),
+             "mL": dict(obs(2), cl=80),
              "oL": obs(1, 0.9, 1, fog=True)}
         c2 = dict(c, o0=obs(1), oL=obs(1))   # NTU-like, no fog flag
         rows = core.fog_rows([c, c2], "corrected", {}, {"LBSF": (42.7, 23.4)})
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][1:4], (1.0, 1.0, 1))
+        self.assertEqual(len(rows[0][0]), 10)                       # model terms + observation terms
+        rows_m = core.fog_rows([c], "model", {}, {"LBSF": (42.7, 23.4)}, use_obs=False)
+        self.assertEqual(len(rows_m[0][0]), 5)
+
+    def test_observation_terms_learn_persistence_that_fades(self):
+        X, y = [], []
+        for k in range(400):
+            fog0 = k % 4 == 0
+            for lead in range(7):
+                truth = fog0 and lead <= 2           # fog lasts 2 h, model terms carry no signal
+                X.append(core.fog_features(2.0, 3.0, 0, True, fog0, 300 if fog0 else 9999, lead))
+                y.append(1.0 if truth else 0.0)
+        w = core.fit_logistic(X, y)
+        p = lambda fog0, lead: core.predict(w, core.fog_features(2.0, 3.0, 0, True, fog0, 300 if fog0 else 9999, lead))
+        self.assertGreater(p(True, 0), 0.6)
+        self.assertLess(p(True, 6), p(True, 1))
+        self.assertLess(p(False, 1), 0.1)
+        self.assertEqual(core.vis_index(100), 0.0)
+        self.assertEqual(core.vis_index(10000), 1.0)
 
 
 class IceTests(unittest.TestCase):
@@ -93,6 +113,32 @@ class IceTests(unittest.TestCase):
         self.assertEqual(core.sat_deficit(-3.0, -2.0), 0.0)   # td above t is clipped
         self.assertIsNone(core.sat_deficit(None, 1.0))
         self.assertEqual(core.temp_class(-0.1), "t<0")
+
+
+class RateLimitTests(unittest.TestCase):
+    def test_429_waits_longer_then_succeeds(self):
+        import io
+        import urllib.error
+        from verification.runs import fetch_run
+        run = datetime(2026, 10, 10, 0, tzinfo=UTC)
+        times = [(run + timedelta(hours=h)).strftime("%Y-%m-%dT%H:%M") for h in range(3)]
+        good = {"hourly": {"time": times, "temperature_2m": [1] * 3, "dew_point_2m": [0] * 3,
+                           "wind_speed_10m": [2] * 3, "cloud_cover_low": [0] * 3}}
+        calls, waits = [], []
+
+        def fetch(url):
+            calls.append(url)
+            if len(calls) <= 2:
+                raise urllib.error.HTTPError(url, 429, "Too Many Requests", {"Retry-After": "7"} if len(calls) == 2 else {}, io.BytesIO())
+            return good
+        out = fetch_run(run, [{"id": "A", "lat": 1, "lon": 2, "elev_m": 3}], fetch=fetch, sleep=waits.append)
+        self.assertEqual(waits, [60, 7])
+        self.assertIn("A", out)
+
+        def always429(url):
+            raise urllib.error.HTTPError(url, 429, "Too Many Requests", {}, io.BytesIO())
+        with self.assertRaises(urllib.error.HTTPError):
+            fetch_run(run, [{"id": "A", "lat": 1, "lon": 2, "elev_m": 3}], fetch=always429, sleep=lambda s: None)
 
 
 class RunsParseTests(unittest.TestCase):

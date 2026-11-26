@@ -150,11 +150,24 @@ def temp_class(t):
 
 # ---- fog probability (airports, against METAR) ----
 
-def fog_features(dd, ws, cl, night):
-    """Feature vector; missing values -> None (case skipped)."""
+def vis_index(vis_m):
+    """0 at <= 100 m, 1 at >= 10 km (log scale); None when unknown."""
+    if vis_m is None:
+        return None
+    return min(1.0, max(0.0, (math.log10(max(vis_m, 1)) - 2.0) / 2.0))
+
+
+def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0):
+    """Feature vector; missing dd/ws -> None (case skipped). fog0/vis0 are the METAR at t0: the fog
+    probability starts from what is observed now and moves towards the model with the lead
+    (interaction terms with lead/6). Without them only the model terms are used."""
     if None in (dd, ws):
         return None
-    return [1.0, dd / 5.0, ws / 10.0, (cl if cl is not None else 0.0) / 100.0, 1.0 if night else 0.0]  # rough scaling
+    x = [1.0, dd / 5.0, ws / 10.0, (cl if cl is not None else 0.0) / 100.0, 1.0 if night else 0.0]  # rough scaling
+    if fog0 is not None and vis0 is not None:
+        f, v, l = (1.0 if fog0 else 0.0), vis_index(vis0), lead / 6.0
+        x += [f, f * l, v, v * l, l]
+    return x
 
 
 def sigmoid(z):
@@ -162,7 +175,18 @@ def sigmoid(z):
 
 
 def fit_logistic(X, y, iters=400, lr=0.5, l2=1e-3):
-    """Plain gradient descent; features are small so no scaling library is needed."""
+    """Gradient descent on roughly scaled features. Uses numpy when installed (fast), else plain Python."""
+    try:
+        import numpy as np
+    except ImportError:
+        np = None
+    if np is not None:
+        A, b = np.asarray(X, float), np.asarray(y, float)
+        w = np.zeros(A.shape[1])
+        for _ in range(iters * 3):
+            p = 1 / (1 + np.exp(-np.clip(A @ w, -30, 30)))
+            w -= lr * (A.T @ (p - b) / len(b) + l2 * w)
+        return [float(v) for v in w]
     w = [0.0] * len(X[0])
     n = len(X)
     for _ in range(iters):
@@ -179,19 +203,23 @@ def predict(w, x):
     return sigmoid(sum(a * b for a, b in zip(w, x)))
 
 
-def fog_rows(cases, method, taus, lat_lon):
+def fog_rows(cases, method, taus, lat_lon, use_obs=True):
     """(features, truth, fog_at_t0, lead, day, temp_class_of_truth) for airport cases with METAR fog flags.
     The deficit is to saturation over ice below 0 C (sat_deficit), from the forecast t and td."""
     rows = []
     for c in cases:
-        if "fog" not in c["oL"] or "fog" not in c["o0"]:
-            continue
+        if "fog" not in c["oL"] or "fog" not in c["o0"] or c["o0"].get("vis") is None:
+            continue  # same cases for all variants
         t = forecast(c, "t", method, taus.get("t", 3))
         td = forecast(c, "td", method, taus.get("td", 3))
         ws = forecast(c, "ws", method, taus.get("ws", 3))
         lat, lon = lat_lon[c["point"]]
         valid = c["t0"] + timedelta(hours=c["lead"])
-        x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), sun_elevation_deg(valid, lat, lon) <= 0)
+        night = sun_elevation_deg(valid, lat, lon) <= 0
+        if use_obs:
+            x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night, c["o0"]["fog"], c["o0"]["vis"], c["lead"])
+        else:
+            x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night)
         if x is None:
             continue
         rows.append((x, 1.0 if c["oL"]["fog"] else 0.0, 1.0 if c["o0"]["fog"] else 0.0, c["lead"], c["t0"].date(),
