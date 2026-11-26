@@ -80,7 +80,8 @@
   "description": {"bg": "Наблюдения от пътните станции на НТУ; предстои прогноза за мъгла по точки",
                   "en": "NTU road weather stations; fog point forecast coming"},
   "url": "https://ilianrvd.github.io/fogNowcast/", "repo": "https://github.com/ilianrvd/fogNowcast",
-  "status": "draft", "cadence_min": 15, "run": null, "embed": null,
+  "status": "experimental", "cadence_min": 15, "run": null,
+  "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": false},
   "products": [
     {"id": "ntu_latest", "path": "obs/ntu_latest.json", "format": "json", "schema": "fognowcast.ntu_latest/1.0",
      "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md#obsntu_latestjson",
@@ -92,8 +93,18 @@
 - Пише се в края на всяко **успешно** пускане и влиза в същия deploy като `obs/`. `generated_at` е часът на пускането.
 - При прескочено пускане (защитата от 14 мин) или неуспешно пускане **не се пренаписва**: възрастта в портала расте и цветът минава в жълто и червено, вместо да остане зелен с нов час и стари данни.
 - Продукти: `ntu_latest` (`data_time` = най-новият запис от НТУ, `obs_time_latest`; може да е по-стар от `generated_at`, когато НТУ закъснява), `ntu_recent` (`data_time` = най-новият ред) и `ntu_fallback` (`generated_at` = кога е изтеглен, `data_time` = `updated_at` на НТУ). `ntu_fetch_state.json` е служебен и не е продукт. Архивите са клонове в репото, не са в Pages и не са продукти.
-- `status` е `draft`, докато няма страница; тогава става `experimental` и се попълва `embed`.
+- `status` е `experimental` от появата на страницата (`index.html`), с `embed`: `{"url": "index.html?embed=1", "min_height_px": 800, "gated": false}`.
 - `consumes` липсва: живият поток не чете нищо от другите проекти (заместителят е от самото НТУ). Ще се добавят `latest_points.json` (MultiConvect) и `obs/metar_latest.json` (nowcasting-public) с живата версия на етап 2.
+
+### Страница `index.html`
+
+https://ilianrvd.github.io/fogNowcast/ — карта на станциите от `obs/ntu_latest.json` (Leaflet, OpenStreetMap). Изходният файл е `web/index.html`; копира се в `gh-pages` при всяко пускане на НТУ.
+
+- Цветът на точката е **дефицитът до насищане**: `t − td` при `t ≥ 0`, `t` минус точката на скреж при `t < 0` (виж [verification.md](verification.md)). Изключените станции (`qc.excluded`) са сиви. Не се ползва `rh`, защото не е флаг за мъгла.
+- При избор на станция: температура, роса, влажност, дефицит, настилка, вятър (kt), налягане, час и възраст на записа, флаговете на български и графика на `t` и `td` за 24 ч от `obs/ntu_recent.json`.
+- Горе: часът на данните и възрастта по `manifest.json`, с цвят по правилата на портала (зелено ≤ 30 мин, жълто ≤ 45 мин, червено).
+- `?embed=1` скрива заглавието и долната лента, за вграждане в портала.
+- **Само наблюдения.** Прогноза за мъгла не се показва, докато проверката не покаже умение; целевият ѝ вид са полигони върху картата ([fog_map.md](fog_map.md)).
 
 ### `obs/ntu_fetch_state.json`
 

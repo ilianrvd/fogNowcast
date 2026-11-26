@@ -38,6 +38,9 @@ jobs:
             fi
           done
       - run: python -m ingest.ntu_live --site site --fallback-archive fb --live-archive live
+      - name: Station page
+        # the page (web/index.html) is published with the data; on a skipped or failed run it changes nothing
+        run: cmp -s web/index.html site/index.html || cp web/index.html site/index.html
       - name: Publish
         # also after a failed ingest, so that the time of the request attempt (ntu_fetch_state.json) is kept;
         # the data files are unchanged in that case
