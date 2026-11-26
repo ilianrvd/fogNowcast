@@ -157,7 +157,7 @@ def vis_index(vis_m):
     return min(1.0, max(0.0, (math.log10(max(vis_m, 1)) - 2.0) / 2.0))
 
 
-def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0, cold=None):
+def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0, cold=None, vis_model=None):
     """Feature vector; missing dd/ws -> None (case skipped). fog0/vis0 are the METAR at t0: the fog
     probability starts from what is observed now and moves towards the model with the lead
     (interaction terms with lead/6). Without them only the model terms are used."""
@@ -170,6 +170,9 @@ def fog_features(dd, ws, cl, night, fog0=None, vis0=None, lead=0, cold=None):
     if cold is not None:  # forecast t < 0 C: fog persists and behaves differently in the cold
         c = 1.0 if cold else 0.0
         x += [c, c * (1.0 if fog0 else 0.0)]
+    if vis_model is not None:  # ICON-EU visibility at the valid time (log index), and its weight growing with lead
+        vm = vis_index(vis_model)
+        x += [vm, vm * lead / 6.0]
     return x
 
 
@@ -206,24 +209,31 @@ def predict(w, x):
     return sigmoid(sum(a * b for a, b in zip(w, x)))
 
 
-def fog_rows(cases, method, taus, lat_lon, use_obs=True, use_cold=False):
+def fog_rows(cases, method, taus, lat_lon, use_obs=True, use_cold=False, use_vis=False, vis_only=False):
     """(features, truth, fog_at_t0, lead, day, temp_class_of_truth) for airport cases with METAR fog flags.
-    The deficit is to saturation over ice below 0 C (sat_deficit), from the forecast t and td."""
+    The deficit is to saturation over ice below 0 C (sat_deficit), from the forecast t and td.
+    use_vis adds the ICON-EU visibility; vis_only uses nothing but it (calibrated raw model visibility).
+    Cases are the same for all variants (METAR at t0 and model visibility required)."""
     rows = []
     for c in cases:
-        if "fog" not in c["oL"] or "fog" not in c["o0"] or c["o0"].get("vis") is None:
-            continue  # same cases for all variants
-        t = forecast(c, "t", method, taus.get("t", 3))
-        td = forecast(c, "td", method, taus.get("td", 3))
-        ws = forecast(c, "ws", method, taus.get("ws", 3))
+        if "fog" not in c["oL"] or "fog" not in c["o0"] or c["o0"].get("vis") is None or c["mL"].get("vis") is None:
+            continue
         lat, lon = lat_lon[c["point"]]
         valid = c["t0"] + timedelta(hours=c["lead"])
-        night = sun_elevation_deg(valid, lat, lon) <= 0
-        if use_obs:
-            x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night, c["o0"]["fog"], c["o0"]["vis"], c["lead"],
-                             cold=(t is not None and t < 0) if use_cold else None)
+        if vis_only:
+            x = [1.0, vis_index(c["mL"]["vis"])]
         else:
-            x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night)
+            t = forecast(c, "t", method, taus.get("t", 3))
+            td = forecast(c, "td", method, taus.get("td", 3))
+            ws = forecast(c, "ws", method, taus.get("ws", 3))
+            night = sun_elevation_deg(valid, lat, lon) <= 0
+            if use_obs:
+                x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night, c["o0"]["fog"], c["o0"]["vis"],
+                                 c["lead"], cold=(t is not None and t < 0) if use_cold else None,
+                                 vis_model=c["mL"]["vis"] if use_vis else None)
+            else:
+                x = fog_features(sat_deficit(t, td), ws, c["mL"].get("cl"), night,
+                                 vis_model=c["mL"]["vis"] if use_vis else None)
         if x is None:
             continue
         rows.append((x, 1.0 if c["oL"]["fog"] else 0.0, 1.0 if c["o0"]["fog"] else 0.0, c["lead"], c["t0"].date(),

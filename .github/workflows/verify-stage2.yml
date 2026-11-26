@@ -43,9 +43,9 @@ jobs:
         # runs fetched by an earlier (even cancelled) attempt are reused; the key grows with every attempt
         uses: actions/cache@v4
         with:
-          path: .cache/single-runs
-          key: single-runs-v1-${{ github.run_id }}
-          restore-keys: single-runs-v1-
+          path: .cache/single-runs-v2
+          key: single-runs-v2-${{ github.run_id }}
+          restore-keys: single-runs-v2-
       - name: Fetch observations
         run: |
           mkdir -p "$RUNNER_TEMP/archive" "$RUNNER_TEMP/metar"
@@ -61,7 +61,7 @@ jobs:
           python -m verification.build --archive-dir "$RUNNER_TEMP/archive" --metar-dir "$RUNNER_TEMP/metar"
           --out "$RUNNER_TEMP/out" --train "${{ inputs.train }}" --test "${{ inputs.test }}"
           --fog-train "${{ inputs.fog_train }}"
-          --cache-dir .cache/single-runs
+          --cache-dir .cache/single-runs-v2
       - if: ${{ inputs.publish }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

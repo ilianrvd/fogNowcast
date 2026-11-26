@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 URL = "https://single-runs-api.open-meteo.com/v1/forecast"
 UA = "fogNowcast/0.1 (+https://github.com/ilianrvd/fogNowcast)"
-HOURLY = ["temperature_2m", "dew_point_2m", "wind_speed_10m", "cloud_cover_low"]
+HOURLY = ["temperature_2m", "dew_point_2m", "wind_speed_10m", "cloud_cover_low", "visibility"]
 RETRY_WAIT_S = (5, 15)
 RATE_LIMIT_WAIT_S = (60, 180)  # HTTP 429: wait longer (or as long as Retry-After says, up to 300 s)
 MAX_LEAD_H = 16  # a run is used for t0 from run+4 h to run+9 h (next run is usable at run+10 h), plus 6 h ahead
@@ -49,7 +49,8 @@ def parse(data, points, run):
                 continue
             t, td = h["temperature_2m"][i], h["dew_point_2m"][i]
             series[valid] = {"t": t, "td": td, "dd": t - td if t is not None and td is not None else None,
-                             "ws": h["wind_speed_10m"][i], "cl": h["cloud_cover_low"][i]}
+                             "ws": h["wind_speed_10m"][i], "cl": h["cloud_cover_low"][i],
+                             "vis": (h.get("visibility") or [None] * len(h["time"]))[i]}
         out[p["id"]] = series
     return out
 
