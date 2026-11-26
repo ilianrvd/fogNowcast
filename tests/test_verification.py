@@ -115,6 +115,27 @@ class IceTests(unittest.TestCase):
         self.assertEqual(core.temp_class(-0.1), "t<0")
 
 
+class FogCVTests(unittest.TestCase):
+    def test_every_week_predicted_from_other_weeks(self):
+        from verification.build import score_fog_cv
+        cases = []
+        for d in range(28):                                   # four weeks, fog every third day
+            t0 = datetime(2026, 10, 5, 4, tzinfo=UTC) + timedelta(days=d)
+            fog = d % 3 == 0
+            for lead in range(7):
+                o0 = dict(obs(1, 0.9 if fog else -3, 1.0, fog=fog), vis=300 if fog else 9999)
+                oL = obs(1, 0.9, 1.0, fog=fog and lead <= 2)
+                cases.append({"point": "LBSF", "t0": t0, "lead": lead, "o0": o0, "m0": obs(2),
+                              "mL": dict(obs(2), cl=50), "oL": oL})
+        out = score_fog_cv(cases, {"LBSF"}, {"LBSF": (42.7, 23.4)}, {})
+        v = out["corrected+obs"]
+        self.assertEqual(v["weeks"], 4)
+        self.assertEqual(v["rows"], len(cases))               # every case predicted once
+        lead1 = v["by_lead"][1]
+        self.assertGreater(lead1["scores"]["pod"], 0.8)       # fog at t0 carries to +1 h
+        self.assertEqual(v["by_lead"][6]["fog_events"], 0)
+
+
 class RateLimitTests(unittest.TestCase):
     def test_429_waits_longer_then_succeeds(self):
         import io
