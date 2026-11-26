@@ -67,6 +67,9 @@ class Onset(unittest.TestCase):
         self.assertGreaterEqual(w["logistic"]["episodes"]["warned_2h_share"], 0.5)
         self.assertTrue(w["logistic"]["passes"])
         self.assertIn("logistic_weights", w)
+        self.assertGreater(w["dynamic_rows"], 0)                # windy clear hours are dynamic
+        self.assertEqual(w["dynamic_events"], 0)                # fog nights are calm
+        self.assertGreater(w["logistic_calm"]["csi"], 0.5)
         md = onset.report({"period": ["a", "b"], "episodes": 14, "windows": res})
         self.assertIn("Стоп-условие", md)
 
