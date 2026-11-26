@@ -51,7 +51,7 @@ def with_header(schema, d):
     return out
 
 
-def build_manifest(now, latest, recent, fallback):
+def build_manifest(now, latest, recent, fallback, previous=None):
     """manifest.json for the portal (portal.manifest/1.0). Written only after a successful run."""
     rows = recent.get("rows") or []
     products = [
@@ -67,10 +67,13 @@ def build_manifest(now, latest, recent, fallback):
             {"id": "ntu_fallback", "path": "obs/ntu_fallback_latest.json", "format": "json",
              "schema": "fognowcast.ntu_fallback/1.0", "doc": DOCS + "#obsntu_fallback_latestjson",
              "cadence_min": CADENCE_MIN, "generated_at": fallback["generated_at"], "data_time": fallback.get("updated_at")})
+    # fog_points is added by core.fog_points (the step after this one); keep the last entry, so that a failed fog step
+    # does not make the product disappear from the portal (its generated_at then shows how old it is)
+    products += [p for p in (previous or {}).get("products", []) if p.get("id") == "fog_points"]
     return {"schema": "portal.manifest/1.0", "generated_at": iso(now), "source": "fogNowcast",
             "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
-            "description": {"bg": "Наблюдения от пътните станции на НТУ; предстои прогноза за мъгла по точки",
-                            "en": "NTU road weather stations; fog point forecast coming"},
+            "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза по точки (модел + корекция от наблюдението)",
+                            "en": "NTU road weather stations and an uncalibrated point forecast (model + observation correction)"},
             "url": SITE, "repo": "https://github.com/ilianrvd/fogNowcast", "status": "experimental",
             "cadence_min": CADENCE_MIN, "run": None,
             "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": False}, "products": products}
@@ -323,7 +326,8 @@ def run(site, fb_dir, static_path, fetch=http_json, now=None, live_dir=None):
     flag_frozen(latest, recent, now)
     write_json(os.path.join(site, "obs", "ntu_latest.json"), latest)
     write_json(os.path.join(site, "obs", "ntu_recent.json"), recent)
-    write_json(os.path.join(site, "manifest.json"), build_manifest(now, latest, recent, fallback))
+    write_json(os.path.join(site, "manifest.json"),
+               build_manifest(now, latest, recent, fallback, load_json(os.path.join(site, "manifest.json"))))
     if live_dir:
         try:
             status["live_archived"] = archive_live(live_dir, latest)

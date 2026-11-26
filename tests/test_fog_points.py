@@ -73,6 +73,18 @@ class Cli(unittest.TestCase):
         self.assertEqual(sorted(ids), ["LBSF", "NTU:1"])
         self.assertFalse(os.path.exists(d + "/o.json.tmp"))
 
+    def test_manifest_gets_and_replaces_fog_points_product(self):
+        import json, os, tempfile
+        path = os.path.join(tempfile.mkdtemp(), "manifest.json")
+        doc = fp.build(MODEL, NTU, None, POINTS, NOW)
+        self.assertFalse(fp.update_manifest(path, doc))                       # no manifest: nothing written
+        json.dump({"products": [{"id": "ntu_latest"}]}, open(path, "w"))
+        self.assertTrue(fp.update_manifest(path, doc))
+        self.assertTrue(fp.update_manifest(path, doc))                        # again: replaced, not duplicated
+        by = {p["id"]: p for p in json.load(open(path))["products"]}
+        self.assertEqual(sorted(by), ["fog_points", "ntu_latest"])
+        self.assertEqual((by["fog_points"]["data_time"], by["fog_points"]["generated_at"]), (doc["t0"], doc["generated_at"]))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -129,6 +129,24 @@ def build(model, ntu, metar, points, now=None):
             "inputs": inputs, "tau_h": TAU_H, "points": result}
 
 
+def update_manifest(path, doc):
+    """Add or replace the fog_points product in the portal manifest (written by ingest.ntu_live); no manifest, no change."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            m = json.load(f)
+    except (OSError, ValueError):
+        return False
+    entry = {"id": "fog_points", "path": "fog/fog_points.json", "format": "json", "schema": "fog_points/1.0",
+             "doc": "https://github.com/ilianrvd/fogNowcast/blob/main/docs/fog_points.md", "cadence_min": 15,
+             "generated_at": doc["generated_at"], "data_time": doc["t0"]}
+    m["products"] = [p for p in m.get("products", []) if p.get("id") != "fog_points"] + [entry]
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(m, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, path)
+    return True
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
@@ -137,6 +155,7 @@ def main(argv=None):
     ap.add_argument("--points", default="static/points.json")
     ap.add_argument("--stations", default="static/correction_stations.json")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--manifest", help="portal manifest.json: add the fog_points product to it")
     a = ap.parse_args(argv)
     load = lambda p: json.load(open(p, encoding="utf-8"))
     points = load(a.points)
@@ -146,6 +165,8 @@ def main(argv=None):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
     os.replace(tmp, a.out)
+    if a.manifest:
+        update_manifest(a.manifest, doc)
     print(f"fog_points: {len(doc['points'])} points, {sum(1 for p in doc['points'] if p['obs_source'])} with observation")
 
 

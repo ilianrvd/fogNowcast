@@ -228,6 +228,16 @@ class PortalTests(unittest.TestCase):
         self.assertTrue(by["ntu_latest"]["doc"].startswith("https://github.com/ilianrvd/fogNowcast/blob/main/docs/"))
         self.assertNotIn("ntu_fetch_state", by)
 
+    def test_manifest_keeps_fog_points_product_between_runs(self):
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
+        m = self.load("manifest.json")
+        m["products"].append({"id": "fog_points", "generated_at": "2026-11-25T17:21:00Z"})
+        with open(os.path.join(self.site, "manifest.json"), "w", encoding="utf-8") as f:
+            json.dump(m, f)
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW + timedelta(minutes=15))
+        by = {p["id"]: p for p in self.load("manifest.json")["products"]}
+        self.assertEqual(by["fog_points"]["generated_at"], "2026-11-25T17:21:00Z")
+
     def test_manifest_not_rewritten_when_skipped_or_failed(self):
         ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
         before = self.load("manifest.json")
