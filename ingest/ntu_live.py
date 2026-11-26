@@ -37,6 +37,42 @@ from qc.ntu_qc import normalize_record
 BASE = "https://bgtoll.bg/index.php/mto/"
 UA = "fogNowcast/0.1 (+https://github.com/ilianrvd/fogNowcast)"
 SOURCE = "bgtoll.bg/mto/data (Национално тол управление), CC BY 4.0"
+CADENCE_MIN = 15
+DOCS = "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md"
+SITE = "https://ilianrvd.github.io/fogNowcast/"
+
+
+def with_header(schema, d):
+    """Portal header first (schema, generated_at, source, run, cadence_min; see the portal's docs/header.md),
+    then the file's own fields. run is null: these are observations, not a model run."""
+    out = {"schema": schema, "generated_at": d["generated_at"], "source": d["source"], "run": None,
+           "cadence_min": CADENCE_MIN}
+    out.update({k: v for k, v in d.items() if k not in out})
+    return out
+
+
+def build_manifest(now, latest, recent, fallback):
+    """manifest.json for the portal (portal.manifest/1.0). Written only after a successful run."""
+    rows = recent.get("rows") or []
+    products = [
+        {"id": "ntu_latest", "path": "obs/ntu_latest.json", "format": "json", "schema": "fognowcast.ntu_latest/1.0",
+         "doc": DOCS + "#obsntu_latestjson", "cadence_min": CADENCE_MIN, "generated_at": latest["generated_at"],
+         "data_time": latest.get("obs_time_latest")},
+        {"id": "ntu_recent", "path": "obs/ntu_recent.json", "format": "json", "schema": "fognowcast.ntu_recent/1.0",
+         "doc": DOCS + "#obsntu_recentjson", "cadence_min": CADENCE_MIN, "generated_at": recent["generated_at"],
+         "data_time": max(r[0] for r in rows) if rows else None},
+    ]
+    if fallback and fallback.get("generated_at"):
+        products.append(
+            {"id": "ntu_fallback", "path": "obs/ntu_fallback_latest.json", "format": "json",
+             "schema": "fognowcast.ntu_fallback/1.0", "doc": DOCS + "#obsntu_fallback_latestjson",
+             "cadence_min": CADENCE_MIN, "generated_at": fallback["generated_at"], "data_time": fallback.get("updated_at")})
+    return {"schema": "portal.manifest/1.0", "generated_at": iso(now), "source": "fogNowcast",
+            "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
+            "description": {"bg": "Наблюдения от пътните станции на НТУ; предстои прогноза за мъгла по точки",
+                            "en": "NTU road weather stations; fog point forecast coming"},
+            "url": SITE, "repo": "https://github.com/ilianrvd/fogNowcast", "status": "draft",
+            "cadence_min": CADENCE_MIN, "run": None, "embed": None, "products": products}
 UTC = timezone.utc
 LATE_MIN = 30               # flag `late` when the record is older than this
 OMIT_MIN = 360              # drop records older than this (dead or ghost stations)
@@ -131,10 +167,10 @@ def build_latest(records, now, fallback, elevations):
             "qc": {"excluded": model_fb, "flags": flags},
         })
     newest = max((s["time"] for s in stations), default=None)
-    return {"generated_at": iso(now), "source": SOURCE, "obs_time_latest": newest,
+    return with_header("fognowcast.ntu_latest/1.0", {"generated_at": iso(now), "source": SOURCE, "obs_time_latest": newest,
             "fallback_updated_at": (fallback or {}).get("updated_at"),
             "fallback_used": fallback_fresh is not None, "omitted_records": omitted,
-            "stations": stations}
+            "stations": stations})
 
 
 def update_recent(prev, latest, now):
@@ -148,8 +184,8 @@ def update_recent(prev, latest, now):
                s["wind_kt"], s["wind_dir"]]
         seen[(row[1], row[0])] = row
     rows = sorted(seen.values())
-    return {"generated_at": latest["generated_at"], "source": SOURCE, "window_hours": RECENT_HOURS,
-            "columns": RECENT_COLUMNS, "rows": rows}
+    return with_header("fognowcast.ntu_recent/1.0", {"generated_at": latest["generated_at"], "source": SOURCE, "window_hours": RECENT_HOURS,
+            "columns": RECENT_COLUMNS, "rows": rows})
 
 
 def flag_frozen(latest, recent, now):
@@ -219,9 +255,9 @@ def compact_fallback(raw, now):
         u = v.get("updated_at")
         if isinstance(u, (int, float)) and (updated is None or u > updated):
             updated = u
-    return {"generated_at": iso(now), "fetched_at": iso(now), "source": "bgtoll.bg/mto/temperaturefallback (НТУ)",
+    return with_header("fognowcast.ntu_fallback/1.0", {"generated_at": iso(now), "fetched_at": iso(now), "source": "bgtoll.bg/mto/temperaturefallback (НТУ)",
             "updated_at": None if updated is None else iso(datetime.fromtimestamp(updated, UTC)),
-            "stations": stations}
+            "stations": stations})
 
 
 def archive_fallback(fb_dir, fallback):
@@ -256,8 +292,8 @@ def run(site, fb_dir, static_path, fetch=http_json, now=None, live_dir=None):
         since = (now - datetime.strptime(last, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)).total_seconds() / 60
         if since < MIN_REQUEST_INTERVAL_MIN:
             return {"skipped": True, "reason": f"last request {since:.1f} min ago (< {MIN_REQUEST_INTERVAL_MIN})"}
-    write_json(state_path, {"generated_at": iso(now), "source": "fogNowcast ingest.ntu_live",
-                            "last_request_at": iso(now)})
+    write_json(state_path, with_header("fognowcast.ntu_fetch_state/1.0", {
+        "generated_at": iso(now), "source": "fogNowcast ingest.ntu_live", "last_request_at": iso(now)}))
     elevations = {k: v.get("elev_m") for k, v in (load_json(static_path, {}) or {}).get("stations", {}).items()}
     fb_path = os.path.join(site, "obs", "ntu_fallback_latest.json")
     fallback = load_json(fb_path)
@@ -286,6 +322,7 @@ def run(site, fb_dir, static_path, fetch=http_json, now=None, live_dir=None):
     flag_frozen(latest, recent, now)
     write_json(os.path.join(site, "obs", "ntu_latest.json"), latest)
     write_json(os.path.join(site, "obs", "ntu_recent.json"), recent)
+    write_json(os.path.join(site, "manifest.json"), build_manifest(now, latest, recent, fallback))
     if live_dir:
         try:
             status["live_archived"] = archive_live(live_dir, latest)

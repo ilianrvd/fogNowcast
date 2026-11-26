@@ -192,6 +192,53 @@ class GuardTests(unittest.TestCase):
         self.assertNotIn("rh_constant", by["NTU:2"]["qc"]["flags"])   # only 3 h of history, needs 6 h
 
 
+class PortalTests(unittest.TestCase):
+    def setUp(self):
+        d = tempfile.mkdtemp()
+        self.site, self.fb = os.path.join(d, "site"), os.path.join(d, "fb")
+        self.static = os.path.join(d, "st.json")
+        with open(self.static, "w", encoding="utf-8") as f:
+            json.dump({"stations": {}}, f)
+        self.many = [rec(i, 5) for i in range(1, 31)]
+        self.fb_ok = {str(i): fb_entry(i) for i in range(1, 31)}
+
+    def load(self, rel):
+        with open(os.path.join(self.site, rel), encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_headers_and_manifest(self):
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
+        for rel, schema in (("obs/ntu_latest.json", "fognowcast.ntu_latest/1.0"),
+                            ("obs/ntu_recent.json", "fognowcast.ntu_recent/1.0"),
+                            ("obs/ntu_fallback_latest.json", "fognowcast.ntu_fallback/1.0"),
+                            ("obs/ntu_fetch_state.json", "fognowcast.ntu_fetch_state/1.0")):
+            d = self.load(rel)
+            self.assertEqual(list(d)[:5], ["schema", "generated_at", "source", "run", "cadence_min"])
+            self.assertEqual((d["schema"], d["run"], d["cadence_min"]), (schema, None, 15))
+        m = self.load("manifest.json")
+        self.assertEqual(m["schema"], "portal.manifest/1.0")
+        self.assertEqual((m["id"], m["status"], m["cadence_min"], m["generated_at"]), ("fognowcast", "draft", 15, "2026-11-25T17:20:00Z"))
+        self.assertNotIn("consumes", m)
+        by = {p["id"]: p for p in m["products"]}
+        self.assertEqual(set(by), {"ntu_latest", "ntu_recent", "ntu_fallback"})
+        self.assertEqual(by["ntu_latest"]["data_time"], "2026-11-25T17:15:00Z")   # newest record, 5 min old
+        self.assertEqual(by["ntu_recent"]["data_time"], "2026-11-25T17:15:00Z")
+        self.assertEqual(by["ntu_fallback"]["data_time"], "2026-11-25T17:00:01Z")
+        self.assertTrue(by["ntu_latest"]["doc"].startswith("https://github.com/ilianrvd/fogNowcast/blob/main/docs/"))
+        self.assertNotIn("ntu_fetch_state", by)
+
+    def test_manifest_not_rewritten_when_skipped_or_failed(self):
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW)
+        before = self.load("manifest.json")
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW + timedelta(minutes=5))
+        self.assertEqual(self.load("manifest.json"), before)            # throttled: nothing written
+        with self.assertRaises(RuntimeError):
+            ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher([], {}), now=NOW + timedelta(minutes=15))
+        self.assertEqual(self.load("manifest.json"), before)            # failed: age keeps growing on the portal
+        ntu_live.run(self.site, self.fb, self.static, fetch=Fetcher(self.many, self.fb_ok), now=NOW + timedelta(minutes=30))
+        self.assertEqual(self.load("manifest.json")["generated_at"], "2026-11-25T17:50:00Z")
+
+
 class LiveArchiveTests(unittest.TestCase):
     def setUp(self):
         d = tempfile.mkdtemp()
