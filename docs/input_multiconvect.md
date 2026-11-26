@@ -1,8 +1,6 @@
 # Вход от MultiConvect: `fog_fields_<model>.npz`
 
-> Чернова, за съгласуване. Файлът се създава и публикува от **MultiConvect** (решение от 2026-11-25) и се описва и в неговия repo. Тук е описано какво очаква fogNowcast.
->
-> Предложения за съгласуване с MultiConvect: за мъглата трябва всеки 3-часов рън на ICON-EU, а не само 4 рънa на ден, защото данните от MultiConvect са остарели с до ~11 ч. Нужен е хоризонт f000–f030, изрязан по България. Вместо `.npz` се предлага бинарен файл `.bin` (int16/uint8, little-endian) с JSON заглавие, който се чете и в браузъра.
+> Съгласувано и реализирано от MultiConvect на 2026-11-26 (PR #6 там). Верният формат е в **`docs/fog_fields.md` на MultiConvect** (https://github.com/ilianrvd/multiconvect/blob/main/docs/fog_fields.md); тук е само това, на което се опира fogNowcast. Реализиран е само ICON-EU; таблиците за GFS и IFS по-долу са от черновата. Файловете: `https://ilianrvd.github.io/multiconvect/fog_fields_icon_eu.npz` и `.../fog_fields_meta.json`. Първото production публикуване е следващият рън (около 22:50 UTC на 2026-11-26).
 
 ## Обхват
 
@@ -42,33 +40,11 @@ ICON-D2 (2.2 км) не покрива България. ALADIN няма отв�
 
 Каквото липсва за даден модел, просто липсва в неговия файл.
 
-## Формат
+## Формат (както е реализиран)
 
-```
-fog_fields_icon_eu.npz
-  lat        (ny,)            float32
-  lon        (nx,)            float32
-  valid_time (nt,)            int64, секунди от 1970-01-01 UTC
-  hsurf      (ny, nx)         int16, m
-  t2m        (nt, ny, nx)     int16, scale 0.01, offset 0
-  ...
-fog_fields_meta.json
-```
-
-`fog_fields_meta.json`:
-
-```json
-{
-  "generated_at": "2026-11-25T05:20:00Z",
-  "source": "MultiConvect",
-  "run": {"icon_eu": "2026-11-25T00:00:00Z", "gfs": "2026-11-25T00:00:00Z", "ifs": "2026-11-24T18:00:00Z"},
-  "models": {
-    "icon_eu": {"file": "fog_fields_icon_eu.npz", "time_step_h": 1, "interpolated_hours": []},
-    "ifs":     {"file": "fog_fields_ifs.npz", "time_step_h": 1, "interpolated_hours": [1, 2, 4, 5]}
-  },
-  "vars": {"t2m": {"units": "degC", "scale": 0.01, "offset": 0, "fill": -32768}}
-}
-```
-
-- `interpolated_hours`: кои часове са интерполирани (при IFS на 3 ч), за да ги различава верификацията.
-- `run` е по модел, защото IFS може да е от предишен рън.
+- `.npz` (не `.bin`): fogNowcast го чете в Actions, не в браузъра. `fog_fields_meta.json` е със заглавния блок на портала (`schema` `multiconvect.fog_fields/1.0`, `generated_at`, `source`, `run`, `cadence_min` 360), плюс `grid` и `vars`.
+- `run` е ISO низ на рънa на ICON-EU и е равен на `run` в `latest_points.json` за същото пускане. Когато се добавят GFS и IFS, рънът на всеки модел отива в `models.<модел>.run`.
+- Масиви: `lat` (възходящ), `lon`, `valid_time` (секунди от 1970 UTC), `hsurf` (ny, nx) и по (nt, ny, nx) int16: `t2m`, `td2m`, `u10`, `v10`, `clcl`. Стойност = `raw * scale + offset`; мащаби 0.01 за `t2m`, `td2m`, `u10`, `v10` (вятърът в kt, като компоненти), 0.1 за `clcl`, 1 за `hsurf`. Липсва: `raw == fill` (−32768).
+- Район 40.3–45.1 N, 21.1–31.3 E, мрежа 0.0625° (77 × 160), f000–f030 по часове, рънове 00/06/12/18.
+- Потребителите пренебрегват непознати ключове; `vis` (около 2 m на единица) и `ww` (uint8) са по-късна стъпка.
+- Измерено при пробно пускане: около 2,7 MB за рън.
