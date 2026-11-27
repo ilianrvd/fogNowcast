@@ -38,6 +38,14 @@ SOURCE = ("METAR (Iowa Environmental Mesonet); ICON-EU single runs (Open-Meteo);
 FEATURES = ["dd0", "d_dd_1h", "d_dd_3h", "ws0", "d_ws_3h", "vis0", "d_vis_3h", "cover0", "d_cover_3h", "ceil0",
             "night", "cold", "mod_dd_min", "mod_dd_drop", "mod_ws_mean", "mod_cl_mean",
             "ntu_dd_min", "ntu_d_dd_3h", "ntu_missing"]
+# Hypothesis from fog-model-bulgaria (2026-11-26): false alarms on calm clear nights need terrain temperature and
+# moisture. Terrain temperature: NTU road surface near the airport (t_surface; there is none near LBWN and LBBG).
+# Terrain moisture: hours with precipitation in the METAR over the last 12 and 24 h.
+TERRAIN = ["ts_minus_td", "d_ts_3h", "ts_minus_t", "terrain_missing", "precip_12h", "precip_24h"]
+TERRAIN_AIRPORTS = ("LBSF", "LBGO", "LBPD")
+# Confirmation, fixed before the run: with terrain, FAR at least 0.1 lower, share of episodes warned >= 2 h not
+# lower, and the 95 % interval of CSI(with) - CSI(without) above 0 (same cases, same calm regime).
+CONFIRM = {"far_drop_min": 0.1}
 
 
 def _dd(o):
@@ -79,6 +87,26 @@ def ntu_features(obs, station_ids, t0):
     if not now:
         return 0.0, 0.0, 1.0
     return min(now), (min(before) if before else 0.0), 0.0
+
+
+def terrain_features(obs, pid, station_ids, t0):
+    """Road surface vs dew point and air at the NTU stations near the airport (smallest ts - td: the station
+    most likely to take moisture as dew or frost), its 3-h cooling, and METAR precipitation hours."""
+    best = None
+    for sid in station_ids:
+        o0, o3 = obs.get((sid, t0)), obs.get((sid, t0 - 3 * H))
+        if not o0 or None in (o0.get("ts"), o0.get("td"), o0.get("t")):
+            continue
+        d = o0["ts"] - o0["td"]
+        if best is None or d < best[0]:
+            dts = (o0["ts"] - o3["ts"]) if o3 and o3.get("ts") is not None else 0.0
+            best = (d, dts, o0["ts"] - o0["t"])
+    pr = [obs.get((pid, t0 - h * H), {}).get("precip") for h in range(0, 24)]
+    p12 = sum(1 for x in pr[:12] if x) / 12.0
+    p24 = sum(1 for x in pr if x) / 24.0
+    if best is None:
+        return [0.0, 0.0, 0.0, 1.0, p12, p24]
+    return [best[0], best[1], best[2], 0.0, p12, p24]
 
 
 def samples(obs, model, runs, airports, lat_lon, near, t0s):
@@ -139,6 +167,7 @@ def samples(obs, model, runs, airports, lat_lon, near, t0s):
                 dyn = (o0["ws"] > REGIME["ws_max_kt"] and f["mod_ws_mean"] > REGIME["ws_max_kt"]) or \
                       (ceil is not None and ceil < REGIME["ceil_min_ft"])
                 out.append({"point": pid, "t0": t0, "window": wname, "y": bool(y), "f": f, "dynamic": dyn,
+                            "xt": terrain_features(obs, pid, near.get(pid, []), t0),
                             "x": [f[k] for k in FEATURES]})
     return out
 
@@ -246,6 +275,9 @@ def best_threshold(ps, ys):
 def _predict_batch(method, train, test):
     """Probabilities for test from a model fitted on train; None if the method is unavailable.
     *_calm: fitted on the calm regime only; a sample in the dynamic regime gets probability 0."""
+    if method.endswith("_terrain"):
+        add = lambda batch: [dict(s, x=s["x"] + s["xt"]) for s in batch]
+        return _predict_batch(method[:-8], add(train), add(test))
     if method.endswith("_calm"):
         tr = [s for s in train if not s["dynamic"]]
         calm = [i for i, s in enumerate(test) if not s["dynamic"]]
@@ -373,7 +405,31 @@ def score(rows, preds, rule_dec, eps, window, with_prob=True):
     return out
 
 
-def run_all(rows_all, eps):
+def compare_terrain(rows, base, terr, eps, window, points=None):
+    """Same cases: terrain model vs base model. points restricts to the airports with a road surface sensor."""
+    idx = [i for i, s in enumerate(rows) if base[i] is not None and terr[i] is not None
+           and (points is None or s["point"] in points)]
+    sel = [rows[i] for i in idx]
+    ys = [s["y"] for s in sel]
+    eps_sel = {k: v for k, v in eps.items() if points is None or k in points}
+    out = {}
+    for name, pr in (("without", base), ("with", terr)):
+        dec = [pr[i][1] for i in idx]
+        c = core.contingency([1.0 if d else 0.0 for d in dec], [1.0 if y else 0.0 for y in ys], 0.5)
+        out[name] = {"pod": c["pod"], "far": c["far"], "csi": c["csi"],
+                     "episodes": episode_warnings(sel, dec, eps_sel, window)}
+    _, diff = bootstrap_csi([s["t0"].date() for s in sel], [terr[i][1] for i in idx], [base[i][1] for i in idx], ys)
+    out["csi_diff_ci95"] = diff
+    fw, fo = out["with"]["far"], out["without"]["far"]
+    sw = out["with"]["episodes"]["warned_2h_share"] or 0.0
+    so = out["without"]["episodes"]["warned_2h_share"] or 0.0
+    out["confirms"] = bool(fw is not None and fo is not None and fo - fw >= CONFIRM["far_drop_min"]
+                           and sw >= so and diff and diff[0] > 0)
+    out["n"], out["events"] = len(sel), sum(ys)
+    return out
+
+
+def run_all(rows_all, eps, terrain=True):
     res = {}
     for wname in WINDOWS:
         rows = [s for s in rows_all if s["window"] == wname]
@@ -382,22 +438,41 @@ def run_all(rows_all, eps):
              "dynamic_rows": sum(s["dynamic"] for s in rows),
              "dynamic_events": sum(1 for s in rows if s["dynamic"] and s["y"])}
         w["rule"] = score(rows, [(1.0 if d else 0.0, d) for d in rule_dec], rule_dec, eps, wname, with_prob=False)
-        for m in ("climatology", "logistic", "boosting", "logistic_calm", "boosting_calm"):
+        preds = {}
+        for m in ("climatology", "logistic", "boosting", "logistic_calm", "boosting_calm") + \
+                (("logistic_calm_terrain", "boosting_calm_terrain") if terrain else ()):
             p = cv_predict(rows, m)
+            preds[m] = p
             w[m] = {"note": "scikit-learn not installed"} if p is None else score(rows, p, rule_dec, eps, wname)
+        if terrain:
+            w["terrain"] = {}
+            for m in ("logistic_calm", "boosting_calm"):
+                b, t = preds.get(m), preds.get(m + "_terrain")
+                if b is None or t is None:
+                    continue
+                w["terrain"][m] = {"all": compare_terrain(rows, b, t, eps, wname),
+                                   "surface_airports": compare_terrain(rows, b, t, eps, wname, TERRAIN_AIRPORTS)}
         if rows and any(s["y"] for s in rows):
             _, wts = fit_logistic(rows)   # all data: only to read which predictors carry the signal
             w["logistic_weights"] = dict(sorted(zip(["bias"] + FEATURES, [round(v, 3) for v in wts]),
                                                 key=lambda kv: -abs(kv[1])))
+            calm = [dict(s, x=s["x"] + s["xt"]) for s in rows if not s["dynamic"]]
+            if terrain and any(s["y"] for s in calm):
+                _, wt = fit_logistic(calm)
+                w["logistic_terrain_weights"] = dict(sorted(zip(["bias"] + FEATURES + TERRAIN, [round(v, 3) for v in wt]),
+                                                            key=lambda kv: -abs(kv[1])))
         res[wname] = w
     return res
 
 
 METHOD_BG = {"rule": "правило", "climatology": "климатология", "logistic": "логистична регресия",
              "boosting": "gradient boosting", "logistic_calm": "регресия, само спокоен режим",
-             "boosting_calm": "boosting, само спокоен режим"}
-METHODS = ("rule", "climatology", "logistic", "boosting", "logistic_calm", "boosting_calm")
-LEARNED = ("logistic", "boosting", "logistic_calm", "boosting_calm")
+             "boosting_calm": "boosting, само спокоен режим",
+             "logistic_calm_terrain": "регресия, спокоен режим + терен",
+             "boosting_calm_terrain": "boosting, спокоен режим + терен"}
+METHODS = ("rule", "climatology", "logistic", "boosting", "logistic_calm", "boosting_calm",
+           "logistic_calm_terrain", "boosting_calm_terrain")
+LEARNED = METHODS[2:]
 
 
 def report(res):
@@ -425,6 +500,23 @@ def report(res):
                      f"{r['csi_minus_rule_ci95'] if m != 'rule' else '—'} | {r.get('brier', '—')} | "
                      f"{r.get('mean_p', '—')} / {r.get('obs_freq', '—')} | {e['warned_2h']} ({e['warned_2h_share']}) | "
                      f"{e['missed']} | {'да' if r['passes'] else 'не'} |")
+        if w.get("terrain"):
+            L += ["", "**Хипотеза „терен“** (същите случаи в спокоен режим, без и със: " + ", ".join(f"`{k}`" for k in TERRAIN)
+                  + f"). Потвърждава се при FAR с поне {CONFIRM['far_drop_min']} по-нисък, не по-малко предупредени епизоди "
+                  "и интервал на разликата в CSI над 0.", "",
+                  "| метод | летища | случаи | FAR без → с | CSI без → с | ИД CSI (с − без) | епизоди ≥ 2 ч без → с | потвърждава |",
+                  "|---|---|---|---|---|---|---|---|"]
+            for m, v in w["terrain"].items():
+                for key, lab in (("all", "всички 5"), ("surface_airports", "LBSF, LBGO, LBPD")):
+                    r = v[key]
+                    L.append(f"| {METHOD_BG[m]} | {lab} | {r['events']} | {r['without']['far']} → {r['with']['far']} | "
+                             f"{r['without']['csi']} → {r['with']['csi']} | {r['csi_diff_ci95']} | "
+                             f"{r['without']['episodes']['warned_2h']} → {r['with']['episodes']['warned_2h']} "
+                             f"от {r['with']['episodes']['episodes']} | {'да' if r['confirms'] else 'не'} |")
+        if w.get("logistic_terrain_weights"):
+            top = [kv for kv in w["logistic_terrain_weights"].items() if kv[0] in TERRAIN]
+            L += ["", "Тегла на предикторите за терен (регресия, спокоен режим, всички данни): "
+                  + ", ".join(f"`{k}` {v}" for k, v in top) + "."]
         if w.get("logistic_weights"):
             top = list(w["logistic_weights"].items())[:8]
             L += ["", "Най-тежки предиктори в регресията (стандартизирани, на всички данни): "
@@ -479,7 +571,7 @@ def main(argv=None):
     eps = events.episodes(fog_series)
     res = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "source": SOURCE,
            "run": "ICON-EU single runs 00/06/12/18 UTC", "status": "research, not for operational use",
-           "period": a.period.split(":"), "windows_h": WINDOWS, "stop": STOP, "rule": RULE, "regime": REGIME, "taus_h": TAUS,
+           "period": a.period.split(":"), "windows_h": WINDOWS, "stop": STOP, "rule": RULE, "regime": REGIME, "terrain": TERRAIN, "confirm": CONFIRM, "taus_h": TAUS,
            "features": FEATURES, "runs_failed": failed, "episodes": sum(len(v) for v in eps.values()),
            "windows": run_all(rows, eps)}
     out = Path(a.out)
