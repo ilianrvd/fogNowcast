@@ -42,6 +42,7 @@ DOCS = "https://github.com/ilianrvd/fogNowcast/blob/main/docs/obs_ntu.md"
 SITE = "https://ilianrvd.github.io/fogNowcast/"
 # read by core.fog_points (portal manifest.md, consumes[]); the model file is regenerated every 6 h, METAR every 30 min
 CONSUMES = [{"project": "multiconvect", "path": "latest_points.json", "max_age_min": 480},
+            {"project": "multiconvect", "path": "fog_fields_icon_eu.npz", "max_age_min": 480},
             {"project": "nowcasting-public", "path": "obs/metar_latest.json", "max_age_min": 60}]
 
 
@@ -75,8 +76,8 @@ def build_manifest(now, latest, recent, fallback, previous=None):
     products += [p for p in (previous or {}).get("products", []) if p.get("id") in ("fog_points", "fog_polygons")]
     return {"schema": "portal.manifest/1.0", "generated_at": iso(now), "source": "fogNowcast",
             "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
-            "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза по точки (модел + корекция от наблюдението)",
-                            "en": "NTU road weather stations and an uncalibrated point forecast (model + observation correction)"},
+            "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза 0–6 ч: точки и площи с условия за мъгла (модел ICON-EU + корекция от наблюденията)",
+                            "en": "NTU road weather stations and an uncalibrated 0–6 h forecast: points and fog-condition areas (ICON-EU + observation correction)"},
             "url": SITE, "repo": "https://github.com/ilianrvd/fogNowcast", "status": "experimental",
             "cadence_min": CADENCE_MIN, "run": None,
             "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": False}, "products": products,
