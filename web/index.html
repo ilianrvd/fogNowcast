@@ -57,7 +57,8 @@
 </header>
 <div id="timebar">
   <span><button id="mObs" aria-pressed="true">Наблюдения</button> <button id="mFc" aria-pressed="false" disabled>Прогноза</button></span>
-  <span id="slider" hidden><input id="lead" type="range" min="0" max="6" step="1" value="0" aria-label="Час на прогнозата"> <b id="leadLabel"></b></span>
+  <span id="slider" hidden><input id="lead" type="range" min="0" max="6" step="1" value="0" aria-label="Час на прогнозата"> <b id="leadLabel"></b>
+    <label><input id="showPoly" type="checkbox" checked> площи</label></span>
   <span id="fogInfo" class="muted"></span>
 </div>
 <main>
@@ -66,6 +67,7 @@
     <h2>Изберете станция</h2>
     <p class="muted">Цветът е дефицитът до насищане: <i>t − td</i> над 0 °C и <i>t</i> минус точката на скреж под 0 °C (под нулата мъглата се образува при насищане спрямо лед, при <i>rh</i> под 100 %). Малкият дефицит не означава мъгла: срещу METAR на летищата насищането на близка станция дава много фалшиви тревоги.</p>
     <p class="muted">Прогноза: цветът е дефицитът на коригираните t и td за избрания час. Плътен кръг: има пресно наблюдение; блед: само модел. Кръг с дебела рамка: летище (METAR). Дефицитът не е вероятност за мъгла.</p>
+    <p class="muted">Площи: коригирано поле от модела и всички станции (лилаво ≤ 0,5 °C, условия за мъгла; синьо 0,5–1 °C, близо до насищане), само в спокоен режим: вятър ≤ 4,9 kt и ниска облачност под BKN. Извън площите условия за мъгла няма или режимът е динамичен.</p>
     <p class="muted">Сиво: станцията е изключена от проверката на качеството (например моделна температура или заседнал сензор).</p>
   </aside>
 </main>
@@ -119,7 +121,11 @@ legend.onAdd = () => {
 };
 legend.addTo(map);
 
-let recent = null, fog = null, mode = "obs", lead = 0, selected = null;
+let recent = null, fog = null, polyDoc = null, mode = "obs", lead = 0, selected = null;
+map.createPane("fogPoly").style.zIndex = 350;   // under the station markers
+const POLY_COLOR = {fog_conditions: BINS[0].color, near_saturation: BINS[1].color};
+const polyLayer = L.geoJSON(null, {pane: "fogPoly", interactive: false,
+  style: f => ({color: POLY_COLOR[f.properties.class], weight: 1, fillColor: POLY_COLOR[f.properties.class], fillOpacity: 0.35})}).addTo(map);
 let latestDoc = null, manifestDoc = null, lastLoad = 0, lastObsTime = null, loading = false;
 const REFRESH_MIN = 5;       // data refresh while the page stays open (the sources update every 15 min; Pages caches up to 10)
 const markers = new Map();   // id -> {marker, station, name, fp}
@@ -222,6 +228,10 @@ function render() {
     const t = new Date(Date.parse(fog.t0) + lead * 3600000).toISOString();
     document.getElementById("leadLabel").textContent = `${t.slice(11, 16)} UTC (+${lead} ч)`;
   }
+  polyLayer.clearLayers();
+  if (fc && polyDoc && document.getElementById("showPoly").checked) {
+    polyLayer.addData({type: "FeatureCollection", features: polyDoc.features.filter(f => f.properties.lead_h === lead)});
+  }
   for (const [id, m] of markers) {
     const st = styleFor(id);
     // forecast view: only the 26 points with a forecast (airports appear there); observation view: all NTU stations
@@ -266,6 +276,8 @@ async function loadAll() {
   try {
     const [latest, manifest, fogDoc] = await Promise.all([getJSON("obs/ntu_latest.json"), getJSON("manifest.json").catch(() => null),
       getJSON("fog/fog_points.json").catch(() => null)]);
+    const poly = await getJSON("fog/fog_polygons.geojson").catch(() => null);
+    if (poly) polyDoc = poly;                 // a failed read keeps the previous polygons
     latestDoc = latest; manifestDoc = manifest || manifestDoc;
     if (fogDoc) fog = fogDoc;                 // a failed read of the forecast keeps the previous one (its age grows)
     if (latest.obs_time_latest !== lastObsTime) {
@@ -295,7 +307,7 @@ async function loadAll() {
     for (const [id, m] of [...markers]) {     // a station that no longer reports
       if (id.indexOf("NTU:") === 0 && !seen.has(id)) { map.removeLayer(m.marker); markers.delete(id); }
     }
-    document.getElementById("mFc").disabled = !fog;
+    document.getElementById("mFc").disabled = !fog && !polyDoc;
     if (!fog) document.getElementById("fogInfo").textContent = "Прогнозата още не е налична.";
     lastLoad = Date.now();
     document.getElementById("warn").textContent = "";
@@ -312,6 +324,7 @@ async function loadAll() {
 
 document.getElementById("mObs").onclick = () => { mode = "obs"; render(); };
 document.getElementById("mFc").onclick = () => { mode = "fc"; render(); };
+document.getElementById("showPoly").onchange = () => render();
 document.getElementById("lead").oninput = e => { lead = +e.target.value; render(); };
 const stale = () => Date.now() - lastLoad >= REFRESH_MIN * 60000;
 setInterval(() => { if (document.hidden) return; if (stale()) loadAll(); else showAges(); }, 60000);   // ages every minute, data every 5

@@ -58,7 +58,7 @@
 | клон `analysis-metar`: `calibration_metar.json`, `calibration_report.md`, `metar_<ICAO>.csv.gz` | [obs_metar_synop.md](obs_metar_synop.md#исторически-metar-от-iem-и-калибриране-на-флага-за-мъгла-етап-1) | 1 | чернова |
 | `fog_fields_<model>.npz` (вход от MultiConvect) | [input_multiconvect.md](input_multiconvect.md) | 1 | реализиран от MultiConvect (само ICON-EU) |
 | клон `analysis-onset`: `onset.json`, `onset_report.md` (поява на мъгла, изследване) | [fog_onset.md](fog_onset.md) | 2 | чернова |
-| `fog/fog_polygons.geojson` (условия за мъгла 0–6 ч, некалибрирани; засега само на сухо) | [fog_polygons.md](fog_polygons.md) | 2 | чернова |
+| `fog/fog_polygons.geojson` (условия за мъгла 0–6 ч, некалибрирани) | [fog_polygons.md](fog_polygons.md) | 2 | чернова |
 | `fog_points.json` (версия 1, по точки, 0–6 ч, некалибриран); после карта | [fog_points.md](fog_points.md), [fog_map.md](fog_map.md), [verification.md](verification.md) | 2 | чернова |
 | `roads_latest.json`, `static/roads_segments.geojson` | [roads.md](roads.md) | 3 | чернова |
 
