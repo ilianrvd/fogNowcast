@@ -1,0 +1,28 @@
+name: probe-fog-fields
+# Manual: download the MultiConvect ICON-EU grid from Pages and check it (core/fog_fields.py): format, grid size,
+# value ranges, missing share, the same run as latest_points.json, and grid vs point values at the 26 points.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install numpy
+      - name: Download
+        run: |
+          base=https://ilianrvd.github.io/multiconvect
+          for f in fog_fields_icon_eu.npz fog_fields_meta.json latest_points.json; do
+            curl -fsS --retry 2 --max-time 120 -o "$f" "$base/$f"
+          done
+          ls -l fog_fields_icon_eu.npz fog_fields_meta.json latest_points.json
+          cat fog_fields_meta.json
+      - run: python -m core.fog_fields --npz fog_fields_icon_eu.npz --meta fog_fields_meta.json --points latest_points.json

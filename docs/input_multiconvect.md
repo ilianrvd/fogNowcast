@@ -2,6 +2,12 @@
 
 > Съгласувано и реализирано от MultiConvect на 2026-11-26 (PR #6 там). Верният формат е в **`docs/fog_fields.md` на MultiConvect** (https://github.com/ilianrvd/multiconvect/blob/main/docs/fog_fields.md); тук е само това, на което се опира fogNowcast. Реализиран е само ICON-EU; таблиците за GFS и IFS по-долу са от черновата. Файловете: `https://ilianrvd.github.io/multiconvect/fog_fields_icon_eu.npz` и `.../fog_fields_meta.json`. Първото production публикуване е следващият рън (около 22:50 UTC на 2026-11-26).
 
+## Четец във fogNowcast
+
+`core/fog_fields.py` (само в Actions, нужен е numpy): `load(npz, meta)` връща масивите като числа с плаваща запетая (`NaN` на мястото на `fill`) и `times` като UTC; отказва при друга главна версия на `schema`, при несъвпадение на `grid.ny`/`grid.nx` с масивите, при `lat`/`lon` не във възходящ ред и при липсващ масив. Непознатите ключове в `fog_fields_meta.json` се пренебрегват. `bilinear()` дава стойност в точка (`NaN` извън мрежата или до липсваща клетка).
+
+Проверка на публикувания файл: работен процес `probe-fog-fields` (ръчно). Сваля `.npz`, `fog_fields_meta.json` и `latest_points.json` от Pages и показва размера на мрежата, часовете, обхвата на стойностите, дела липсващи, дали `run` съвпада с `latest_points.json`, и средната абсолютна разлика между мрежата (билинейно) и точковите стойности за 26-те точки.
+
 ## Обхват
 
 - Район: същият като в MultiConvect (`config.yaml`: 40.3–45.1 N, 21.1–31.3 E).
