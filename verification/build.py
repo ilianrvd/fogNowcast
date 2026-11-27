@@ -26,6 +26,7 @@ SOURCE = ("ICON-EU single runs (Open-Meteo Single Runs API); NTU archive (bgtoll
           "Environmental Mesonet); fogNowcast docs/verification.md")
 
 
+PRECIP = ("RA", "DZ", "SN", "SG", "PL", "GR", "GS", "UP")   # any precipitation in the present weather
 COVER = {"FEW": 0.19, "SCT": 0.44, "BKN": 0.75, "OVC": 1.0}
 _CLOUD = re.compile(r"\b(FEW|SCT|BKN|OVC)(\d{3})")
 _VV = re.compile(r"\bVV(\d{3})")
@@ -67,6 +68,7 @@ def metar_hourly(path, icao):
                 cover, ceil = parse_clouds(r.get("raw") or "")
                 best[k] = (off, {"t": tt, "td": td, "dd": tt - td if tt is not None and td is not None else None,
                                  "ws": ws, "fog": r["fog"] == "1", "vis": num(r["vis_m"]),
+                                 "precip": any(p in (r.get("wx") or "") for p in PRECIP),
                                  "low_cover": cover, "ceil_ft": ceil})
     return {k: v[1] for k, v in best.items()}
 

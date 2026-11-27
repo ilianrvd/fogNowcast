@@ -73,6 +73,25 @@ class Onset(unittest.TestCase):
         md = onset.report({"period": ["a", "b"], "episodes": 14, "windows": res})
         self.assertIn("Стоп-условие", md)
 
+    def test_terrain_features(self):
+        t = T0 + 10 * H
+        obs = {("NTU:21", t): {"t": 2.0, "td": 1.0, "ts": 0.5}, ("NTU:21", t - 3 * H): {"ts": 2.5},
+               ("NTU:64", t): {"t": 2.0, "td": 1.0, "ts": 3.0},
+               ("LBSF", t - 2 * H): {"precip": True}, ("LBSF", t - 15 * H): {"precip": True}}
+        f = onset.terrain_features(obs, "LBSF", ["NTU:21", "NTU:64"], t)
+        self.assertEqual(f[:4], [-0.5, -2.0, -1.5, 0.0])        # NTU:21: surface below the dew point
+        self.assertAlmostEqual(f[4], 1 / 12)
+        self.assertAlmostEqual(f[5], 2 / 24)
+        self.assertEqual(onset.terrain_features({}, "LBSF", ["NTU:21"], t)[3], 1.0)
+
+    def test_terrain_comparison_runs(self):
+        eps = events.episodes({"LBSF": [(t, o["fog"]) for (p, t), o in self.obs.items()]})
+        w = onset.run_all(self.rows, eps)["3-6"]
+        r = w["terrain"]["logistic_calm"]["all"]
+        self.assertIn("confirms", r)
+        self.assertEqual(r["n"], w["terrain"]["logistic_calm"]["surface_airports"]["n"])   # LBSF only
+        self.assertIn("Хипотеза", onset.report({"period": ["a", "b"], "episodes": 1, "windows": {"3-6": w}}))
+
     def test_episode_warning_lead(self):
         rows = [{"point": "LBSF", "t0": T0 + 1 * H}, {"point": "LBSF", "t0": T0 + 2 * H}]
         eps = {"LBSF": [(T0 + 3 * H, T0 + 6 * H)]}

@@ -25,7 +25,7 @@ def row_to_obs(row: dict) -> dict:
     if "wind_missing" not in flags and "wind_zero_both" not in flags:  # zero/zero is ambiguous in the source
         ws, wd = _f(row["wind_kt"]), _f(row["wind_dir"])
     dd = t - td if t is not None and td is not None else None
-    return {"t": t, "td": td, "dd": dd, "rh": rh, "ws": ws, "wd": wd}
+    return {"t": t, "td": td, "dd": dd, "rh": rh, "ws": ws, "wd": wd, "ts": _f(row.get("t_surface"))}
 
 
 def slot_obs(paths, station_ids, step_min=60, max_offset_min=MAX_OFFSET_MIN):
