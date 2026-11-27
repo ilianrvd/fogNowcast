@@ -77,8 +77,8 @@
 {
   "schema": "portal.manifest/1.0", "generated_at": "2026-11-26T05:50:31Z", "source": "fogNowcast",
   "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
-  "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза по точки (модел + корекция от наблюдението)",
-                  "en": "NTU road weather stations and an uncalibrated point forecast (model + observation correction)"},
+  "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза 0–6 ч: точки и площи с условия за мъгла (модел ICON-EU + корекция от наблюденията)",
+                  "en": "NTU road weather stations and an uncalibrated 0–6 h forecast: points and fog-condition areas (ICON-EU + observation correction)"},
   "url": "https://ilianrvd.github.io/fogNowcast/", "repo": "https://github.com/ilianrvd/fogNowcast",
   "status": "experimental", "cadence_min": 15, "run": null,
   "embed": {"url": "index.html?embed=1", "min_height_px": 800, "gated": false},
@@ -94,7 +94,7 @@
 - При прескочено пускане (защитата от 14 мин) или неуспешно пускане **не се пренаписва**: възрастта в портала расте и цветът минава в жълто и червено, вместо да остане зелен с нов час и стари данни.
 - Продукти: `ntu_latest` (`data_time` = най-новият запис от НТУ, `obs_time_latest`; може да е по-стар от `generated_at`, когато НТУ закъснява), `ntu_recent` (`data_time` = най-новият ред) и `ntu_fallback` (`generated_at` = кога е изтеглен, `data_time` = `updated_at` на НТУ). `fog_polygons` (`fog/fog_polygons.geojson`, [fog_polygons.md](fog_polygons.md)) се добавя по същия начин. `fog_points` (`fog/fog_points.json`, [fog_points.md](fog_points.md); `generated_at` = кога е направен, `data_time` = `t0`, текущият час на прогнозата) се добавя от стъпката за мъглата в същото пускане; ако тя се провали, остава последният запис и възрастта му расте. `ntu_fetch_state.json` е служебен и не е продукт. Архивите са клонове в репото, не са в Pages и не са продукти.
 - `status` е `experimental` от появата на страницата (`index.html`), с `embed`: `{"url": "index.html?embed=1", "min_height_px": 800, "gated": false}`.
-- `consumes`: стъпката за мъглата чете `latest_points.json` на `multiconvect` (`max_age_min` 480: файлът се обновява на 6 ч) и `obs/metar_latest.json` на `nowcasting-public` (`max_age_min` 60). Стойностите са предложение; форматът на полето е описан в `manifest.md` на портала.
+- `consumes`: стъпките за мъглата четат `latest_points.json` и `fog_fields_icon_eu.npz` на `multiconvect` (`max_age_min` 480: обновяват се на 6 ч) и `obs/metar_latest.json` на `nowcasting-public` (`max_age_min` 60). Стойностите са предложение; форматът на полето е описан в `manifest.md` на портала.
 
 ### Страница `index.html`
 
