@@ -1,6 +1,7 @@
 name: probe-fog-fields
 # Manual: download the MultiConvect ICON-EU grid from Pages and check it (core/fog_fields.py): format, grid size,
 # value ranges, missing share, the same run as latest_points.json, and grid vs point values at the 26 points.
+# Then a dry run of core/fog_polygons.py on the live NTU and METAR data (leave-one-out check, not published).
 on:
   workflow_dispatch:
 
@@ -16,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install numpy
+      - run: pip install numpy contourpy
       - name: Download
         run: |
           base=https://ilianrvd.github.io/multiconvect
@@ -26,3 +27,11 @@ jobs:
           ls -l fog_fields_icon_eu.npz fog_fields_meta.json latest_points.json
           cat fog_fields_meta.json
       - run: python -m core.fog_fields --npz fog_fields_icon_eu.npz --meta fog_fields_meta.json --points latest_points.json
+      - name: Fog polygons (dry run)
+        run: |
+          curl -fsS --retry 2 --max-time 60 -o ntu_latest.json https://ilianrvd.github.io/fogNowcast/obs/ntu_latest.json
+          metar=""
+          if curl -fsS --retry 2 --max-time 60 -o metar.json https://ilianrvd.github.io/nowcasting-public/obs/metar_latest.json; then metar="--metar metar.json"; fi
+          python -m core.fog_polygons --npz fog_fields_icon_eu.npz --meta fog_fields_meta.json --ntu ntu_latest.json $metar --out fog_polygons.geojson
+          ls -l fog_polygons.geojson
+          python -c "import json;d=json.load(open('fog_polygons.geojson'));print(json.dumps({k:v for k,v in d.items() if k!='features'},ensure_ascii=False));from collections import Counter;print(Counter((f['properties']['lead_h'],f['properties']['class']) for f in d['features']))"
