@@ -36,4 +36,10 @@ GeoJSON `FeatureCollection` с полета на заглавния блок н�
 
 `python -m core.fog_polygons --npz fog_fields_icon_eu.npz --meta fog_fields_meta.json --ntu ntu_latest.json [--metar metar_latest.json] --out fog_polygons.geojson [--manifest manifest.json]`
 
-Сега се пуска само на сухо в `probe-fog-fields` (ръчно). Публикуването в Pages и слоят на страницата са следващата стъпка, след като проверката с изключване на станции покаже, че разнасянето помага.
+Файлът се прави в `ingest-ntu-live` (на 15 мин), след изтеглянето от НТУ и след `fog_points.json`, и се публикува като `fog/fog_polygons.geojson`. Входове от Pages: `fog_fields_icon_eu.npz` и `fog_fields_meta.json` от MultiConvect, METAR от nowcasting-public. Стъпката е независима: при грешка остава предишният файл, а продуктът `fog_polygons` остава в манифеста и възрастта му расте. Сухо пускане: `probe-fog-fields` (ръчно).
+
+Първа проверка с живите данни (2026-11-27 07 UTC, 103 станции): изключена станция, предсказана от останалите, td 1,62 → 0,75 °C, t 1,14 → 0,89 °C средна абсолютна грешка (модел → коригирано).
+
+## Страницата
+
+В режим „Прогноза“ площите се рисуват под станциите за избрания час (същият плъзгач 0–6 ч), лилаво за `fog_conditions` и синьо за `near_saturation` (цветовете на дефицита в легендата). Отметката „площи“ ги скрива. Страницата чете файла отново на всеки 5 мин.

@@ -72,7 +72,7 @@ def build_manifest(now, latest, recent, fallback, previous=None):
              "cadence_min": CADENCE_MIN, "generated_at": fallback["generated_at"], "data_time": fallback.get("updated_at")})
     # fog_points is added by core.fog_points (the step after this one); keep the last entry, so that a failed fog step
     # does not make the product disappear from the portal (its generated_at then shows how old it is)
-    products += [p for p in (previous or {}).get("products", []) if p.get("id") == "fog_points"]
+    products += [p for p in (previous or {}).get("products", []) if p.get("id") in ("fog_points", "fog_polygons")]
     return {"schema": "portal.manifest/1.0", "generated_at": iso(now), "source": "fogNowcast",
             "id": "fognowcast", "name": {"bg": "fogNowcast", "en": "fogNowcast"},
             "description": {"bg": "Наблюдения от пътните станции на НТУ и некалибрирана прогноза по точки (модел + корекция от наблюдението)",
