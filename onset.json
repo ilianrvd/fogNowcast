@@ -1,0 +1,873 @@
+{
+ "generated_at": "2026-11-27T04:19:20Z",
+ "source": "METAR (Iowa Environmental Mesonet); ICON-EU single runs (Open-Meteo); NTU archive (bgtoll.bg, CC BY 4.0); fogNowcast docs/fog_onset.md",
+ "run": "ICON-EU single runs 00/06/12/18 UTC",
+ "status": "research, not for operational use",
+ "period": [
+  "2026-04-05",
+  "2026-11-24"
+ ],
+ "windows_h": {
+  "1-3": [
+   1,
+   3
+  ],
+  "3-6": [
+   3,
+   6
+  ]
+ },
+ "stop": {
+  "warned_2h_share_min": 0.25,
+  "far_max": 0.7
+ },
+ "rule": {
+  "dd_max": 1.0,
+  "ws_max": 5.0
+ },
+ "regime": {
+  "ws_max_kt": 4.9,
+  "ceil_min_ft": 5000
+ },
+ "terrain": [
+  "ts_minus_td",
+  "d_ts_3h",
+  "ts_minus_t",
+  "terrain_missing",
+  "precip_12h",
+  "precip_24h"
+ ],
+ "confirm": {
+  "far_drop_min": 0.1
+ },
+ "taus_h": {
+  "t": 9,
+  "td": 9,
+  "ws": 6
+ },
+ "features": [
+  "dd0",
+  "d_dd_1h",
+  "d_dd_3h",
+  "ws0",
+  "d_ws_3h",
+  "vis0",
+  "d_vis_3h",
+  "cover0",
+  "d_cover_3h",
+  "ceil0",
+  "night",
+  "cold",
+  "mod_dd_min",
+  "mod_dd_drop",
+  "mod_ws_mean",
+  "mod_cl_mean",
+  "ntu_dd_min",
+  "ntu_d_dd_3h",
+  "ntu_missing"
+ ],
+ "runs_failed": [
+  "2026-06-11T06Z"
+ ],
+ "episodes": 52,
+ "windows": {
+  "1-3": {
+   "rows": 27263,
+   "events": 127,
+   "dynamic_rows": 13585,
+   "dynamic_events": 18,
+   "rule": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.268,
+    "far": 0.974,
+    "csi": 0.024,
+    "csi_ci95": [
+     0.013,
+     0.038
+    ],
+    "csi_minus_rule_ci95": [
+     0.0,
+     0.0
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 20,
+     "warned_2h_share": 0.385,
+     "warned_any": 24,
+     "missed": 28
+    },
+    "passes": false
+   },
+   "climatology": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.22,
+    "far": 0.972,
+    "csi": 0.026,
+    "csi_ci95": [
+     0.011,
+     0.044
+    ],
+    "csi_minus_rule_ci95": [
+     -0.015,
+     0.017
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 12,
+     "warned_2h_share": 0.231,
+     "warned_any": 13,
+     "missed": 39
+    },
+    "brier": 0.00468,
+    "mean_p": 0.0046,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "logistic": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.205,
+    "far": 0.854,
+    "csi": 0.093,
+    "csi_ci95": [
+     0.042,
+     0.154
+    ],
+    "csi_minus_rule_ci95": [
+     0.02,
+     0.123
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 10,
+     "warned_2h_share": 0.192,
+     "warned_any": 20,
+     "missed": 32
+    },
+    "brier": 0.00437,
+    "mean_p": 0.0048,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "boosting": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.362,
+    "far": 0.804,
+    "csi": 0.146,
+    "csi_ci95": [
+     0.089,
+     0.206
+    ],
+    "csi_minus_rule_ci95": [
+     0.07,
+     0.173
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 20,
+     "warned_2h_share": 0.385,
+     "warned_any": 28,
+     "missed": 24
+    },
+    "brier": 0.00428,
+    "mean_p": 0.0044,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "logistic_calm": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.26,
+    "far": 0.857,
+    "csi": 0.102,
+    "csi_ci95": [
+     0.054,
+     0.16
+    ],
+    "csi_minus_rule_ci95": [
+     0.036,
+     0.126
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 12,
+     "warned_2h_share": 0.231,
+     "warned_any": 24,
+     "missed": 28
+    },
+    "brier": 0.00438,
+    "mean_p": 0.004,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "boosting_calm": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.299,
+    "far": 0.876,
+    "csi": 0.096,
+    "csi_ci95": [
+     0.061,
+     0.138
+    ],
+    "csi_minus_rule_ci95": [
+     0.04,
+     0.106
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 15,
+     "warned_2h_share": 0.288,
+     "warned_any": 27,
+     "missed": 25
+    },
+    "brier": 0.00443,
+    "mean_p": 0.0038,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "logistic_calm_terrain": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.252,
+    "far": 0.866,
+    "csi": 0.096,
+    "csi_ci95": [
+     0.047,
+     0.151
+    ],
+    "csi_minus_rule_ci95": [
+     0.028,
+     0.12
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 11,
+     "warned_2h_share": 0.212,
+     "warned_any": 24,
+     "missed": 28
+    },
+    "brier": 0.00442,
+    "mean_p": 0.0041,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "boosting_calm_terrain": {
+    "n": 27263,
+    "events": 127,
+    "pod": 0.331,
+    "far": 0.859,
+    "csi": 0.11,
+    "csi_ci95": [
+     0.063,
+     0.16
+    ],
+    "csi_minus_rule_ci95": [
+     0.042,
+     0.132
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 17,
+     "warned_2h_share": 0.327,
+     "warned_any": 26,
+     "missed": 26
+    },
+    "brier": 0.00441,
+    "mean_p": 0.0038,
+    "obs_freq": 0.0047,
+    "passes": false
+   },
+   "terrain": {
+    "logistic_calm": {
+     "all": {
+      "without": {
+       "pod": 0.26,
+       "far": 0.857,
+       "csi": 0.102,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 12,
+        "warned_2h_share": 0.231,
+        "warned_any": 24,
+        "missed": 28
+       }
+      },
+      "with": {
+       "pod": 0.252,
+       "far": 0.866,
+       "csi": 0.096,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 11,
+        "warned_2h_share": 0.212,
+        "warned_any": 24,
+        "missed": 28
+       }
+      },
+      "csi_diff_ci95": [
+       -0.026,
+       0.014
+      ],
+      "confirms": false,
+      "n": 27263,
+      "events": 127
+     },
+     "surface_airports": {
+      "without": {
+       "pod": 0.36,
+       "far": 0.837,
+       "csi": 0.126,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 10,
+        "warned_2h_share": 0.312,
+        "warned_any": 19,
+        "missed": 13
+       }
+      },
+      "with": {
+       "pod": 0.32,
+       "far": 0.826,
+       "csi": 0.127,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 8,
+        "warned_2h_share": 0.25,
+        "warned_any": 18,
+        "missed": 14
+       }
+      },
+      "csi_diff_ci95": [
+       -0.02,
+       0.019
+      ],
+      "confirms": false,
+      "n": 16694,
+      "events": 75
+     }
+    },
+    "boosting_calm": {
+     "all": {
+      "without": {
+       "pod": 0.299,
+       "far": 0.876,
+       "csi": 0.096,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 15,
+        "warned_2h_share": 0.288,
+        "warned_any": 27,
+        "missed": 25
+       }
+      },
+      "with": {
+       "pod": 0.331,
+       "far": 0.859,
+       "csi": 0.11,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 17,
+        "warned_2h_share": 0.327,
+        "warned_any": 26,
+        "missed": 26
+       }
+      },
+      "csi_diff_ci95": [
+       -0.02,
+       0.052
+      ],
+      "confirms": false,
+      "n": 27263,
+      "events": 127
+     },
+     "surface_airports": {
+      "without": {
+       "pod": 0.333,
+       "far": 0.875,
+       "csi": 0.1,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 9,
+        "warned_2h_share": 0.281,
+        "warned_any": 18,
+        "missed": 14
+       }
+      },
+      "with": {
+       "pod": 0.453,
+       "far": 0.833,
+       "csi": 0.139,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 14,
+        "warned_2h_share": 0.438,
+        "warned_any": 21,
+        "missed": 11
+       }
+      },
+      "csi_diff_ci95": [
+       0.0,
+       0.099
+      ],
+      "confirms": false,
+      "n": 16694,
+      "events": 75
+     }
+    }
+   },
+   "logistic_weights": {
+    "bias": -12.616,
+    "ntu_dd_min": -3.156,
+    "mod_dd_min": -2.203,
+    "dd0": -1.992,
+    "mod_ws_mean": -1.469,
+    "ntu_d_dd_3h": 0.95,
+    "d_dd_3h": 0.569,
+    "night": 0.545,
+    "ws0": 0.436,
+    "ceil0": 0.403,
+    "vis0": -0.261,
+    "d_dd_1h": 0.228,
+    "cover0": 0.208,
+    "mod_cl_mean": -0.201,
+    "d_vis_3h": 0.081,
+    "ntu_missing": -0.067,
+    "cold": 0.047,
+    "d_cover_3h": 0.021,
+    "mod_dd_drop": -0.018,
+    "d_ws_3h": 0.005
+   },
+   "logistic_terrain_weights": {
+    "bias": -11.626,
+    "ntu_dd_min": -3.576,
+    "mod_dd_min": -2.074,
+    "dd0": -1.787,
+    "ts_minus_td": -1.135,
+    "ntu_d_dd_3h": 0.975,
+    "mod_ws_mean": -0.832,
+    "ts_minus_t": 0.57,
+    "d_dd_3h": 0.536,
+    "night": 0.521,
+    "ws0": 0.497,
+    "d_dd_1h": 0.232,
+    "vis0": -0.224,
+    "cover0": 0.191,
+    "precip_12h": -0.169,
+    "terrain_missing": 0.164,
+    "ntu_missing": -0.156,
+    "mod_dd_drop": -0.142,
+    "d_ts_3h": -0.113,
+    "d_vis_3h": 0.11,
+    "cold": 0.071,
+    "d_cover_3h": -0.064,
+    "mod_cl_mean": 0.046,
+    "precip_24h": -0.042,
+    "d_ws_3h": 0.027,
+    "ceil0": 0.0
+   }
+  },
+  "3-6": {
+   "rows": 27238,
+   "events": 210,
+   "dynamic_rows": 11144,
+   "dynamic_events": 34,
+   "rule": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.281,
+    "far": 0.932,
+    "csi": 0.058,
+    "csi_ci95": [
+     0.034,
+     0.08
+    ],
+    "csi_minus_rule_ci95": [
+     0.0,
+     0.0
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 30,
+     "warned_2h_share": 0.577,
+     "warned_any": 30,
+     "missed": 22
+    },
+    "passes": false
+   },
+   "climatology": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.252,
+    "far": 0.965,
+    "csi": 0.032,
+    "csi_ci95": [
+     0.017,
+     0.047
+    ],
+    "csi_minus_rule_ci95": [
+     -0.046,
+     -0.007
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 16,
+     "warned_2h_share": 0.308,
+     "warned_any": 16,
+     "missed": 36
+    },
+    "brier": 0.00771,
+    "mean_p": 0.0075,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "logistic": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.395,
+    "far": 0.883,
+    "csi": 0.099,
+    "csi_ci95": [
+     0.057,
+     0.143
+    ],
+    "csi_minus_rule_ci95": [
+     0.01,
+     0.078
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 34,
+     "warned_2h_share": 0.654,
+     "warned_any": 34,
+     "missed": 18
+    },
+    "brier": 0.00737,
+    "mean_p": 0.008,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "boosting": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.324,
+    "far": 0.837,
+    "csi": 0.121,
+    "csi_ci95": [
+     0.069,
+     0.181
+    ],
+    "csi_minus_rule_ci95": [
+     0.022,
+     0.111
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 29,
+     "warned_2h_share": 0.558,
+     "warned_any": 29,
+     "missed": 23
+    },
+    "brier": 0.00705,
+    "mean_p": 0.0075,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "logistic_calm": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.386,
+    "far": 0.851,
+    "csi": 0.12,
+    "csi_ci95": [
+     0.07,
+     0.174
+    ],
+    "csi_minus_rule_ci95": [
+     0.02,
+     0.105
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 34,
+     "warned_2h_share": 0.654,
+     "warned_any": 34,
+     "missed": 18
+    },
+    "brier": 0.00727,
+    "mean_p": 0.0065,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "boosting_calm": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.405,
+    "far": 0.843,
+    "csi": 0.127,
+    "csi_ci95": [
+     0.08,
+     0.178
+    ],
+    "csi_minus_rule_ci95": [
+     0.032,
+     0.113
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 40,
+     "warned_2h_share": 0.769,
+     "warned_any": 40,
+     "missed": 12
+    },
+    "brier": 0.00729,
+    "mean_p": 0.0063,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "logistic_calm_terrain": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.39,
+    "far": 0.871,
+    "csi": 0.107,
+    "csi_ci95": [
+     0.063,
+     0.155
+    ],
+    "csi_minus_rule_ci95": [
+     0.013,
+     0.095
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 31,
+     "warned_2h_share": 0.596,
+     "warned_any": 31,
+     "missed": 21
+    },
+    "brier": 0.00741,
+    "mean_p": 0.0066,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "boosting_calm_terrain": {
+    "n": 27238,
+    "events": 210,
+    "pod": 0.386,
+    "far": 0.823,
+    "csi": 0.138,
+    "csi_ci95": [
+     0.085,
+     0.197
+    ],
+    "csi_minus_rule_ci95": [
+     0.037,
+     0.13
+    ],
+    "episodes": {
+     "episodes": 52,
+     "warned_2h": 35,
+     "warned_2h_share": 0.673,
+     "warned_any": 35,
+     "missed": 17
+    },
+    "brier": 0.00714,
+    "mean_p": 0.006,
+    "obs_freq": 0.0077,
+    "passes": false
+   },
+   "terrain": {
+    "logistic_calm": {
+     "all": {
+      "without": {
+       "pod": 0.386,
+       "far": 0.851,
+       "csi": 0.12,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 34,
+        "warned_2h_share": 0.654,
+        "warned_any": 34,
+        "missed": 18
+       }
+      },
+      "with": {
+       "pod": 0.39,
+       "far": 0.871,
+       "csi": 0.107,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 31,
+        "warned_2h_share": 0.596,
+        "warned_any": 31,
+        "missed": 21
+       }
+      },
+      "csi_diff_ci95": [
+       -0.033,
+       0.004
+      ],
+      "confirms": false,
+      "n": 27238,
+      "events": 210
+     },
+     "surface_airports": {
+      "without": {
+       "pod": 0.528,
+       "far": 0.824,
+       "csi": 0.152,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 25,
+        "warned_2h_share": 0.781,
+        "warned_any": 25,
+        "missed": 7
+       }
+      },
+      "with": {
+       "pod": 0.543,
+       "far": 0.834,
+       "csi": 0.146,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 24,
+        "warned_2h_share": 0.75,
+        "warned_any": 24,
+        "missed": 8
+       }
+      },
+      "csi_diff_ci95": [
+       -0.031,
+       0.017
+      ],
+      "confirms": false,
+      "n": 16679,
+      "events": 127
+     }
+    },
+    "boosting_calm": {
+     "all": {
+      "without": {
+       "pod": 0.405,
+       "far": 0.843,
+       "csi": 0.127,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 40,
+        "warned_2h_share": 0.769,
+        "warned_any": 40,
+        "missed": 12
+       }
+      },
+      "with": {
+       "pod": 0.386,
+       "far": 0.823,
+       "csi": 0.138,
+       "episodes": {
+        "episodes": 52,
+        "warned_2h": 35,
+        "warned_2h_share": 0.673,
+        "warned_any": 35,
+        "missed": 17
+       }
+      },
+      "csi_diff_ci95": [
+       -0.012,
+       0.032
+      ],
+      "confirms": false,
+      "n": 27238,
+      "events": 210
+     },
+     "surface_airports": {
+      "without": {
+       "pod": 0.496,
+       "far": 0.83,
+       "csi": 0.145,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 28,
+        "warned_2h_share": 0.875,
+        "warned_any": 28,
+        "missed": 4
+       }
+      },
+      "with": {
+       "pod": 0.504,
+       "far": 0.796,
+       "csi": 0.17,
+       "episodes": {
+        "episodes": 32,
+        "warned_2h": 25,
+        "warned_2h_share": 0.781,
+        "warned_any": 25,
+        "missed": 7
+       }
+      },
+      "csi_diff_ci95": [
+       -0.004,
+       0.054
+      ],
+      "confirms": false,
+      "n": 16679,
+      "events": 127
+     }
+    }
+   },
+   "logistic_weights": {
+    "bias": -11.234,
+    "ntu_dd_min": -3.047,
+    "mod_dd_min": -2.241,
+    "dd0": -1.783,
+    "mod_ws_mean": -1.56,
+    "d_dd_3h": 0.629,
+    "night": 0.593,
+    "ws0": 0.528,
+    "ceil0": 0.243,
+    "mod_cl_mean": -0.189,
+    "ntu_d_dd_3h": 0.188,
+    "d_ws_3h": -0.165,
+    "vis0": -0.158,
+    "d_dd_1h": 0.103,
+    "mod_dd_drop": -0.102,
+    "cold": 0.034,
+    "d_vis_3h": 0.027,
+    "ntu_missing": -0.024,
+    "cover0": 0.008,
+    "d_cover_3h": 0.004
+   },
+   "logistic_terrain_weights": {
+    "bias": -10.996,
+    "ntu_dd_min": -3.618,
+    "mod_dd_min": -2.049,
+    "dd0": -1.707,
+    "ts_minus_td": -1.056,
+    "mod_ws_mean": -0.908,
+    "night": 0.573,
+    "ts_minus_t": 0.566,
+    "d_dd_3h": 0.505,
+    "ws0": 0.487,
+    "precip_12h": -0.338,
+    "d_ts_3h": 0.328,
+    "precip_24h": 0.174,
+    "vis0": -0.157,
+    "cover0": 0.126,
+    "ntu_missing": -0.111,
+    "d_ws_3h": -0.095,
+    "d_cover_3h": -0.084,
+    "mod_dd_drop": 0.078,
+    "ntu_d_dd_3h": -0.072,
+    "d_vis_3h": 0.069,
+    "cold": 0.043,
+    "d_dd_1h": 0.037,
+    "mod_cl_mean": 0.024,
+    "terrain_missing": 0.015,
+    "ceil0": 0.0
+   }
+  }
+ }
+}
