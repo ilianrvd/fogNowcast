@@ -55,6 +55,7 @@
 | `obs/metar_latest.json`, `obs/synop_latest.json` (и двата: nowcasting-public) | [obs_metar_synop.md](obs_metar_synop.md) | 1 | чернова |
 | `obs/sat_fog_mask.json` (публикува nowcasting-public) | [obs_sat_fog_mask.md](obs_sat_fog_mask.md) | 1–2 | чернова |
 | клон `analysis-correction`: `correction_by_station.json`, `correction_report.md` | [correction_model.md](correction_model.md#изход) | 1 | чернова |
+| клон `archive-metar`: `manifest.json`, `metar/<ICAO>/<YYYY-MM>.csv.gz` (исторически METAR от IEM, за всички проекти) | [metar_archive.md](metar_archive.md) | 1 | чернова |
 | клон `analysis-metar`: `calibration_metar.json`, `calibration_report.md`, `metar_<ICAO>.csv.gz` | [obs_metar_synop.md](obs_metar_synop.md#исторически-metar-от-iem-и-калибриране-на-флага-за-мъгла-етап-1) | 1 | чернова |
 | `fog_fields_<model>.npz` (вход от MultiConvect) | [input_multiconvect.md](input_multiconvect.md) | 1 | реализиран от MultiConvect (само ICON-EU) |
 | клон `analysis-onset`: `onset.json`, `onset_report.md` (поява на мъгла, изследване) | [fog_onset.md](fog_onset.md) | 2 | чернова |
