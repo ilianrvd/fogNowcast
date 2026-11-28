@@ -46,15 +46,25 @@ class ParseRawTests(unittest.TestCase):
 
     def test_row_fog_flag_and_iem_fallback(self):
         r = M.to_row({"valid": "2026-01-28 01:30", "vsby": "0.37",
-                      "metar": "LBSF 280130Z 33003KT 0999 FG M02/M03 Q1007"}, "SPECI")
-        self.assertEqual((r["time"], r["type"], r["fog"], r["low_vis"], r["vis_source"]), ("2026-01-28T01:30:00Z", "SPECI", 1, 1, "metar"))
-        r = M.to_row({"valid": "2026-01-28 01:30", "vsby": "0.62", "metar": "LBSF 280130Z BROKEN"}, "METAR")
+                      "metar": "LBSF 280130Z 33003KT 0999 FG M02/M03 Q1007"})
+        self.assertEqual((r["time"], r["type"], r["fog"], r["low_vis"], r["vis_source"]), ("2026-01-28T01:30:00Z", "METAR", 1, 1, "metar"))
+        r = M.to_row({"valid": "2026-01-28 01:30", "vsby": "0.62", "metar": "LBSF 280130Z BROKEN"})
         self.assertEqual((r["vis_m"], r["vis_source"], r["fog"]), (1000, "iem", 0))
-        r = M.to_row({"valid": "2026-01-28 01:30", "vsby": "M", "metar": "LBBG 280130Z 27003KT 4200 BCFG 10/10 Q1007"}, "METAR")
+        r = M.to_row({"valid": "2026-01-28 01:30", "vsby": "M", "metar": "LBBG 280130Z 27003KT 4200 BCFG 10/10 Q1007"})
         self.assertEqual((r["fog"], r["low_vis"]), (0, 1))   # patches are not fog
 
 
 class ArchiveTests(unittest.TestCase):
+    def test_type_by_minute_and_old_labels_fixed(self):
+        self.assertEqual([M.report_type(t) for t in ("2026-01-28T01:00:00Z", "2026-01-28T01:30:00Z", "2026-01-28T01:07:00Z")],
+                         ["METAR", "METAR", "SPECI"])
+        old = [dict.fromkeys(M.FIELDS, ""), dict.fromkeys(M.FIELDS, "")]
+        old[0].update(time="2026-01-28T01:30:00Z", type="SPECI", raw="A")   # written with the IEM report_type
+        old[1].update(time="2026-01-28T01:00:00Z", type="METAR", raw="B")
+        new = [dict(old[0], type="METAR")]
+        out = M.merge(old, new)
+        self.assertEqual([(r["time"][11:16], r["type"]) for r in out], [("01:00", "METAR"), ("01:30", "METAR")])
+
     def test_year_chunks(self):
         self.assertEqual(list(M.year_chunks("2025-12-30", "2026-01-02")),
                          [("2025-12-30", "2026-01-01"), ("2026-01-01", "2026-01-02")])

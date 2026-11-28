@@ -23,7 +23,7 @@ from pathlib import Path
 from calibration.metar_iem import FOG_TOKENS, FOG_VIS_M, LOW_VIS_M, RETRY_WAIT_S, SM_TO_M, URL, http_text
 
 AIRPORTS = ["LBBG", "LBGO", "LBPD", "LBSF", "LBWN"]
-REPORT_TYPES = {"3": "METAR", "4": "SPECI"}  # IEM report_type -> type
+REPORT_TYPES = ("3", "4")  # IEM report_type: both are fetched; IEM files the :30 routine reports as 4, so it is not the type
 DEFAULT_START = "2022-01-01"
 DAILY_DAYS = 3
 PAUSE_S = 2
@@ -119,7 +119,12 @@ def parse_raw(raw):
     return out
 
 
-def to_row(iem_row, rtype):
+def report_type(time_iso):
+    """METAR at :00 and :30 (routine half-hourly reports of the airports), otherwise SPECI."""
+    return "METAR" if time_iso[14:16] in ("00", "30") else "SPECI"
+
+
+def to_row(iem_row):
     raw = (iem_row.get("metar") or "").strip()
     p = parse_raw(raw)
     vis, src = p["vis_m"], "metar" if p["vis_m"] is not None else None
@@ -129,7 +134,7 @@ def to_row(iem_row, rtype):
         except (TypeError, ValueError):
             pass
     t = datetime.strptime(iem_row["valid"], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
-    return {"time": t.strftime("%Y-%m-%dT%H:%M:%SZ"), "type": rtype, "vis_m": vis, "vis_source": src,
+    return {"time": t.strftime("%Y-%m-%dT%H:%M:%SZ"), "type": report_type(t.strftime("%Y-%m-%dT%H:%M:%SZ")), "vis_m": vis, "vis_source": src,
             "rvr_m": p["rvr_m"], "wx": " ".join(p["wx"]),
             "fog": int(vis is not None and vis < FOG_VIS_M and any(w in FOG_TOKENS for w in p["wx"])),
             "low_vis": int(vis is not None and vis < LOW_VIS_M),
@@ -151,7 +156,7 @@ def fetch_rows(station, start, end, fetch=http_text, sleep=time.sleep):
     """All METAR and SPECI of one station, one request per report type and calendar year."""
     out = []
     for a, b in year_chunks(start, end):
-        for code, rtype in REPORT_TYPES.items():
+        for code in REPORT_TYPES:
             url = build_url(station, a, b, code)
             for attempt in range(len(RETRY_WAIT_S) + 1):
                 try:
@@ -164,7 +169,7 @@ def fetch_rows(station, start, end, fetch=http_text, sleep=time.sleep):
             lines = text.splitlines()
             if not lines or not lines[0].startswith("station,valid"):
                 raise RuntimeError(f"unexpected IEM answer for {station}: {text[:200]!r}")
-            out += [to_row(r, rtype) for r in csv.DictReader(io.StringIO(text)) if not is_taf(r.get("metar"))]
+            out += [to_row(r) for r in csv.DictReader(io.StringIO(text)) if not is_taf(r.get("metar"))]
             sleep(PAUSE_S)
     return out
 
@@ -207,10 +212,13 @@ def encode_month(rows):
 
 
 def merge(old, new):
-    """Union by (time, type, raw), sorted by time; a new copy of the same report replaces the old one."""
-    by = {(r["time"], r["type"], r["raw"]): {k: _cell(r.get(k)) for k in FIELDS} for r in old}
-    for r in new:
-        by[(r["time"], r["type"], r["raw"])] = {k: _cell(r.get(k)) for k in FIELDS}
+    """Union by (time, raw), sorted by time; a new copy of the same report replaces the old one.
+    The type is derived again from the time, so files written with the IEM report_type are corrected."""
+    by = {}
+    for r in list(old) + list(new):
+        row = {k: _cell(r.get(k)) for k in FIELDS}
+        row["type"] = report_type(row["time"])
+        by[(row["time"], row["raw"])] = row
     return [by[k] for k in sorted(by)]
 
 
