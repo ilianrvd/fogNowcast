@@ -1,0 +1,58 @@
+name: archive-metar
+# Historical METAR/SPECI of the five airports from IEM, branch archive-metar (docs/metar_archive.md).
+# Daily: the last 3 days (2 requests per airport). Manual with "start": backfill, 2 requests per airport and year.
+on:
+  schedule:
+    - cron: "7 4 * * *"
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "Backfill from this day (YYYY-MM-DD); empty = daily top-up"
+        default: ""
+      end:
+        description: "Exclusive end day (YYYY-MM-DD); empty = today"
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archive-metar
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch archive-metar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # exit code 2 = branch does not exist yet (first run); any other failure stops the run
+          rc=0; git ls-remote --exit-code --heads origin archive-metar >/dev/null 2>&1 || rc=$?
+          if [ "$rc" = 0 ]; then
+            git clone -q --depth 1 --single-branch --branch archive-metar \
+              "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" arch
+            rm -rf arch/.git
+          elif [ "$rc" = 2 ]; then
+            mkdir -p arch
+          else
+            echo "git ls-remote failed ($rc)"; exit 1
+          fi
+      - name: Fetch from IEM
+        env:
+          START: ${{ inputs.start }}
+          END: ${{ inputs.end }}
+        run: |
+          args=()
+          [ -n "${START:-}" ] && args+=(--start "$START")
+          [ -n "${END:-}" ] && args+=(--end "$END")
+          python -m ingest.metar_archive --archive arch "${args[@]}"
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: tools/publish_metar_archive.sh arch
