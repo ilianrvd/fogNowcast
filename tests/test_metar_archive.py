@@ -102,6 +102,21 @@ class ArchiveTests(unittest.TestCase):
             self.assertEqual(man2["airports"]["LBSF"]["months"]["2026-10"]["sha256"], sha)
             self.assertEqual(man2["period"], ["2026-10-01", "2026-11-25"])
 
+    def test_calibration_reads_archive(self):
+        from calibration import skill
+        from calibration.build_metar import load_reports
+        rows = [M.to_row({"valid": v, "vsby": "M", "metar": raw}) for v, raw in (
+            ("2026-01-31 23:30", "LBSF 312330Z 27005KT 9999 NCD 05/01 Q1020"),
+            ("2026-02-01 01:30", "LBSF 010130Z 00000KT 0600 FZFG VV002 M02/M03 Q1007"),
+            ("2026-02-03 00:00", "LBSF 030000Z 00000KT 9999 NCD M02/M03 Q1007"))]
+        with tempfile.TemporaryDirectory() as d:
+            M.store(d, "LBSF", rows)
+            out = load_reports(d, "LBSF", "2026-01-31", "2026-02-02")   # end exclusive, spans two months
+            self.assertEqual([r["time"].day for r in out], [31, 1])
+            self.assertTrue(out[1]["fog"])
+            self.assertEqual((out[1]["vis_m"], out[1]["t"], out[1]["wx"]), (600, -2.0, ["FZFG"]))
+            self.assertEqual(sum(v["fog"] for v in skill.metar_by_slot(out).values()), 1)
+
     def test_all_failed_writes_nothing(self):
         def fetch(url):
             raise OSError("down")

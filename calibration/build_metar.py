@@ -1,7 +1,8 @@
 """Calibrate the fog flag of NTU stations against airport METAR:
-python -m calibration.build_metar --archive-dir DIR --out DIR
+python -m calibration.build_metar --archive-dir DIR --metar-archive DIR --out DIR
 
-Fetches METAR/SPECI of the five airports from IEM, pairs them with half-hourly NTU observations of the
+Reads METAR/SPECI of the five airports from a checkout of branch archive-metar (docs/metar_archive.md,
+nothing is fetched from IEM here), pairs them with half-hourly NTU observations of the
 stations near each airport (static/correction_stations.json), writes metar_<ICAO>.csv.gz,
 calibration_metar.json and calibration_report.md. Run in GitHub Actions.
 """
@@ -11,16 +12,15 @@ import glob
 import gzip
 import json
 import sys
-import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from correction.hourly import slot_obs
 
 from . import skill
-from .metar_iem import fetch_reports
+from ingest.metar_archive import month_path, read_month
 
-SOURCE = ("METAR/SPECI: Iowa Environmental Mesonet ASOS archive; stations: NTU (bgtoll.bg, CC BY 4.0); "
+SOURCE = ("METAR/SPECI: Iowa Environmental Mesonet ASOS archive (fogNowcast branch archive-metar); stations: NTU (bgtoll.bg, CC BY 4.0); "
           "fogNowcast docs/obs_metar_synop.md")
 
 
@@ -30,6 +30,30 @@ def airport_stations(stations_json):
         for g in s["groups"]:
             if g.startswith("airport:"):
                 out.setdefault(g.split(":")[1], []).append(s["id"])
+    return out
+
+
+def _f(x):
+    return None if x in (None, "") else float(x)
+
+
+def load_reports(metar_archive, icao, start, end):
+    """Reports of one airport from archive-metar, start <= day < end, in the shape write_reports and
+    skill.metar_by_slot expect."""
+    out = []
+    d = datetime.strptime(start[:7], "%Y-%m").date()
+    last = datetime.strptime(end, "%Y-%m-%d").date()
+    while d < last:
+        for r in read_month(month_path(metar_archive, icao, d.strftime("%Y-%m"))):
+            if not (start <= r["time"][:10] < end):
+                continue
+            vis = _f(r["vis_m"])
+            out.append({"time": datetime.strptime(r["time"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc),
+                        "vis_m": None if vis is None else int(vis), "vis_source": r["vis_source"] or None,
+                        "wx": r["wx"].split(), "fog": r["fog"] == "1", "low_vis": r["low_vis"] == "1",
+                        "t": _f(r["t"]), "td": _f(r["td"]), "wind_kt": _f(r["wind_kt"]), "wind_dir": _f(r["wind_dir"]),
+                        "raw": r["raw"]})
+        d = (d.replace(day=28) + timedelta(days=4)).replace(day=1)
     return out
 
 
@@ -68,6 +92,7 @@ def main(argv=None) -> int:
     ap.add_argument("--archive-dir", required=True)
     ap.add_argument("--stations", default="static/correction_stations.json")
     ap.add_argument("--points", default="static/points.json")
+    ap.add_argument("--metar-archive", required=True, help="checkout of branch archive-metar")
     ap.add_argument("--out", required=True)
     ap.add_argument("--start", default="2026-01-27")
     ap.add_argument("--end", default="2026-11-25", help="exclusive")
@@ -92,7 +117,10 @@ def main(argv=None) -> int:
               "targets": {"fog": "vis < 1000 m and FG/FZFG", "low_vis": "vis < 5000 m"},
               "airports": {}}
     for icao, ids in sorted(by_airport.items()):
-        reports = fetch_reports(icao, a.start, a.end)
+        reports = load_reports(a.metar_archive, icao, a.start, a.end)
+        if not reports:
+            print(f"{icao}: no METAR in archive-metar for {a.start}..{a.end}", file=sys.stderr)
+            return 1
         write_reports(out / f"metar_{icao}.csv.gz", reports)
         slots = skill.metar_by_slot(reports)
         p = points[icao]
@@ -105,7 +133,6 @@ def main(argv=None) -> int:
             "rows": rows}
         print(f"{icao}: reports={len(reports)} slots={len(slots)} fog_slots={result['airports'][icao]['fog_slots']} "
               f"vis_from_iem={fallback}", flush=True)
-        time.sleep(2)
     (out / "calibration_metar.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
     md = report_md(result)
     (out / "calibration_report.md").write_text(md, encoding="utf-8")

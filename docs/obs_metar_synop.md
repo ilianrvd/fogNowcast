@@ -39,9 +39,9 @@ fogNowcast приема `n_oktas`, `h` и `cloud_base_ft: null`. Система�
 
 > **Изследване, не за оперативна употреба.** Праговете не са проверени на отделен период, случаите са малко и групирани в епизоди, а станциите за LBBG, LBPD и LBGO са на 16–31 км. Влажността на станция не е флаг за мъгла на летището.
 
-Това е еднократен архив за калибриране. Живият METAR остава задача на nowcasting-public (виж по-горе).
+METAR за калибрирането се чете от клона `archive-metar` ([metar_archive.md](metar_archive.md)). `calibrate-metar` вече не тегли от IEM. Живият METAR остава задача на nowcasting-public (виж по-горе).
 
-**Източник:** Iowa Environmental Mesonet, ASOS архив (METAR и SPECI, типове 3 и 4), за LBSF, LBBG, LBWN, LBPD и LBGO, 2026-01-27 … 2026-11-24, на половин час. Проба от 2026-11-25: пълни данни за всички летища, с изключение на LBBG, където METAR има само от 2026-04-28. Съобщенията са AUTO, т.е. явленията са от сензор.
+**Източник:** Iowa Environmental Mesonet, ASOS архив (METAR и SPECI, типове 3 и 4), през клона `archive-metar`, за LBSF, LBBG, LBWN, LBPD и LBGO, 2026-01-27 … 2026-11-24, на половин час. Проба от 2026-11-25: пълни данни за всички летища, с изключение на LBBG, където METAR има само от 2026-04-28. Съобщенията са AUTO, т.е. явленията са от сензор.
 
 **Определения:**
 - видимостта се чете от самото съобщение в метри (IEM дава мили, закръглени, и 1000 m би се получило като 998 m); ако съобщението не може да се разчете, се ползва IEM, закръглена до 100 m (броят се отчита в `vis_from_iem_rounded`);
@@ -59,6 +59,6 @@ fogNowcast приема `n_oktas`, `h` и `cloud_base_ft: null`. Система�
 **Изход (клон `analysis-metar`, един пренаписван къмит, ръчен workflow `calibrate-metar`):**
 - `calibration_metar.json`: `generated_at`, `source`, `period`, `slot_minutes`, `min_events`, `targets` и по летище `stations`, `metar_reports`, `metar_first`, `vis_from_iem_rounded`, `slots`, `fog_slots`, `low_vis_slots` и `rows` (`station`, `predictor`, `target`, `subset`, `n`, `events`, `tp`, `fp`, `fn`, `tn`, `pod`, `far`, `csi`);
 - `calibration_report.md`: същото, като най-добри комбинации по CSI;
-- `metar_<ICAO>.csv.gz`: нормализираните съобщения (`time` UTC, `vis_m`, `vis_source`, `wx`, `fog`, `low_vis`, `t`, `td` в °C, `wind_kt`, `wind_dir`, `raw`). Температурата и росата в METAR са на цели градуси.
+- `metar_<ICAO>.csv.gz`: съобщенията от `archive-metar` за периода на калибрирането (остават заради `verify-*`, които ги четат) (`time` UTC, `vis_m`, `vis_source`, `wx`, `fog`, `low_vis`, `t`, `td` в °C, `wind_kt`, `wind_dir`, `raw`). Температурата и росата в METAR са на цели градуси.
 
 Данни: Iowa Environmental Mesonet; станции: Национално тол управление (CC BY 4.0).

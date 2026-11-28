@@ -1,6 +1,6 @@
 name: calibrate-metar
 # Manual: calibrate the fog flag of NTU stations against airport METAR from IEM (docs/obs_metar_synop.md).
-# Reads the archive branches, fetches METAR/SPECI of five airports from IEM (5 requests).
+# Reads the NTU archive branches and the METAR archive (branch archive-metar); nothing is fetched from IEM.
 on:
   workflow_dispatch:
     inputs:
@@ -35,7 +35,12 @@ jobs:
             git fetch --depth 1 origin "archive-$m"
             git show FETCH_HEAD:"ntu_$m.csv.gz" > "$RUNNER_TEMP/archive/ntu_$m.csv.gz"
           done
-      - run: python -m calibration.build_metar --archive-dir "$RUNNER_TEMP/archive" --out "$RUNNER_TEMP/out"
+      - name: Fetch archive-metar
+        run: |
+          git fetch --depth 1 origin archive-metar
+          mkdir -p "$RUNNER_TEMP/metar"
+          git archive FETCH_HEAD metar | tar -x -C "$RUNNER_TEMP/metar"
+      - run: python -m calibration.build_metar --archive-dir "$RUNNER_TEMP/archive" --metar-archive "$RUNNER_TEMP/metar" --out "$RUNNER_TEMP/out"
       - if: ${{ inputs.publish }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
